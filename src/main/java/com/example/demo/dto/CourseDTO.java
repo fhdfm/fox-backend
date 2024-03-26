@@ -2,6 +2,7 @@ package com.example.demo.dto;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.UUID;
 import java.util.function.Function;
 
 import org.springframework.data.domain.Page;
@@ -10,17 +11,17 @@ import com.example.demo.domain.Course;
 
 public class CourseDTO implements Serializable {
     
-    private String id;
+    private UUID id;
     private String name;
     private String description;
     private BigDecimal price;
     private Double discount;
-    private String imageUrl;
+    private String image;
     private byte[] imageBytes;
     private String level;
     private String state;
     private String city;
-    private String organizer;
+    private String committee;
     private String instructor;
 
     public CourseDTO() {
@@ -32,19 +33,19 @@ public class CourseDTO implements Serializable {
         this.description = entity.getDescription();
         this.price = entity.getPrice();
         this.discount = entity.getDiscount();
-        this.imageUrl = entity.getImageUrl();
+        this.image = entity.getImage();
         this.level = entity.getLevel();
         this.state = entity.getState();
         this.city = entity.getCity();
-        this.organizer = entity.getOrganizer();
+        this.committee = entity.getCommittee();
         this.instructor = entity.getInstructor();
     }
 
-    public String getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
@@ -80,12 +81,12 @@ public class CourseDTO implements Serializable {
         this.discount = discount;
     }
 
-    public String getImageUrl() {
-        return imageUrl;
+    public String getImage() {
+        return image;
     }
 
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
+    public void setImage(String image) {
+        this.image = image;
     }
 
     public String getLevel() {
@@ -112,12 +113,12 @@ public class CourseDTO implements Serializable {
         this.city = city;
     }
 
-    public String getOrganizer() {
-        return organizer;
+    public String getCommittee() {
+        return committee;
     }
 
-    public void setOrganizer(String organizer) {
-        this.organizer = organizer;
+    public void setCommittee(String committee) {
+        this.committee = committee;
     }
 
     public byte[] getImageBytes() {

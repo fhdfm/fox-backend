@@ -1,9 +1,9 @@
 package com.example.demo.domain;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import com.example.demo.dto.CourseDTO;
@@ -12,17 +12,16 @@ import com.example.demo.dto.CourseDTO;
 public class Course {
     
     @Id
-    private String id;
+    private UUID id;
     private String name;
     private String description;
     private BigDecimal price;
     private Double discount;
-    @Column("image_url")
-    private String imageUrl;
+    private String image;
     private String level;
     private String state;
     private String city;
-    private String organizer;
+    private String committee;
     private String instructor;
 
     public Course() {
@@ -34,19 +33,19 @@ public class Course {
         this.description = dto.getDescription();
         this.price = dto.getPrice();
         this.discount = dto.getDiscount();
-        this.imageUrl = dto.getImageUrl();
+        this.image = dto.getImage();
         this.level = dto.getLevel();
         this.state = dto.getState();
         this.city = dto.getCity();
-        this.organizer = dto.getOrganizer();
+        this.committee = dto.getCommittee();
         this.instructor = dto.getInstructor();
     }
 
-    public String getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
@@ -82,12 +81,12 @@ public class Course {
         this.discount = discount;
     }
 
-    public String getImageUrl() {
-        return imageUrl;
+    public String getImage() {
+        return image;
     }
 
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
+    public void setImage(String image) {
+        this.image = image;
     }
 
     public String getLevel() {
@@ -114,12 +113,12 @@ public class Course {
         this.city = city;
     }
 
-    public String getOrganizer() {
-        return organizer;
+    public String getCommittee() {
+        return committee;
     }
 
-    public void setOrganizer(String organizer) {
-        this.organizer = organizer;
+    public void setCommittee(String committee) {
+        this.committee = committee;
     }
 
     public String getInstructor() {

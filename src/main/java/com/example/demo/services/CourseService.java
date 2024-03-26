@@ -26,7 +26,7 @@ public class CourseService {
         byte[] imageBytes = courseDTO.getImageBytes();
         if (imageBytes != null) {
             String imageUrl = storageService.upload(imageBytes);
-            courseDTO.setImageUrl(imageUrl);
+            courseDTO.setImage(imageUrl);
         }
 
         validateFields(courseDTO);

@@ -1,5 +1,7 @@
 package com.example.demo.domain;
 
+import java.util.UUID;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -7,7 +9,7 @@ import org.springframework.data.relational.core.mapping.Table;
 public class User {
 
     @Id
-    private String id;
+    private UUID id;
 
     private String email;
     private String name;
@@ -17,11 +19,11 @@ public class User {
     public User() {
     }
 
-    public String getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
