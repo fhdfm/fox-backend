@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @ControllerAdvice
-public class TransactionExceptionHandler {
+public class FoxExceptionHandler {
     
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Object> handle(IllegalArgumentException e) {
