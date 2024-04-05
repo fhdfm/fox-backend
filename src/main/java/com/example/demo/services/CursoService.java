@@ -1,0 +1,89 @@
+package com.example.demo.services;
+
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import com.example.demo.domain.Banca;
+import com.example.demo.domain.Curso;
+import com.example.demo.dto.CursoDTO;
+import com.example.demo.repositories.CursoRepository;
+
+@Service
+public class CursoService {
+    
+    // private final StorageService storageService;
+
+    private final CursoRepository cursoRepository;
+
+    private final BancaService bancaService;
+
+    public CursoService(CursoRepository cursoRepository, BancaService bancaService) {
+        this.cursoRepository = cursoRepository;
+        this.bancaService = bancaService;
+    }
+
+    public void save(CursoDTO cursoDTO) {
+        
+        // byte[] imageBytes = cursoDTO.getImageBytes();
+        // if (imageBytes != null) {
+        //     String imageUrl = storageService.upload(imageBytes);
+        //     cursoDTO.setImage(imageUrl);
+        // }
+
+        validarEntrada(cursoDTO);
+
+        this.cursoRepository.save(new Curso(cursoDTO));
+    }
+
+    private void validarEntrada(CursoDTO cursoDTO) {
+        if (cursoDTO.getTitulo() == null) {
+            throw new IllegalArgumentException("Título é requerido.");
+        }
+
+        if (cursoDTO.getDescricao() == null) {
+            throw new IllegalArgumentException("Descrição é requerida.");
+        }
+
+        if (cursoDTO.getValor() == null) {
+            throw new IllegalArgumentException("Preço é requerido.");
+        }
+    }
+
+    public void delete(UUID id) {
+        
+        if (id == null) {
+            throw new IllegalArgumentException("Id é requerido.");
+        }
+
+        if (!this.cursoRepository.existsById(id)) {
+            throw new IllegalArgumentException("Curso não encontrado.");
+        }
+
+        this.cursoRepository.deleteById(id);
+    }
+
+    public CursoDTO findById(UUID id) {
+        
+        if (id == null) {
+            throw new IllegalArgumentException("Id é requerido.");
+        }
+
+        Curso curso = this.cursoRepository.findById(id).orElse(null);
+
+        if (curso == null) {
+            throw new IllegalArgumentException("Curso não encontrado.");
+        }
+
+        Banca banca = this.bancaService.findById(curso.getBanca());
+
+        return new CursoDTO(curso, banca);
+    }
+
+    public Page<CursoDTO> findAll(Pageable pageable) {
+        return CursoDTO.toDTOList(this.cursoRepository.findAll(pageable));
+    }
+
+}

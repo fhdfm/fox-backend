@@ -5,18 +5,17 @@ import java.util.UUID;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
-@Table("users")
-public class User {
+@Table("usuarios")
+public class Usuario {
 
     @Id
     private UUID id;
-
     private String email;
-    private String name;
+    private String nome;
     private String password;
-    private UserRole role;
-    
-    public User() {
+    private PerfilUsuario perfil;
+
+    public Usuario() {
     }
 
     public UUID getId() {
@@ -35,12 +34,12 @@ public class User {
         this.email = email;
     }
 
-    public String getName() {
-        return name;
+    public String getNome() {
+        return nome;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setNome(String nome) {
+        this.nome = nome;
     }
 
     public String getPassword() {
@@ -51,12 +50,12 @@ public class User {
         this.password = password;
     }
 
-    public UserRole getRole() {
-        return role;
+    public PerfilUsuario getPerfil() {
+        return perfil;
     }
 
-    public void setRole(UserRole role) {
-        this.role = role;
+    public void setRole(PerfilUsuario perfil) {
+        this.perfil = perfil;
     }
-    
+
 }

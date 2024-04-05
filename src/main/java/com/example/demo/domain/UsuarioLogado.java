@@ -7,35 +7,38 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-public class CurrentUser implements UserDetails {
+public class UsuarioLogado implements UserDetails {
 
-    private final User user;
+    private final Usuario usuario;
 
-    public CurrentUser(User user) {
-        this.user = user;
+    public UsuarioLogado(Usuario usuario) {
+        this.usuario = usuario;
     }
 
-    public String getName() {
-        return this.user.getName();
+    public String getNome() {
+        return this.usuario.getNome();
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-      if (this.user.getRole() == UserRole.ADMIN)
-        return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"), 
-            new SimpleGrantedAuthority("ROLE_USER"));
-      return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        if (this.usuario.getPerfil() == PerfilUsuario.ADMIN)
+            return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"),
+                    new SimpleGrantedAuthority("ROLE_ALUNO"), 
+                    new SimpleGrantedAuthority("ROLE_EXTERNO"));
+        if (this.usuario.getPerfil() == PerfilUsuario.ALUNO)
+            return List.of(new SimpleGrantedAuthority("ROLE_ALUNO"));
+
+        return List.of(new SimpleGrantedAuthority("ROLE_EXTERNO"));
     }
 
     @Override
     public String getPassword() {
-        return this.user.getPassword();
+        return this.usuario.getPassword();
     }
-
 
     @Override
     public String getUsername() {
-       return this.user.getEmail();
+        return this.usuario.getEmail();
     }
 
     @Override
