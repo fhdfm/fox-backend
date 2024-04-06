@@ -27,7 +27,7 @@ public class DisciplinaController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping
+    @PostMapping(consumes = "application/json", produces = "application/json")
     public ResponseEntity<String> salvar(@RequestBody DominioDTO dominio) {
         
         Disciplina disciplina = new Disciplina();
@@ -40,7 +40,7 @@ public class DisciplinaController {
     }
 
     @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO') or hasRole('ADMINISTRADOR')")
-    @GetMapping
+    @GetMapping(consumes = "application/json", produces = "application/json")
     public ResponseEntity<List<Disciplina>> listar() {
         return ResponseEntity.ok(disciplinaService.findAll());
     }

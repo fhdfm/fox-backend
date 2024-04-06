@@ -26,7 +26,7 @@ public class BancaController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping
+    @PostMapping(consumes = "application/json", produces = "application/json")
     public ResponseEntity<String> salvar(@RequestBody DominioDTO dominio) {
         
         Banca banca = new Banca();
@@ -39,7 +39,7 @@ public class BancaController {
     }
 
     @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO') or hasRole('ADMINISTRADOR')")
-    @GetMapping
+    @GetMapping(consumes = "application/json", produces = "application/json")
     public ResponseEntity<List<Banca>> listar() {
         return ResponseEntity.ok(bancaService.findAll());
     }

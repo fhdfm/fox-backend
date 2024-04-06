@@ -26,7 +26,7 @@ public class CursoController {
         this.cursoService = cursoService;
     }
 
-    @PostMapping("/api/cursos")
+    @PostMapping(value = "/api/cursos", consumes = "application/json", produces = "application/json")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> save(@RequestBody CursoDTO courseDTO) {
 
@@ -36,14 +36,14 @@ public class CursoController {
 
     }
 
-    @DeleteMapping("/api/cursos/{id}")
+    @DeleteMapping(value = "/api/cursos/{id}", consumes = "application/json", produces = "application/json")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> delete(@PathVariable UUID id) {
         this.cursoService.delete(id);
         return ResponseEntity.ok("Curso deletado com sucesso.");
     }
 
-    @GetMapping("/cursos")
+    @GetMapping(value = "/cursos", consumes = "application/json", produces = "application/json")
     public ResponseEntity<Page<CursoDTO>> findAll(Pageable pageable) {
 
         return new ResponseEntity<Page<CursoDTO>>(
@@ -51,7 +51,7 @@ public class CursoController {
        
     }
 
-    @GetMapping("/cursos/{id}")
+    @GetMapping(value = "/cursos/{id}", consumes = "application/json", produces = "application/json")
     public ResponseEntity<CursoDTO> findById(@PathVariable UUID id) {
 
         return new ResponseEntity<CursoDTO>(

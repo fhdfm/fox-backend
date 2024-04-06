@@ -1,5 +1,6 @@
 package com.example.demo.repositories;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -21,4 +22,6 @@ public interface CursoRepository extends PagingAndSortingRepository<Curso, UUID>
     boolean existsById(UUID id);
 
     Curso save(Curso curso);
+
+    List<Curso> findAll();
 }

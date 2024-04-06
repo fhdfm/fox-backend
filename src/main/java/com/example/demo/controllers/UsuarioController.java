@@ -25,31 +25,31 @@ public class UsuarioController {
         this.respository = respository;
     }
     
-    @PostMapping("/signup")
+    @PostMapping(value = "/signup", consumes = "application/json", produces = "application/json")
     public ResponseEntity<String> create(@RequestBody Usuario user) {
         UsuarioLogado savedUser = this.respository.save(user);
         return ResponseEntity.ok("Usuário: " + savedUser.getNome() + " criado com sucesso.");
     }
 
-    @PostMapping("/api/usuarios")
+    @PostMapping(value = "/api/usuarios", consumes = "application/json", produces = "application/json")
     @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO') or hasRole('ADMINISTRADOR")
     public ResponseEntity<String> save(@RequestBody UsuarioDTO user) {
         return null;
     }
 
-    @DeleteMapping("/api/usuarios/{id}")
+    @DeleteMapping(value = "/api/usuarios/{id}", consumes = "application/json", produces = "application/json")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> delete(String id) {
         return null;
     }
 
-    @GetMapping("/api/usuarios")
+    @GetMapping(value = "/api/usuarios", consumes = "application/json", produces = "application/json")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<UsuarioDTO>> findAll(Pageable pageable) {
         return null;
     }
 
-    @GetMapping("/api/usuarios/{id}")
+    @GetMapping(value = "/api/usuarios/{id}", consumes = "application/json", produces = "application/json")
     @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO') or hasRole('ADMINISTRADOR")
     public ResponseEntity<UsuarioDTO> findById(String id) {
         return null;

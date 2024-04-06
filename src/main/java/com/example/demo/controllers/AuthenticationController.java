@@ -15,7 +15,7 @@ public class AuthenticationController {
         this.authenticationService = authenticationService;
     }
 
-    @PostMapping("/signin")
+    @PostMapping(value = "/signin", consumes = "application/json", produces = "application/json")
     public String authenticate(Authentication authentication) {
         return this.authenticationService.authenticate(authentication);
     }

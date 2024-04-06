@@ -1,5 +1,7 @@
 package com.example.demo.services;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
@@ -100,6 +102,23 @@ public class CursoService {
                 return cursoDTO;
             }
         });
+
+        return result;
+    }
+
+    public Map<UUID, CursoDTO> findAllAsMap() {
+
+        Map<UUID, CursoDTO> result = new HashMap<UUID, CursoDTO>();
+
+        Map<UUID, String> bancas = this.bancaService.findAllAsMap();
+
+        List<Curso> cursos = this.cursoRepository.findAll();
+        for (Curso curso : cursos) {
+            String banca = bancas.get(curso.getBancaId());
+            CursoDTO cursoDTO = new CursoDTO(curso);
+            cursoDTO.setNomeBanca(banca);
+            result.put(curso.getId(), cursoDTO);
+        }
 
         return result;
     }

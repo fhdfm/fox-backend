@@ -10,12 +10,12 @@ import com.example.demo.domain.Status;
 @RestController
 public class DominioController {
     
-    @GetMapping("/dominio/escolaridades")
+    @GetMapping(value = "/dominio/escolaridades", consumes = "application/json", produces = "application/json")
     public ResponseEntity<Escolaridade[]> listarDominios() {
         return ResponseEntity.ok(Escolaridade.values());
     }
     
-    @GetMapping("/dominio/status")
+    @GetMapping(value = "/dominio/status", consumes = "application/json", produces = "application/json")
     public ResponseEntity<Status[]> listarStatus() {
         return ResponseEntity.ok(Status.values());
     }
