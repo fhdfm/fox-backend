@@ -1,7 +1,9 @@
 package com.example.demo.services;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -29,5 +31,9 @@ public class BancaService {
 
     public Banca findById(UUID id) {
         return bancaRepository.findById(id).orElse(null);
+    }
+
+    public Map<UUID, String> findAllAsMap() {
+        return bancaRepository.findAll().stream().collect(Collectors.toMap(Banca::getId, Banca::getNome));
     }
 }

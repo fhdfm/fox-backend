@@ -5,7 +5,6 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import com.example.demo.dto.CursoDTO;
@@ -17,13 +16,10 @@ public class Curso {
     private UUID id;
     private String titulo;
     private String descricao;
-    @Column("datainicio")
     private LocalDate dataInicio;
-    @Column("datatermino")
     private LocalDate dataTermino;
     private Status status;
-    @Column("banca_id")
-    private UUID banca;
+    private UUID bancaId;
     private Escolaridade escolaridade;
     private String estado;
     private String cidade;
@@ -39,7 +35,7 @@ public class Curso {
         this.dataInicio = cursoDTO.getDataInicio();
         this.dataTermino = cursoDTO.getDataTermino();
         this.status = cursoDTO.getStatus();
-        this.banca = cursoDTO.getIdBanca();
+        this.bancaId = cursoDTO.getBancaId();
         this.escolaridade = cursoDTO.getEscolaridade();
         this.estado = cursoDTO.getEstado();
         this.cidade = cursoDTO.getCidade();
@@ -94,12 +90,12 @@ public class Curso {
         this.status = status;
     }
 
-    public UUID getBanca() {
-        return banca;
+    public UUID getBancaId() {
+        return bancaId;
     }
 
-    public void setBanca(UUID banca) {
-        this.banca = banca;
+    public void setBancaId(UUID bancaId) {
+        this.bancaId = bancaId;
     }
 
     public Escolaridade getEscolaridade() {

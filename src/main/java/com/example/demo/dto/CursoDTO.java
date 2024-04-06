@@ -4,11 +4,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
-import java.util.function.Function;
 
-import org.springframework.data.domain.Page;
-
-import com.example.demo.domain.Banca;
 import com.example.demo.domain.Curso;
 import com.example.demo.domain.Escolaridade;
 import com.example.demo.domain.Status;
@@ -21,7 +17,7 @@ public class CursoDTO implements Serializable {
     private LocalDate dataInicio;
     private LocalDate dataTermino;
     private Status status;
-    private UUID idBanca;
+    private UUID bancaId;
     private String nomeBanca;
     private Escolaridade escolaridade;
     private String estado;
@@ -32,18 +28,13 @@ public class CursoDTO implements Serializable {
     }
 
     public CursoDTO(Curso curso) {
-        this(curso, null);
-    }
-
-    public CursoDTO(Curso curso, Banca banca) {
         this.id = curso.getId();
         this.titulo = curso.getTitulo();
         this.descricao = curso.getDescricao();
         this.dataInicio = curso.getDataInicio();
         this.dataTermino = curso.getDataTermino();
+        this.bancaId = curso.getBancaId();
         this.status = curso.getStatus();
-        this.idBanca = banca != null ? banca.getId() : null;
-        this.nomeBanca = banca != null ? banca.getNome() : null;
         this.escolaridade = curso.getEscolaridade();
         this.estado = curso.getEstado();
         this.cidade = curso.getCidade();
@@ -98,12 +89,12 @@ public class CursoDTO implements Serializable {
         this.status = status;
     }
 
-    public UUID getIdBanca() {
-        return idBanca;
+    public UUID getBancaId() {
+        return bancaId;
     }
 
-    public void setIdBanca(UUID idBanca) {
-        this.idBanca = idBanca;
+    public void setBancaId(UUID bancaId) {
+        this.bancaId = bancaId;
     }
 
     public String getNomeBanca() {
@@ -145,18 +136,4 @@ public class CursoDTO implements Serializable {
     public void setValor(BigDecimal valor) {
         this.valor = valor;
     }
-
-    public static Page<CursoDTO> toDTOList(Page<Curso> cursos) {
-
-        Page<CursoDTO> pageDTO = cursos.map(new Function<Curso, CursoDTO>() {
-            public CursoDTO apply(Curso curso) {
-                return new CursoDTO(curso);
-            }
-        });
-
-        return pageDTO;
-
-    }
 }
-
-

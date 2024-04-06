@@ -1,6 +1,8 @@
 package com.example.demo.services;
 
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -77,13 +79,29 @@ public class CursoService {
             throw new IllegalArgumentException("Curso não encontrado.");
         }
 
-        Banca banca = this.bancaService.findById(curso.getBanca());
+        Banca banca = this.bancaService.findById(curso.getBancaId());
 
-        return new CursoDTO(curso, banca);
+        CursoDTO result = new CursoDTO(curso);
+        result.setNomeBanca(banca.getNome());
+
+        return result;
     }
 
     public Page<CursoDTO> findAll(Pageable pageable) {
-        return CursoDTO.toDTOList(this.cursoRepository.findAll(pageable));
+
+        Map<UUID, String> bancas = this.bancaService.findAllAsMap();
+
+        Page<Curso> cursos = this.cursoRepository.findAll(pageable);
+        Page<CursoDTO> result = cursos.map(new Function<Curso, CursoDTO>() {
+            public CursoDTO apply(Curso curso) {
+                String banca = bancas.get(curso.getBancaId());
+                CursoDTO cursoDTO = new CursoDTO(curso);
+                cursoDTO.setNomeBanca(banca);
+                return cursoDTO;
+            }
+        });
+
+        return result;
     }
 
 }
