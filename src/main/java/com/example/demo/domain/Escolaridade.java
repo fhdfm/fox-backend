@@ -2,8 +2,9 @@ package com.example.demo.domain;
 
 public enum Escolaridade {
     
-    MEDIO("Nível Médio"),
-    SUPERIOR("Nível Superior");
+    FUNDAMENTAL("Ensino Fundamental"),
+    MEDIO("Ensino Médio"),
+    SUPERIOR("Ensino Superior");
 
     private final String escolaridade;
 

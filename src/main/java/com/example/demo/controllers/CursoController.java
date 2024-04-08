@@ -1,5 +1,6 @@
 package com.example.demo.controllers;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -14,16 +15,22 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.domain.CursoDisciplina;
+import com.example.demo.domain.Disciplina;
 import com.example.demo.dto.CursoDTO;
 import com.example.demo.services.CursoService;
+import com.example.demo.services.DisciplinaService;
 
 @RestController
 public class CursoController {
 
     private final CursoService cursoService;
+    private final DisciplinaService disciplinaService;
 
-    public CursoController(CursoService cursoService) {
+    public CursoController(CursoService cursoService,
+        DisciplinaService disciplinaService) {
         this.cursoService = cursoService;
+        this.disciplinaService = disciplinaService;
     }
 
     @PostMapping(value = "/api/cursos", consumes = "application/json", produces = "application/json")
@@ -56,5 +63,24 @@ public class CursoController {
 
         return new ResponseEntity<CursoDTO>(
                 this.cursoService.findById(id), HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/cursos/{id}/disciplinas", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<List<Disciplina>> listarDisciplinasCurso(@PathVariable UUID id) {
+        return ResponseEntity.ok(this.disciplinaService.findByCursoId(id));
+    }
+
+    @PostMapping(value = "/cursos/{id}/disciplinas:add", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<String> adicionarDisciplina(@PathVariable UUID id, @RequestBody Disciplina disciplina) {
+        CursoDisciplina cursoDisciplina = new CursoDisciplina(id, disciplina.getId());
+        this.disciplinaService.adicionarDisciplina(cursoDisciplina);
+        return ResponseEntity.ok("Disciplina adicionada com sucesso.");
+    }
+
+    @DeleteMapping(value = "/cursos/{idCurso}/disciplinas/{idDisciplina}", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<String> removerDisciplina(@PathVariable UUID idCurso, @PathVariable UUID idDisciplina) {
+        CursoDisciplina cursoDisciplina = new CursoDisciplina(idCurso, idDisciplina);
+        this.disciplinaService.removerDisciplina(cursoDisciplina);
+        return ResponseEntity.ok("Disciplina removida com sucesso.");
     }
 }

@@ -41,3 +41,12 @@ CREATE TABLE simulados (
     valor NUMERIC(10,2) NOT NULL,
     FOREIGN KEY (curso_id) REFERENCES cursos (id)
 );
+
+
+CREATE TABLE curso_disciplina (
+    curso_id UUID NOT NULL,
+    disciplina_id UUID NOT NULL,
+    PRIMARY KEY (curso_id, disciplina_id),
+    FOREIGN KEY (curso_id) REFERENCES cursos(id),
+    FOREIGN KEY (disciplina_id) REFERENCES disciplinas(id)
+);
