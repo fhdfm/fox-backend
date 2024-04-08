@@ -11,7 +11,7 @@ public class CursoDisciplina {
     
     @Id
     @Column("curso_id")
-    private UUID cursoId;
+    private UUID id;
     
     @Id
     @Column("disciplina_id")
@@ -21,7 +21,7 @@ public class CursoDisciplina {
     }
 
     public CursoDisciplina(UUID cursoId, UUID disciplinaId) {
-        this.cursoId = cursoId;
+        this.id = cursoId;
         this.disciplinaId = disciplinaId;
     }
 
