@@ -19,20 +19,20 @@ import com.example.demo.services.impl.UsuarioServiceImpl;
 public class UsuarioController {
 
 
-    private final UsuarioServiceImpl respository;
+    private final UsuarioServiceImpl service;
 
-    public UsuarioController(UsuarioServiceImpl respository) {
-        this.respository = respository;
+    public UsuarioController(UsuarioServiceImpl service) {
+        this.service = service;
     }
     
     @PostMapping(value = "/signup", consumes = "application/json", produces = "application/json")
     public ResponseEntity<String> create(@RequestBody Usuario user) {
-        UsuarioLogado savedUser = this.respository.save(user);
+        UsuarioLogado savedUser = this.service.save(user);
         return ResponseEntity.ok("Usuário: " + savedUser.getNome() + " criado com sucesso.");
     }
 
     @PostMapping(value = "/api/usuarios", consumes = "application/json", produces = "application/json")
-    @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO') or hasRole('ADMINISTRADOR")
+    @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO') or hasRole('ADMIN')")
     public ResponseEntity<String> save(@RequestBody UsuarioDTO user) {
         return null;
     }
@@ -50,7 +50,7 @@ public class UsuarioController {
     }
 
     @GetMapping(value = "/api/usuarios/{id}", consumes = "application/json", produces = "application/json")
-    @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO') or hasRole('ADMINISTRADOR")
+    @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO') or hasRole('ADMIN')")
     public ResponseEntity<UsuarioDTO> findById(String id) {
         return null;
     }

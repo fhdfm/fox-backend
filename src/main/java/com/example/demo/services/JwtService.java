@@ -10,6 +10,8 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.domain.UsuarioLogado;
+
 @Service
 public class JwtService {
 
@@ -32,6 +34,7 @@ public class JwtService {
             .expiresAt(now.plusSeconds(3600))
             .subject(authentication.getName())
             .claim("scope", scopes)
+            .claim("nome", ((UsuarioLogado)authentication.getDetails()).getNome())
             .build();
 
         return this.encoder.encode
