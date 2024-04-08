@@ -65,18 +65,20 @@ public class CursoController {
                 this.cursoService.findById(id), HttpStatus.OK);
     }
 
-    @GetMapping(value = "/cursos/{id}/disciplinas", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<List<Disciplina>> listarDisciplinasCurso(@PathVariable UUID id) {
-        return ResponseEntity.ok(this.disciplinaService.findByCursoId(id));
+    @GetMapping(value = "/cursos/{cursoId}/disciplinas", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<List<Disciplina>> listarDisciplinasCurso(@PathVariable UUID cursoId) {
+        return ResponseEntity.ok(this.disciplinaService.findByCursoId(cursoId));
     }
 
-    @PostMapping(value = "/cursos/{id}/disciplinas:add", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<String> adicionarDisciplina(@PathVariable UUID id, @RequestBody Disciplina disciplina) {
-        CursoDisciplina cursoDisciplina = new CursoDisciplina(id, disciplina.getId());
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping(value = "/cursos/{cursoId}/disciplinas:add", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<String> adicionarDisciplina(@PathVariable UUID cursoId, @RequestBody Disciplina disciplina) {
+        CursoDisciplina cursoDisciplina = new CursoDisciplina(cursoId, disciplina.getId());
         this.disciplinaService.adicionarDisciplina(cursoDisciplina);
         return ResponseEntity.ok("Disciplina adicionada com sucesso.");
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(value = "/cursos/{idCurso}/disciplinas/{idDisciplina}", consumes = "application/json", produces = "application/json")
     public ResponseEntity<String> removerDisciplina(@PathVariable UUID idCurso, @PathVariable UUID idDisciplina) {
         CursoDisciplina cursoDisciplina = new CursoDisciplina(idCurso, idDisciplina);
