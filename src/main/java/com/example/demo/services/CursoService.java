@@ -29,7 +29,7 @@ public class CursoService {
         this.bancaService = bancaService;
     }
 
-    public void save(CursoDTO cursoDTO) {
+    public UUID save(CursoDTO cursoDTO) {
         
         // byte[] imageBytes = cursoDTO.getImageBytes();
         // if (imageBytes != null) {
@@ -39,7 +39,7 @@ public class CursoService {
 
         validarEntrada(cursoDTO);
 
-        this.cursoRepository.save(new Curso(cursoDTO));
+        return this.cursoRepository.save(new Curso(cursoDTO)).getId();
     }
 
     private void validarEntrada(CursoDTO cursoDTO) {

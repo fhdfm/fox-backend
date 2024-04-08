@@ -37,9 +37,9 @@ public class CursoController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> save(@RequestBody CursoDTO courseDTO) {
 
-        this.cursoService.save(courseDTO);
+        UUID newCurso = this.cursoService.save(courseDTO);
         return new ResponseEntity<String>(
-                "Curso criado com sucesso.", HttpStatus.CREATED);
+                newCurso.toString(), HttpStatus.CREATED);
 
     }
 
