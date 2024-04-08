@@ -79,9 +79,9 @@ public class CursoController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping(value = "/cursos/{idCurso}/disciplinas/{idDisciplina}", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<String> removerDisciplina(@PathVariable UUID idCurso, @PathVariable UUID idDisciplina) {
-        CursoDisciplina cursoDisciplina = new CursoDisciplina(idCurso, idDisciplina);
+    @DeleteMapping(value = "/cursos/{cursoId}/disciplinas/{disciplinaId}", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<String> removerDisciplina(@PathVariable UUID cursoId, @PathVariable UUID disciplinaId) {
+        CursoDisciplina cursoDisciplina = new CursoDisciplina(cursoId, disciplinaId);
         this.disciplinaService.removerDisciplina(cursoDisciplina);
         return ResponseEntity.ok("Disciplina removida com sucesso.");
     }

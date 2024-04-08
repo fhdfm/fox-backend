@@ -34,7 +34,7 @@ public class JwtService {
             .expiresAt(now.plusSeconds(3600))
             .subject(authentication.getName())
             .claim("scope", scopes)
-            .claim("nome", ((UsuarioLogado)authentication.getDetails()).getNome())
+            .claim("nome", ((UsuarioLogado) authentication.getPrincipal()).getNome())
             .build();
 
         return this.encoder.encode
