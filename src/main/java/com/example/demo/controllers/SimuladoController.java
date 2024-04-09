@@ -14,16 +14,21 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.dto.QuestaoSimuladoDTO;
 import com.example.demo.dto.SimuladoDTO;
+import com.example.demo.services.QuestaoSimuladoService;
 import com.example.demo.services.SimuladoService;
 
 @RestController
 public class SimuladoController {
     
     private final SimuladoService simuladoService;
+    private final QuestaoSimuladoService questaoSimuladoService;
 
-    public SimuladoController(SimuladoService simuladoService) {
+    public SimuladoController(SimuladoService simuladoService, 
+        QuestaoSimuladoService questaoSimuladoService) {
         this.simuladoService = simuladoService;
+        this.questaoSimuladoService = questaoSimuladoService;
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -58,4 +63,23 @@ public class SimuladoController {
         return ResponseEntity.ok(simuladoService.findAll());
     }
 
+    @GetMapping(value = "/simulados/{simuladoId}/questoes", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<List<QuestaoSimuladoDTO>> findBySimuladoId(@PathVariable UUID simuladoId) {
+        return ResponseEntity.ok(this.questaoSimuladoService.findBySimuladoId(simuladoId));
+    }
+
+    @GetMapping(value = "/simulados/{simuladoId}/questoes/{questaoId}", consumes = "application/json", 
+        produces = "application/json")
+    public ResponseEntity<QuestaoSimuladoDTO> findQuestaoById(
+        @PathVariable UUID simuladoId, @PathVariable UUID questaoId) {
+        return ResponseEntity.ok(this.questaoSimuladoService.findById(questaoId));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping(value = "/api/simulados/{simuladoId}/questoes", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<UUID> salvarQuestao(@PathVariable UUID simuladoId, @RequestBody QuestaoSimuladoDTO questao) {
+        questao.setSimuladoId(simuladoId);
+        UUID id = questaoSimuladoService.save(questao);
+        return ResponseEntity.status(HttpStatus.CREATED).body(id);
+    }
 }

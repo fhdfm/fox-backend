@@ -50,3 +50,23 @@ CREATE TABLE curso_disciplina (
     FOREIGN KEY (curso_id) REFERENCES cursos(id),
     FOREIGN KEY (disciplina_id) REFERENCES disciplinas(id)
 );
+
+CREATE TABLE questoes_simulado (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+    ordem INTEGER NOT NULL,
+    simulado_id UUID NOT NULL,
+    enunciado TEXT NOT NULL,
+    gabarito INTEGER NOT NULL,
+    disciplina_id UUID NOT NULL,
+    FOREIGN KEY (simulado_id) REFERENCES simulados(id),
+    FOREIGN KEY (disciplina_id) REFERENCES disciplinas(id)
+);
+
+CREATE TABLE itens_questao_simulado (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+    questao_simulado_id UUID NOT NULL,
+    ordem INTEGER NOT NULL,
+    descricao TEXT NOT NULL,
+    UNIQUE (id),
+    FOREIGN KEY (questao_simulado_id) REFERENCES questoes_simulado(id)
+);
