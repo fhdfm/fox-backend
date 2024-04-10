@@ -2,9 +2,11 @@ package com.example.demo.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.UUID;
 
 import com.example.demo.domain.Simulado;
+import com.example.demo.util.FoxUtils;
 
 public class SimuladoDTO {
     
@@ -17,6 +19,7 @@ public class SimuladoDTO {
     private String nomeBanca;
     private Integer alternativasPorQuestao;
     private LocalDateTime dataInicio;
+    private Date dataInicioView;
     private String duracao;
     private BigDecimal valor;
 
@@ -30,6 +33,9 @@ public class SimuladoDTO {
         this.cursoId = simulado.getCursoId();
         this.alternativasPorQuestao = simulado.getAlternativasPorQuestao();
         this.dataInicio = simulado.getDataInicio();
+        if (simulado.getDataInicio() != null) {
+            this.dataInicioView = FoxUtils.convertLocalDateTimeToDate(this.dataInicio);
+        }
         this.duracao = simulado.getDuracao();
         this.valor = simulado.getValor();
     }
@@ -120,5 +126,9 @@ public class SimuladoDTO {
 
     public void setNomeBanca(String nomeBanca) {
         this.nomeBanca = nomeBanca;
+    }
+
+    public Date getDataInicioView() {
+        return dataInicioView;
     }
 }

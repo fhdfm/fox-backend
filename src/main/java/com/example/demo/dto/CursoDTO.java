@@ -3,11 +3,13 @@ package com.example.demo.dto;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.UUID;
 
 import com.example.demo.domain.Curso;
 import com.example.demo.domain.Escolaridade;
 import com.example.demo.domain.Status;
+import com.example.demo.util.FoxUtils;
 
 public class CursoDTO implements Serializable {
     
@@ -16,6 +18,8 @@ public class CursoDTO implements Serializable {
     private String descricao;
     private LocalDate dataInicio;
     private LocalDate dataTermino;
+    private Date dataInicioView;
+    private Date dataTerminoView;
     private Status status;
     private UUID bancaId;
     private String nomeBanca;
@@ -32,7 +36,15 @@ public class CursoDTO implements Serializable {
         this.titulo = curso.getTitulo();
         this.descricao = curso.getDescricao();
         this.dataInicio = curso.getDataInicio();
+        if (curso.getDataInicio() != null) {
+            this.dataInicioView = 
+                FoxUtils.convertLocalDateToDate(this.dataInicio);
+        }
         this.dataTermino = curso.getDataTermino();
+        if (curso.getDataTermino() != null) {
+            this.dataTerminoView =
+                FoxUtils.convertLocalDateToDate(this.dataTermino);
+        }
         this.bancaId = curso.getBancaId();
         this.status = curso.getStatus();
         this.escolaridade = curso.getEscolaridade();
@@ -135,5 +147,13 @@ public class CursoDTO implements Serializable {
 
     public void setValor(BigDecimal valor) {
         this.valor = valor;
+    }
+
+    public Date getDataInicioView() {
+        return dataInicioView;
+    }
+
+    public Date getDataTerminoView() {
+        return dataTerminoView;
     }
 }
