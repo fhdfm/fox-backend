@@ -28,6 +28,8 @@ public class CursoDTO implements Serializable {
     private String cidade;
     private BigDecimal valor;
 
+    private boolean possuiDisciplinas;
+
     public CursoDTO() {
     }
 
@@ -51,6 +53,8 @@ public class CursoDTO implements Serializable {
         this.estado = curso.getEstado();
         this.cidade = curso.getCidade();
         this.valor = curso.getValor();
+
+        this.possuiDisciplinas = false;
     }
 
     public UUID getId() {
@@ -155,5 +159,13 @@ public class CursoDTO implements Serializable {
 
     public Date getDataTerminoView() {
         return dataTerminoView;
+    }
+
+    public boolean isPossuiDisciplinas() {
+        return possuiDisciplinas;
+    }
+
+    public void setPossuiDisciplinas(boolean possuiDisciplinas) {
+        this.possuiDisciplinas = possuiDisciplinas;
     }
 }

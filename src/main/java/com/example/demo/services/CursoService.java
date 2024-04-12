@@ -21,12 +21,14 @@ public class CursoService {
     // private final StorageService storageService;
 
     private final CursoRepository cursoRepository;
-
     private final BancaService bancaService;
+    private final DisciplinaService disciplinaService;
 
-    public CursoService(CursoRepository cursoRepository, BancaService bancaService) {
+    public CursoService(CursoRepository cursoRepository, BancaService bancaService, 
+        DisciplinaService disciplinaService) {
         this.cursoRepository = cursoRepository;
         this.bancaService = bancaService;
+        this.disciplinaService = disciplinaService;
     }
 
     public UUID save(CursoDTO cursoDTO) {
@@ -84,6 +86,7 @@ public class CursoService {
         Banca banca = this.bancaService.findById(curso.getBancaId());
 
         CursoDTO result = new CursoDTO(curso);
+        result.setPossuiDisciplinas(disciplinaService.existsByCursoId(id));
         result.setNomeBanca(banca.getNome());
 
         return result;

@@ -60,4 +60,8 @@ public class DisciplinaService {
         return disciplinaRepository.findById(disciplinaId)
             .orElseThrow(() -> new IllegalArgumentException("Disciplina não encontrada."));
     }
+
+    public boolean existsByCursoId(UUID cursoId) {
+        return cursoDisciplinaRepository.existsByCursoId(cursoId);
+    }
 }

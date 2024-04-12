@@ -38,7 +38,7 @@ public class BancaController {
             "Banca " + banca.getNome() + " criada com sucesso!");
     }
 
-    @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO') or hasRole('ADMINISTRADOR')")
+    @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO') or hasRole('ADMIN')")
     @GetMapping(consumes = "application/json", produces = "application/json")
     public ResponseEntity<List<Banca>> listar() {
         return ResponseEntity.ok(bancaService.findAll());

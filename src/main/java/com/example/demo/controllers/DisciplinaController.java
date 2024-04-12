@@ -59,7 +59,7 @@ public class DisciplinaController {
         return ResponseEntity.ok(disciplinaService.findById(disciplinaId));
     }
 
-    @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO') or hasRole('ADMINISTRADOR')")
+    @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO') or hasRole('ADMIN')")
     @GetMapping(consumes = "application/json", produces = "application/json")
     public ResponseEntity<List<Disciplina>> listar() {
         return ResponseEntity.ok(disciplinaService.findAll());
