@@ -43,7 +43,7 @@ public class DisciplinaController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping(consumes = "application/json", produces = "application/json")
+    @PutMapping(value = "/{disciplinaId}", consumes = "application/json", produces = "application/json")
     public ResponseEntity<String> atualizar(@PathVariable UUID disciplinaId, @RequestBody DominioDTO dominio) {
         Disciplina disciplina = new Disciplina();
         disciplina.setNome(dominio.getNome());
@@ -53,7 +53,7 @@ public class DisciplinaController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping(consumes = "application/json", produces = "application/json")
+    @GetMapping(value = "/{disciplinaId}", consumes = "application/json", produces = "application/json")
     public ResponseEntity<Disciplina> buscar(@PathVariable UUID disciplinaId) {
         return ResponseEntity.ok(disciplinaService.findById(disciplinaId));
     }
