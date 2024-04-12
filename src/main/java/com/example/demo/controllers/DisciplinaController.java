@@ -38,8 +38,9 @@ public class DisciplinaController {
 
         disciplina = disciplinaService.salvar(disciplina);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(
-            "Disciplina " + disciplina.getNome() + " criada com sucesso!");
+        return new ResponseEntity<String>(
+            "Disciplina " + disciplina.getNome() + " criada com sucesso!", 
+            HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
