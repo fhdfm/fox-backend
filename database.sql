@@ -70,3 +70,68 @@ CREATE TABLE itens_questao_simulado (
     UNIQUE (id),
     FOREIGN KEY (questao_simulado_id) REFERENCES questoes_simulado(id)
 );
+
+CREATE TABLE curso_simulado_key (
+    id UUID NOT NULL UNIQUE
+);
+
+-- Trigger para inserir e deletar id na tabela curso_simulado_key
+CREATE OR REPLACE FUNCTION inserir_id()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO curso_simulado_key (id)
+    VALUES (NEW.id);  
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_insert_cursos
+AFTER INSERT ON cursos
+FOR EACH ROW
+EXECUTE FUNCTION inserir_id();
+
+CREATE TRIGGER trigger_insert_simulados
+AFTER INSERT ON simulados
+FOR EACH ROW
+EXECUTE FUNCTION inserir_id();
+
+CREATE OR REPLACE FUNCTION deletar_id()
+RETURNS TRIGGER AS $$
+BEGIN
+    DELETE FROM curso_simulado_key WHERE id = OLD.id;  -- Supondo que o ID do curso ou simulado é "id"
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_delete_cursos
+AFTER DELETE ON cursos
+FOR EACH ROW
+EXECUTE FUNCTION deletar_id();
+
+CREATE TRIGGER trigger_delete_simulados
+AFTER DELETE ON simulados
+FOR EACH ROW
+EXECUTE FUNCTION deletar_id();
+
+-- fim da trigger para inserir e deletar id na tabela curso_simulado_key
+
+CREATE TABLE transacoes (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+    transaction_id VARCHAR(255) NOT NULL,
+    data DATE NOT NULL,
+    valor DECIMAL(19, 2) NOT NULL,
+    descricao VARCHAR(255) NOT NULL,
+    status VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE matriculas (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+    usuario_id UUID NOT NULL,
+    produto_id UUID NOT NULL,
+    transacao_id UUID NOT NULL,
+    tipo_produto VARCHAR(50) NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+    FOREIGN KEY (produto_id) REFERENCES curso_simulado_key(id),
+    FOREIGN KEY (transacao_id) REFERENCES transacoes(id)
+);

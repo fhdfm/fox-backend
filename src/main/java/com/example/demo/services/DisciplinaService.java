@@ -55,4 +55,9 @@ public class DisciplinaService {
     public void removerDisciplina(CursoDisciplina cursoDisciplina) {
         cursoDisciplinaRepository.delete(cursoDisciplina);
     }
+
+    public Disciplina findById(UUID disciplinaId) {
+        return disciplinaRepository.findById(disciplinaId)
+            .orElseThrow(() -> new IllegalArgumentException("Disciplina não encontrada."));
+    }
 }
