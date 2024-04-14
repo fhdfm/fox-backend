@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,7 +21,7 @@ import com.example.demo.services.DisciplinaService;
 
 
 @RestController
-@RequestMapping("/api/disciplinas")
+@RequestMapping(value = "/api/disciplinas", produces = MediaType.APPLICATION_JSON_VALUE)
 public class DisciplinaController {
  
     private final DisciplinaService disciplinaService;
@@ -30,21 +31,19 @@ public class DisciplinaController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping(consumes = "application/json", produces = "application/json")
-    public ResponseEntity<String> salvar(@RequestBody DominioDTO dominio) {
+    @PostMapping(consumes =  MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UUID> salvar(@RequestBody DominioDTO dominio) {
         
         Disciplina disciplina = new Disciplina();
         disciplina.setNome(dominio.getNome());
 
         disciplina = disciplinaService.salvar(disciplina);
 
-        return new ResponseEntity<String>(
-            "Disciplina " + disciplina.getNome() + " criada com sucesso!", 
-            HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED).body(disciplina.getId());
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping(value = "/{disciplinaId}", consumes = "application/json", produces = "application/json")
+    @PutMapping(value = "/{disciplinaId}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> atualizar(@PathVariable UUID disciplinaId, @RequestBody DominioDTO dominio) {
         Disciplina disciplina = new Disciplina();
         disciplina.setNome(dominio.getNome());
@@ -54,13 +53,13 @@ public class DisciplinaController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping(value = "/{disciplinaId}", consumes = "application/json", produces = "application/json")
+    @GetMapping(value = "/{disciplinaId}")
     public ResponseEntity<Disciplina> buscar(@PathVariable UUID disciplinaId) {
         return ResponseEntity.ok(disciplinaService.findById(disciplinaId));
     }
 
     @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO') or hasRole('ADMIN')")
-    @GetMapping(consumes = "application/json", produces = "application/json")
+    @GetMapping
     public ResponseEntity<List<Disciplina>> listar() {
         return ResponseEntity.ok(disciplinaService.findAll());
     }

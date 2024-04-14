@@ -2,6 +2,7 @@ package com.example.demo.domain;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -17,6 +18,14 @@ public class UsuarioLogado implements UserDetails {
 
     public String getNome() {
         return this.usuario.getNome();
+    }
+
+    public PerfilUsuario getPerfil() {
+        return this.usuario.getPerfil();
+    }
+
+    public UUID getId() {
+        return this.usuario.getId();
     }
 
     @Override

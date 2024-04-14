@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.QuestaoSimuladoDTO;
@@ -20,6 +22,7 @@ import com.example.demo.services.QuestaoSimuladoService;
 import com.example.demo.services.SimuladoService;
 
 @RestController
+@RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 public class SimuladoController {
     
     private final SimuladoService simuladoService;
@@ -32,33 +35,33 @@ public class SimuladoController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping(value = "/api/simulados", consumes = "application/json", produces = "application/json")
+    @PostMapping(value = "/api/simulados", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UUID> save(@RequestBody SimuladoDTO simuladoDTO) {
         UUID id = simuladoService.save(simuladoDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(id);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping(value = "/api/simulados/{id}", consumes = "application/json", produces = "application/json")
+    @DeleteMapping(value = "/api/simulados/{id}")
     public ResponseEntity<String> delete(@PathVariable UUID id) {
         simuladoService.delete(id);
         return ResponseEntity.ok("Simulado deletado com sucesso. ID: " + id);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping(value = "/api/simulados/{id}", consumes = "application/json", produces = "application/json")
+    @PutMapping(value = "/api/simulados/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> update(@PathVariable UUID id, @RequestBody SimuladoDTO simuladoDTO) {
         simuladoDTO.setId(id);
         UUID newId = simuladoService.save(simuladoDTO);
         return ResponseEntity.ok("Simulado atualizado com sucesso. ID: " + newId);
     }
 
-    @GetMapping(value = "/simulados/{id}", consumes = "application/json", produces = "application/json")
+    @GetMapping(value = "/simulados/{id}")
     public ResponseEntity<SimuladoDTO> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(simuladoService.findById(id));
     }
 
-    @GetMapping(value = "/simulados", consumes = "application/json", produces = "application/json")
+    @GetMapping(value = "/simulados")
     public ResponseEntity<List<SimuladoDTO>> findAll() {
         return ResponseEntity.ok(simuladoService.findAll());
     }
