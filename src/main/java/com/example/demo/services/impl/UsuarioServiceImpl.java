@@ -1,5 +1,7 @@
 package com.example.demo.services.impl;
 
+import java.util.UUID;
+
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -36,6 +38,12 @@ public class UsuarioServiceImpl implements UserDetailsService {
         usuario.setPassword(this.encoder.encode(usuario.getPassword()));
         Usuario savedUser = this.usuarioRepository.save(usuario);
         return this.loadUserByUsername(savedUser.getEmail());
+    }
+
+    public UsuarioLogado findById(UUID usuarioId) {
+        return this.usuarioRepository.findById(usuarioId)
+                    .map(UsuarioLogado::new)
+                        .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado."));
     }
 
 }

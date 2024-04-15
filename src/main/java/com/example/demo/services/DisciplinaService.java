@@ -46,18 +46,18 @@ public class DisciplinaService {
     }
 
     @Transactional
-    public void adicionarDisciplinas(UUID cursoId, List<UUID> disciplinaIds) {
+    public void adicionarDisciplinas(UUID cursoId, UUID[] disciplinaIds) {
         if (cursoId == null)
             throw new IllegalArgumentException("Informe o curso.");
-        if (disciplinaIds == null || disciplinaIds.isEmpty())
+        if (disciplinaIds == null || disciplinaIds.length == 0)
             throw new IllegalArgumentException("Informe as disciplinas.");
         
-        disciplinaIds.forEach(d -> {
+        for (UUID disciplinaId : disciplinaIds) {
             CursoDisciplina cursoDisciplina = new CursoDisciplina();
             cursoDisciplina.setCursoId(cursoId);
-            cursoDisciplina.setDisciplinaId(d);
-            cursoDisciplina = cursoDisciplinaRepository.save(cursoDisciplina);
-        });
+            cursoDisciplina.setDisciplinaId(disciplinaId);
+            cursoDisciplinaRepository.save(cursoDisciplina);
+        }
     }
 
     public void removerDisciplina(CursoDisciplina cursoDisciplina) {

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.demo.domain.Banca;
 import com.example.demo.domain.Curso;
+import com.example.demo.domain.Status;
 import com.example.demo.dto.CursoDTO;
 import com.example.demo.repositories.CursoRepository;
 
@@ -96,7 +97,7 @@ public class CursoService {
 
         Map<UUID, String> bancas = this.bancaService.findAllAsMap();
 
-        Page<Curso> cursos = this.cursoRepository.findAll(pageable);
+        Page<Curso> cursos = this.cursoRepository.findAllByStatus(pageable, Status.ATIVO);
         Page<CursoDTO> result = cursos.map(new Function<Curso, CursoDTO>() {
             public CursoDTO apply(Curso curso) {
                 String banca = bancas.get(curso.getBancaId());
@@ -115,7 +116,7 @@ public class CursoService {
 
         Map<UUID, String> bancas = this.bancaService.findAllAsMap();
 
-        List<Curso> cursos = this.cursoRepository.findAll();
+        List<Curso> cursos = this.cursoRepository.findAllByStatus(Status.ATIVO);
         for (Curso curso : cursos) {
             String banca = bancas.get(curso.getBancaId());
             CursoDTO cursoDTO = new CursoDTO(curso);

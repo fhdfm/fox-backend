@@ -1,17 +1,16 @@
 package com.example.demo.dto;
 
-import java.util.List;
 import java.util.UUID;
 
 public class AddDisciplinaRequest {
     
-    private List<UUID> ids;
+    private UUID[] ids;
 
-    public List<UUID> getIds() {
+    public UUID[] getIds() {
         return ids;
     }
 
-    public void setIds(List<UUID> ids) {
+    public void setIds(UUID[] ids) {
         this.ids = ids;
     }
 

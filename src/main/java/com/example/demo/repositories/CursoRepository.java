@@ -9,11 +9,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import com.example.demo.domain.Curso;
+import com.example.demo.domain.Status;
 
 public interface CursoRepository extends PagingAndSortingRepository<Curso, UUID> {
 
     @SuppressWarnings("all")
-    Page<Curso> findAll(Pageable pageable);
+    Page<Curso> findAllByStatus(Pageable pageable, Status status);
 
     Optional<Curso> findById(UUID id);
 
@@ -23,5 +24,5 @@ public interface CursoRepository extends PagingAndSortingRepository<Curso, UUID>
 
     Curso save(Curso curso);
 
-    List<Curso> findAll();
+    List<Curso> findAllByStatus(Status status);
 }
