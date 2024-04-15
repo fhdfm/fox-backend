@@ -69,7 +69,7 @@ public class CursoController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping(value = "/cursos/{cursoId}/disciplinas:add", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/cursos/{cursoId}/disciplinas", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> adicionarDisciplina(@PathVariable UUID cursoId, 
         @RequestBody AddDisciplinaRequest disciplinas) {
         this.disciplinaService.adicionarDisciplina(cursoId, disciplinas.getIds());
