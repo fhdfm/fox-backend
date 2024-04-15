@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.domain.CursoDisciplina;
 import com.example.demo.domain.Disciplina;
+import com.example.demo.dto.AddDisciplinaRequest;
 import com.example.demo.dto.CursoDTO;
 import com.example.demo.services.CursoService;
 import com.example.demo.services.DisciplinaService;
@@ -69,10 +70,10 @@ public class CursoController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "/cursos/{cursoId}/disciplinas:add", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> adicionarDisciplina(@PathVariable UUID cursoId, @RequestBody Disciplina disciplina) {
-        CursoDisciplina cursoDisciplina = new CursoDisciplina(cursoId, disciplina.getId());
-        this.disciplinaService.adicionarDisciplina(cursoDisciplina);
-        return ResponseEntity.ok("Disciplina adicionada com sucesso.");
+    public ResponseEntity<String> adicionarDisciplina(@PathVariable UUID cursoId, 
+        @RequestBody AddDisciplinaRequest disciplinas) {
+        this.disciplinaService.adicionarDisciplina(cursoId, disciplinas.getIds());
+        return ResponseEntity.ok("Disciplina(s) adicionada(s) com sucesso.");
     }
 
     @PreAuthorize("hasRole('ADMIN')")

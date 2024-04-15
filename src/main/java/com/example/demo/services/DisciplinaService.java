@@ -6,6 +6,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.domain.CursoDisciplina;
 import com.example.demo.domain.Disciplina;
@@ -44,12 +45,19 @@ public class DisciplinaService {
             .collect(Collectors.toList());
     }
 
-    public String adicionarDisciplina(CursoDisciplina cursoDisciplina) {
-        if (cursoDisciplina == null || cursoDisciplina.getCursoId() == null 
-            || cursoDisciplina.getDisciplinaId() == null)
-            throw new IllegalArgumentException("Informe o curso e a disciplina.");
-        cursoDisciplina = cursoDisciplinaRepository.save(cursoDisciplina);
-        return cursoDisciplina.getDisciplinaId() + "/" + cursoDisciplina.getCursoId();
+    @Transactional
+    public void adicionarDisciplina(UUID cursoId, List<UUID> disciplinaIds) {
+        if (cursoId == null)
+            throw new IllegalArgumentException("Informe o curso.");
+        if (disciplinaIds == null || disciplinaIds.isEmpty())
+            throw new IllegalArgumentException("Informe as disciplinas.");
+        
+        disciplinaIds.forEach(d -> {
+            CursoDisciplina cursoDisciplina = new CursoDisciplina();
+            cursoDisciplina.setCursoId(cursoId);
+            cursoDisciplina.setDisciplinaId(d);
+            cursoDisciplina = cursoDisciplinaRepository.save(cursoDisciplina);
+        });
     }
 
     public void removerDisciplina(CursoDisciplina cursoDisciplina) {
