@@ -69,15 +69,15 @@ public class CursoController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping(value = "/cursos/{cursoId}/disciplinas", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> adicionarDisciplina(@PathVariable UUID cursoId, 
+    @PostMapping(value = "/api/cursos/{cursoId}/disciplinas", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> adicionarDisciplinas(@PathVariable UUID cursoId, 
         @RequestBody AddDisciplinaRequest disciplinas) {
-        this.disciplinaService.adicionarDisciplina(cursoId, disciplinas.getIds());
+        this.disciplinaService.adicionarDisciplinas(cursoId, disciplinas.getIds());
         return ResponseEntity.ok("Disciplina(s) adicionada(s) com sucesso.");
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping(value = "/cursos/{cursoId}/disciplinas/{disciplinaId}")
+    @DeleteMapping(value = "/api/cursos/{cursoId}/disciplinas/{disciplinaId}")
     public ResponseEntity<String> removerDisciplina(@PathVariable UUID cursoId, @PathVariable UUID disciplinaId) {
         CursoDisciplina cursoDisciplina = new CursoDisciplina(cursoId, disciplinaId);
         this.disciplinaService.removerDisciplina(cursoDisciplina);

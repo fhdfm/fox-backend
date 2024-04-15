@@ -46,7 +46,7 @@ public class DisciplinaService {
     }
 
     @Transactional
-    public void adicionarDisciplina(UUID cursoId, List<UUID> disciplinaIds) {
+    public void adicionarDisciplinas(UUID cursoId, List<UUID> disciplinaIds) {
         if (cursoId == null)
             throw new IllegalArgumentException("Informe o curso.");
         if (disciplinaIds == null || disciplinaIds.isEmpty())
