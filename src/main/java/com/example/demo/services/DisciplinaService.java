@@ -41,7 +41,7 @@ public class DisciplinaService {
         
         List<CursoDisciplina> disciplinaIds = cursoDisciplinaRepository.findByCursoId(cursoId);
         return disciplinaIds.stream()
-            .map(d -> disciplinas.get(d.getDisciplinaId()))
+            .map(d -> disciplinas.get(d.getId().getDisciplinaId()))
             .collect(Collectors.toList());
     }
 
@@ -53,9 +53,8 @@ public class DisciplinaService {
             throw new IllegalArgumentException("Informe as disciplinas.");
         
         for (UUID disciplinaId : disciplinaIds) {
-            CursoDisciplina cursoDisciplina = new CursoDisciplina();
-            cursoDisciplina.setCursoId(cursoId);
-            cursoDisciplina.setDisciplinaId(disciplinaId);
+            CursoDisciplina cursoDisciplina = 
+                new CursoDisciplina(cursoId, disciplinaId);
             cursoDisciplinaRepository.save(cursoDisciplina);
         }
     }
