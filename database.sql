@@ -46,10 +46,14 @@ CREATE TABLE simulados (
 CREATE TABLE curso_disciplina (
     curso_id UUID NOT NULL,
     disciplina_id UUID NOT NULL,
-    PRIMARY KEY (curso_id, disciplina_id),
+    --PRIMARY KEY (curso_id, disciplina_id),
     FOREIGN KEY (curso_id) REFERENCES cursos(id),
     FOREIGN KEY (disciplina_id) REFERENCES disciplinas(id)
 );
+
+-- workaround
+--ALTER TABLE curso_disciplina
+--ADD COLUMN id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL UNIQUE;
 
 CREATE TABLE questoes_simulado (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
@@ -67,7 +71,6 @@ CREATE TABLE itens_questao_simulado (
     questao_simulado_id UUID NOT NULL,
     ordem INTEGER NOT NULL,
     descricao TEXT NOT NULL,
-    UNIQUE (id),
     FOREIGN KEY (questao_simulado_id) REFERENCES questoes_simulado(id)
 );
 

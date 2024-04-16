@@ -41,7 +41,7 @@ public class DisciplinaService {
         
         List<CursoDisciplina> disciplinaIds = cursoDisciplinaRepository.findByCursoId(cursoId);
         return disciplinaIds.stream()
-            .map(d -> disciplinas.get(d.getId().getDisciplinaId()))
+            .map(d -> disciplinas.get(d.getDisciplinaId()))
             .collect(Collectors.toList());
     }
 
