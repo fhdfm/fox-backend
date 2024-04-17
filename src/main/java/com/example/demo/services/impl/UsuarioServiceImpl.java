@@ -1,5 +1,6 @@
 package com.example.demo.services.impl;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -7,6 +8,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.domain.PerfilUsuario;
 import com.example.demo.domain.Usuario;
 import com.example.demo.domain.UsuarioLogado;
 import com.example.demo.repositories.UsuarioRepository;
@@ -44,6 +46,17 @@ public class UsuarioServiceImpl implements UserDetailsService {
         return this.usuarioRepository.findById(usuarioId)
                     .map(UsuarioLogado::new)
                         .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado."));
+    }
+
+    public List<Usuario> findAll(PerfilUsuario tipo) {
+        if (tipo != null) {
+            return this.usuarioRepository.findByPerfil(tipo);
+        }
+        return this.usuarioRepository.findAll();
+    }
+
+    public List<Usuario> findAll() {
+        return this.usuarioRepository.findAll();
     }
 
 }

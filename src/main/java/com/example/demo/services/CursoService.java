@@ -50,6 +50,10 @@ public class CursoService {
             throw new IllegalArgumentException("Título é requerido.");
         }
 
+        if (cursoRepository.existsByTitulo(cursoDTO.getTitulo())) {
+            throw new IllegalArgumentException("Já existe um curso com este título.");
+        }
+
         if (cursoDTO.getDescricao() == null) {
             throw new IllegalArgumentException("Descrição é requerida.");
         }
@@ -103,6 +107,7 @@ public class CursoService {
                 String banca = bancas.get(curso.getBancaId());
                 CursoDTO cursoDTO = new CursoDTO(curso);
                 cursoDTO.setNomeBanca(banca);
+                cursoDTO.setPossuiDisciplinas(disciplinaService.existsByCursoId(curso.getId()));
                 return cursoDTO;
             }
         });

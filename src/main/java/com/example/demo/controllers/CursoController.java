@@ -73,7 +73,8 @@ public class CursoController {
     public ResponseEntity<String> adicionarDisciplinas(@PathVariable UUID cursoId, 
         @RequestBody AddDisciplinaRequest disciplinas) {
         this.disciplinaService.adicionarDisciplinas(cursoId, disciplinas.getIds());
-        return ResponseEntity.ok("Disciplina(s) adicionada(s) com sucesso.");
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body("Disciplina(s) adicionada(s) com sucesso.");
     }
 
     @PreAuthorize("hasRole('ADMIN')")

@@ -25,4 +25,6 @@ public interface CursoRepository extends PagingAndSortingRepository<Curso, UUID>
     Curso save(Curso curso);
 
     List<Curso> findAllByStatus(Status status);
+
+    Boolean existsByTitulo(String titulo);
 }
