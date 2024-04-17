@@ -31,7 +31,7 @@ public class SimuladoService {
     }
 
     public SimuladoDTO findById(UUID id) {
-        Simulado simulado = simuladoRepository.findById(id).orElseThrow();
+        Simulado simulado = simuladoRepository.findById(id).orElse(null);
         SimuladoDTO simuladoDTO = new SimuladoDTO(simulado);
         CursoDTO curso = cursoService.findById(simulado.getCursoId());
         simuladoDTO.setNomeCurso(curso.getTitulo());

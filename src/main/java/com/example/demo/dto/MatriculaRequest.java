@@ -2,13 +2,10 @@ package com.example.demo.dto;
 
 import java.util.UUID;
 
-import org.springframework.cglib.core.Local;
-
 public class MatriculaRequest {
     
     private UUID produtoId; // curso ou simulado
     private UUID usuarioId;
-    private Local data;
 
     public MatriculaRequest() {
         
@@ -28,14 +25,6 @@ public class MatriculaRequest {
 
     public void setUsuarioId(UUID usuarioId) {
         this.usuarioId = usuarioId;
-    }
-
-    public Local getData() {
-        return data;
-    }
-
-    public void setData(Local data) {
-        this.data = data;
     }
 
 }

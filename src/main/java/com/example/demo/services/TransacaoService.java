@@ -1,5 +1,7 @@
 package com.example.demo.services;
 
+import java.util.UUID;
+
 import org.springframework.stereotype.Service;
 
 import com.example.demo.domain.StatusPagamento;
@@ -20,16 +22,15 @@ public class TransacaoService {
         return StatusPagamento.PAGO;
     }
 
-    public boolean criarTransacao(Transacao transacao) {
+    public Transacao criarTransacao(Transacao transacao) {
 
         // Simula a chamada a API do ML
         StatusPagamento status = efetuarTransacao();
 
         transacao.setStatus(status);
+        transacao.setTransactionId(UUID.randomUUID().toString());
 
-        this.transacaoRepository.save(transacao);
-
-        return status == StatusPagamento.PAGO;
+        return this.transacaoRepository.save(transacao);
     }
 
 }
