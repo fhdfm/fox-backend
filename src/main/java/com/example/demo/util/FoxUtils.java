@@ -32,7 +32,7 @@ public class FoxUtils {
         
         T objeto = getNovaInstancia(clazz);
         for (String par : pares) {
-            String[] chaveValor = par.split(",");
+            String[] chaveValor = par.split(":");
             if (chaveValor.length != 2)
                 throw new IllegalArgumentException("Parâmetro inválido: " + par);
             
@@ -42,7 +42,7 @@ public class FoxUtils {
             field.setAccessible(true);
             field.set(objeto, valor);
         }
-        
+
         return objeto;
     }
 
