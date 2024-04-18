@@ -9,7 +9,9 @@ import com.example.demo.domain.CursoDisciplina;
 
 public interface CursoDisciplinaRepository extends ListCrudRepository<CursoDisciplina, UUID> {
     
-    public List<CursoDisciplina> findByCursoId(UUID cursoId);
+    List<CursoDisciplina> findByCursoId(UUID cursoId);
 
-    public Boolean existsByCursoId(UUID cursoId);
+    Boolean existsByCursoId(UUID cursoId);
+
+    void deleteByCursoId(UUID cursoId);
 }

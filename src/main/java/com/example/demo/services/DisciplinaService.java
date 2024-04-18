@@ -26,8 +26,13 @@ public class DisciplinaService {
     }
 
     public Disciplina salvar(Disciplina disciplina) {
+        
         if (disciplina == null || disciplina.getNome().isBlank())
             throw new IllegalArgumentException("Informe o nome da disciplina.");
+
+        if (disciplinaRepository.existsByNome(disciplina.getNome()))
+            throw new IllegalArgumentException("Disciplina já cadastrada.");
+
         return disciplinaRepository.save(disciplina);
     }
 
@@ -36,10 +41,12 @@ public class DisciplinaService {
     }
 
     public List<Disciplina> findByCursoId(UUID cursoId) {
+        
         Map<UUID, Disciplina> disciplinas = disciplinaRepository.findAll().stream()
             .collect(Collectors.toMap(Disciplina::getId, d -> d));
         
         List<CursoDisciplina> disciplinaIds = cursoDisciplinaRepository.findByCursoId(cursoId);
+        
         return disciplinaIds.stream()
             .map(d -> disciplinas.get(d.getDisciplinaId()))
             .collect(Collectors.toList());
@@ -47,11 +54,15 @@ public class DisciplinaService {
 
     @Transactional
     public void adicionarDisciplinas(UUID cursoId, UUID[] disciplinaIds) {
+        
         if (cursoId == null)
             throw new IllegalArgumentException("Informe o curso.");
+        
         if (disciplinaIds == null || disciplinaIds.length == 0)
             throw new IllegalArgumentException("Informe as disciplinas.");
         
+        cursoDisciplinaRepository.deleteByCursoId(cursoId);
+
         for (UUID disciplinaId : disciplinaIds) {
             CursoDisciplina cursoDisciplina = 
                 new CursoDisciplina(cursoId, disciplinaId);
@@ -61,6 +72,10 @@ public class DisciplinaService {
 
     public void removerDisciplina(CursoDisciplina cursoDisciplina) {
         cursoDisciplinaRepository.delete(cursoDisciplina);
+    }
+
+    public void deletar(UUID disciplinaId) {
+        disciplinaRepository.deleteById(disciplinaId);
     }
 
     public Disciplina findById(UUID disciplinaId) {
