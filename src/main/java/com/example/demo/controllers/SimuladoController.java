@@ -35,43 +35,45 @@ public class SimuladoController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping(value = "/api/simulados", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/api/admin/simulados", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UUID> save(@RequestBody SimuladoDTO simuladoDTO) {
         UUID id = simuladoService.save(simuladoDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(id);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping(value = "/api/simulados/{id}")
+    @DeleteMapping(value = "/api/admin/simulados/{id}")
     public ResponseEntity<String> delete(@PathVariable UUID id) {
         simuladoService.delete(id);
         return ResponseEntity.ok("Simulado deletado com sucesso. ID: " + id);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping(value = "/api/simulados/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/api/admin/simulados/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> update(@PathVariable UUID id, @RequestBody SimuladoDTO simuladoDTO) {
         simuladoDTO.setId(id);
         UUID newId = simuladoService.save(simuladoDTO);
         return ResponseEntity.ok("Simulado atualizado com sucesso. ID: " + newId);
     }
 
-    @GetMapping(value = "/simulados/{id}")
+    @GetMapping(value = "/api/simulados/{id}")
     public ResponseEntity<SimuladoDTO> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(simuladoService.findById(id));
     }
 
-    @GetMapping(value = "/simulados")
+    @GetMapping(value = "/api/simulados")
     public ResponseEntity<List<SimuladoDTO>> findAll() {
         return ResponseEntity.ok(simuladoService.findAll());
     }
 
-    @GetMapping(value = "/simulados/{simuladoId}/questoes", consumes = "application/json", produces = "application/json")
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping(value = "/api/admin/simulados/{simuladoId}/questoes", consumes = "application/json", produces = "application/json")
     public ResponseEntity<List<QuestaoSimuladoDTO>> findBySimuladoId(@PathVariable UUID simuladoId) {
         return ResponseEntity.ok(this.questaoSimuladoService.findBySimuladoId(simuladoId));
     }
 
-    @GetMapping(value = "/simulados/{simuladoId}/questoes/{questaoId}", consumes = "application/json", 
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping(value = "/api/admin/simulados/{simuladoId}/questoes/{questaoId}", consumes = "application/json", 
         produces = "application/json")
     public ResponseEntity<QuestaoSimuladoDTO> findQuestaoById(
         @PathVariable UUID simuladoId, @PathVariable UUID questaoId) {
