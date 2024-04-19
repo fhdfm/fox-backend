@@ -37,7 +37,7 @@ public class CursoController {
         this.disciplinaService = disciplinaService;
     }
 
-    @PostMapping(value = "/api/cursos", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/api/admin/cursos", consumes = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UUID> save(@RequestBody CursoDTO courseDTO) {
 
@@ -46,30 +46,30 @@ public class CursoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(newCurso);
     }
 
-    @DeleteMapping(value = "/api/cursos/{id}")
+    @DeleteMapping(value = "/api/admin/cursos/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> delete(@PathVariable UUID id) {
         this.cursoService.delete(id);
         return ResponseEntity.ok("Curso deletado com sucesso.");
     }
 
-    @GetMapping(value = "/cursos")
+    @GetMapping(value = "/api/cursos")
     public ResponseEntity<Page<CursoDTO>> findAll(Pageable pageable) {
         return ResponseEntity.ok(this.cursoService.findAll(pageable));
     }
 
-    @GetMapping(value = "/cursos/{id}")
+    @GetMapping(value = "/api/cursos/{id}")
     public ResponseEntity<CursoDTO> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(this.cursoService.findById(id));
     }
 
-    @GetMapping(value = "/cursos/{cursoId}/disciplinas")
+    @GetMapping(value = "/api/cursos/{cursoId}/disciplinas")
     public ResponseEntity<List<Disciplina>> listarDisciplinasCurso(@PathVariable UUID cursoId) {
         return ResponseEntity.ok(this.disciplinaService.findByCursoId(cursoId));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping(value = "/api/cursos/{cursoId}/disciplinas", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/api/admin/cursos/{cursoId}/disciplinas", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> adicionarDisciplinas(@PathVariable UUID cursoId, 
         @RequestBody AddDisciplinaRequest disciplinas) {
         this.disciplinaService.adicionarDisciplinas(cursoId, disciplinas.getIds());
@@ -78,7 +78,7 @@ public class CursoController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping(value = "/api/cursos/{cursoId}/disciplinas/{disciplinaId}")
+    @DeleteMapping(value = "/api/admin/cursos/{cursoId}/disciplinas/{disciplinaId}")
     public ResponseEntity<String> removerDisciplina(@PathVariable UUID cursoId, @PathVariable UUID disciplinaId) {
         CursoDisciplina cursoDisciplina = new CursoDisciplina(cursoId, disciplinaId);
         this.disciplinaService.removerDisciplina(cursoDisciplina);
