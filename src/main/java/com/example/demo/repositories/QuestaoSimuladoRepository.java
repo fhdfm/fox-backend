@@ -10,4 +10,5 @@ import com.example.demo.domain.QuestaoSimulado;
 public interface QuestaoSimuladoRepository extends ListCrudRepository<QuestaoSimulado, UUID> {
 
     List<QuestaoSimulado> findBySimuladoIdOrderByOrdem(UUID simuladoId);
+    List<QuestaoSimulado> findBySimuladoIdAndDisciplinaIdOrderByOrdem(UUID simuladoId, UUID disciplinaId);
 }

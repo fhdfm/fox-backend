@@ -1,46 +1,21 @@
-package com.example.demo.domain;
+package com.example.demo.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Table;
-
-import com.example.demo.dto.SimuladoRequest;
-
-@Table("simulados")
-public class Simulado {
+public class SimuladoRequest {
     
-    @Id
-    private UUID id;
     private String titulo;
     private String descricao;
     private UUID cursoId;
+    private UUID bancaId;
     private Integer alternativasPorQuestao;
     private LocalDateTime dataInicio;
     private String duracao;
     private BigDecimal valor;
 
-    public Simulado() {
-    }
-
-    public Simulado(SimuladoRequest request) {
-        this.titulo = request.getTitulo();
-        this.descricao = request.getDescricao();
-        this.cursoId = request.getCursoId();
-        this.alternativasPorQuestao = request.getAlternativasPorQuestao();
-        this.dataInicio = request.getDataInicio();
-        this.duracao = request.getDuracao();
-        this.valor = request.getValor();
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
+    public SimuladoRequest() {
     }
 
     public String getTitulo() {
@@ -65,6 +40,14 @@ public class Simulado {
 
     public void setCursoId(UUID cursoId) {
         this.cursoId = cursoId;
+    }
+
+    public UUID getBancaId() {
+        return bancaId;
+    }
+
+    public void setBancaId(UUID bancaId) {
+        this.bancaId = bancaId;
     }
 
     public Integer getAlternativasPorQuestao() {

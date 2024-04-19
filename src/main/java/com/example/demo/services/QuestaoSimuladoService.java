@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.example.demo.domain.ItemQuestaoSimulado;
 import com.example.demo.domain.QuestaoSimulado;
 import com.example.demo.dto.ItemQuestaoSimuladoDTO;
+import com.example.demo.dto.QuestaoResponse;
 import com.example.demo.dto.QuestaoSimuladoDTO;
 import com.example.demo.repositories.QuestaoSimuladoRepository;
 
@@ -79,4 +80,22 @@ public class QuestaoSimuladoService {
         // Implementar validações
     }
 
+    public List<QuestaoResponse> findQuestoesBySimuladoIdAndDisciplinaId(UUID simuladoId, UUID disciplinaId) {
+        
+        List<QuestaoResponse> result = new ArrayList<QuestaoResponse>();
+        
+        List<QuestaoSimulado> questoesSimulado = 
+            this.questaoSimuladoRepository.findBySimuladoIdAndDisciplinaIdOrderByOrdem(
+                simuladoId, disciplinaId);
+        
+        for (QuestaoSimulado questaoSimulado : questoesSimulado) {
+            List<ItemQuestaoSimulado> items = 
+                this.itemQuestaoSimuladoService.findByQuestaoSimuladoId(
+                    questaoSimulado.getId());
+            QuestaoResponse questaoResponse = new QuestaoResponse(questaoSimulado, items);
+            result.add(questaoResponse);
+        }
+        
+        return result;
+    }
 }

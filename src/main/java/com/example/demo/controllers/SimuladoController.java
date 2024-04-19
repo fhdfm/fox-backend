@@ -17,7 +17,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.QuestaoSimuladoDTO;
+import com.example.demo.dto.SimuladoComQuestoesResponse;
 import com.example.demo.dto.SimuladoDTO;
+import com.example.demo.dto.SimuladoRequest;
+import com.example.demo.dto.SimuladoResponse;
 import com.example.demo.services.QuestaoSimuladoService;
 import com.example.demo.services.SimuladoService;
 
@@ -36,9 +39,17 @@ public class SimuladoController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "/api/admin/simulados", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UUID> save(@RequestBody SimuladoDTO simuladoDTO) {
-        UUID id = simuladoService.save(simuladoDTO);
+    public ResponseEntity<UUID> save(@RequestBody SimuladoRequest request) {
+        UUID id = simuladoService.save(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(id);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping(value = "/api/admin/simulados/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<SimuladoResponse> update(@PathVariable UUID id, 
+        @RequestBody SimuladoRequest request) {
+        SimuladoResponse response = simuladoService.save(id, request);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -49,15 +60,8 @@ public class SimuladoController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping(value = "/api/admin/simulados/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> update(@PathVariable UUID id, @RequestBody SimuladoDTO simuladoDTO) {
-        simuladoDTO.setId(id);
-        UUID newId = simuladoService.save(simuladoDTO);
-        return ResponseEntity.ok("Simulado atualizado com sucesso. ID: " + newId);
-    }
-
-    @GetMapping(value = "/api/simulados/{id}")
-    public ResponseEntity<SimuladoDTO> findById(@PathVariable UUID id) {
+    @GetMapping(value = "/api/admin/simulados/{id}")
+    public ResponseEntity<SimuladoComQuestoesResponse> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(simuladoService.findById(id));
     }
 
