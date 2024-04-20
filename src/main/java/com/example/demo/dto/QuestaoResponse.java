@@ -35,6 +35,7 @@ public class QuestaoResponse {
         for (ItemQuestaoSimulado item : alternativas) {
             alternativasResponse.add(new ItemQuestaoResponse(item));
         }
+        this.alternativas = alternativasResponse;
     }
 
     public UUID getId() {

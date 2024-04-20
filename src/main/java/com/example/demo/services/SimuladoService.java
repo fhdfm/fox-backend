@@ -4,9 +4,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.domain.Disciplina;
@@ -15,10 +16,11 @@ import com.example.demo.dto.CursoDTO;
 import com.example.demo.dto.DisciplinaQuestoesResponse;
 import com.example.demo.dto.QuestaoResponse;
 import com.example.demo.dto.SimuladoComQuestoesResponse;
-import com.example.demo.dto.SimuladoDTO;
 import com.example.demo.dto.SimuladoRequest;
 import com.example.demo.dto.SimuladoResponse;
+import com.example.demo.dto.SimuladoViewResponse;
 import com.example.demo.repositories.SimuladoRepository;
+import com.example.demo.util.FoxUtils;
 
 @Service
 public class SimuladoService {
@@ -112,8 +114,9 @@ public class SimuladoService {
         for (Disciplina disciplina : disciplinas) {
             
             // buscar questões da disciplina
-            List<QuestaoResponse> questoes = questaoSimuladoService.findQuestoesBySimuladoIdAndDisciplinaId(
-                simulado.getId(), disciplina.getId());
+            List<QuestaoResponse> questoes =
+                questaoSimuladoService.findQuestoesBySimuladoIdAndDisciplinaId(
+                    simulado.getId(), disciplina.getId());
 
             DisciplinaQuestoesResponse disciplinaResponse = 
                 new DisciplinaQuestoesResponse(disciplina, questoes);
@@ -131,18 +134,48 @@ public class SimuladoService {
         simuladoRepository.deleteById(id);
     }
 
-    public List<SimuladoDTO> findAll() {
+    public List<SimuladoViewResponse> findAll() {
+        
         List<Simulado> simulados = simuladoRepository.findAll();
-        Map<UUID, CursoDTO> cursos = cursoService.findAllAsMap();
-        List<SimuladoDTO> result = new ArrayList<SimuladoDTO>();
-        for (Simulado simulado : simulados) {
-            SimuladoDTO simuladoDTO = new SimuladoDTO(simulado);
-            CursoDTO curso = cursos.get(simuladoDTO.getCursoId());
-            simuladoDTO.setNomeCurso(curso.getTitulo());
-            simuladoDTO.setBancaId(curso.getBancaId());
-            simuladoDTO.setNomeBanca(curso.getNomeBanca());
-            result.add(simuladoDTO);
+        
+        List<SimuladoViewResponse> result =
+            new ArrayList<SimuladoViewResponse>();
+
+        for (Simulado s : simulados) {
+            CursoDTO curso = cursoService.findById(s.getCursoId());
+            result.add(new SimuladoViewResponse(
+                s.getId(), s.getTitulo(), curso.getDescricao(), s.getDataInicio()));
         }
+
+        return result;
+    }
+
+    public UUID getCursoAssociado(UUID id) {
+        Simulado simulado = simuladoRepository.findById(id).orElseThrow(
+            () -> new IllegalArgumentException("Simulado não encontrado: " + id));
+        return simulado.getCursoId();
+    }
+
+    public List<SimuladoViewResponse> findByExample(String filter) throws Exception {
+       
+        Simulado simulado = FoxUtils.criarObjetoDinamico(filter, Simulado.class);
+        ExampleMatcher matcher = ExampleMatcher.matching()
+            .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING) // Correspondência parcial
+            .withIgnoreCase() // Ignorar case
+            .withIgnoreNullValues(); // Ignorar valores nulos
+        
+        Example<Simulado> example = Example.of(simulado, matcher);
+              
+        Iterable<Simulado> simulados = simuladoRepository.findAll(example);
+        
+        List<SimuladoViewResponse> result = new ArrayList<SimuladoViewResponse>();
+
+        for (Simulado s : simulados) {
+            CursoDTO curso = cursoService.findById(s.getCursoId());
+            result.add(new SimuladoViewResponse(
+                s.getId(), s.getTitulo(), curso.getDescricao(), s.getDataInicio()));
+        }
+
         return result;
     }
 

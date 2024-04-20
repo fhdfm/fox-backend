@@ -14,13 +14,16 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.demo.dto.QuestaoSimuladoDTO;
+import com.example.demo.dto.QuestaoResponse;
+import com.example.demo.dto.QuestaoSimuladoAgrupadoDisciplinaResponse;
+import com.example.demo.dto.QuestaoSimuladoRequest;
 import com.example.demo.dto.SimuladoComQuestoesResponse;
-import com.example.demo.dto.SimuladoDTO;
 import com.example.demo.dto.SimuladoRequest;
 import com.example.demo.dto.SimuladoResponse;
+import com.example.demo.dto.SimuladoViewResponse;
 import com.example.demo.services.QuestaoSimuladoService;
 import com.example.demo.services.SimuladoService;
 
@@ -44,6 +47,17 @@ public class SimuladoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(id);
     }
 
+    @GetMapping(value = "/api/simulados")
+    public ResponseEntity<List<SimuladoViewResponse>> findAll(
+        @RequestParam(required = false) String filter) throws Exception {
+        if (filter != null) {
+            return ResponseEntity.ok(simuladoService.findByExample(filter));
+        }        
+        return ResponseEntity.ok(simuladoService.findAll());
+    }
+
+    /* Questões do Simulado */
+
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(value = "/api/admin/simulados/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SimuladoResponse> update(@PathVariable UUID id, 
@@ -65,30 +79,39 @@ public class SimuladoController {
         return ResponseEntity.ok(simuladoService.findById(id));
     }
 
-    @GetMapping(value = "/api/simulados")
-    public ResponseEntity<List<SimuladoDTO>> findAll() {
-        return ResponseEntity.ok(simuladoService.findAll());
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping(value = "/api/admin/simulados/{simuladoId}/questoes")
+    public ResponseEntity<QuestaoSimuladoAgrupadoDisciplinaResponse>
+        findBySimuladoId(@PathVariable UUID simuladoId) {
+        UUID cursoId = simuladoService.getCursoAssociado(simuladoId);
+        return ResponseEntity.ok(
+            this.questaoSimuladoService.findBySimuladoId(cursoId, simuladoId));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping(value = "/api/admin/simulados/{simuladoId}/questoes", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<List<QuestaoSimuladoDTO>> findBySimuladoId(@PathVariable UUID simuladoId) {
-        return ResponseEntity.ok(this.questaoSimuladoService.findBySimuladoId(simuladoId));
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping(value = "/api/admin/simulados/{simuladoId}/questoes/{questaoId}", consumes = "application/json", 
-        produces = "application/json")
-    public ResponseEntity<QuestaoSimuladoDTO> findQuestaoById(
+    @GetMapping(value = "/api/admin/simulados/{simuladoId}/questoes/{questaoId}")
+    public ResponseEntity<QuestaoResponse> findQuestaoById(
         @PathVariable UUID simuladoId, @PathVariable UUID questaoId) {
         return ResponseEntity.ok(this.questaoSimuladoService.findById(questaoId));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping(value = "/api/simulados/{simuladoId}/questoes", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<UUID> salvarQuestao(@PathVariable UUID simuladoId, @RequestBody QuestaoSimuladoDTO questao) {
-        questao.setSimuladoId(simuladoId);
-        UUID id = questaoSimuladoService.save(questao);
+    @PostMapping(value = "/api/simulados/{simuladoId}/questoes", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UUID> salvarQuestao(@PathVariable UUID simuladoId, 
+        @RequestBody QuestaoSimuladoRequest request) {
+        UUID id = questaoSimuladoService.save(simuladoId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(id);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping(value = "/api/simulados/{simuladoId}/questoes/{questaoId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<QuestaoResponse> atualizarQuestao(
+        @PathVariable UUID simuladoId, @PathVariable UUID questaoId,
+        @RequestBody QuestaoSimuladoRequest request) {
+        
+        QuestaoResponse response = questaoSimuladoService.save(
+            simuladoId, questaoId, request);
+        
+        return ResponseEntity.ok(response);
     }
 }

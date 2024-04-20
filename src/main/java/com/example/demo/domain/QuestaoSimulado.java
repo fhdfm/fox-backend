@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
-import com.example.demo.dto.QuestaoSimuladoDTO;
+import com.example.demo.dto.QuestaoSimuladoRequest;
 
 @Table("questoes_simulado")
 public class QuestaoSimulado {
@@ -22,13 +22,11 @@ public class QuestaoSimulado {
 
     }
 
-    public QuestaoSimulado(QuestaoSimuladoDTO dto) {
-        this.id = dto.getId();
-        this.ordem = dto.getOrdem();
-        this.simuladoId = dto.getSimuladoId();
-        this.enunciado = dto.getEnunciado();
-        this.gabarito = dto.getGabarito();
-        this.disciplinaId = dto.getDisciplinaId();
+    public QuestaoSimulado(QuestaoSimuladoRequest request) {
+        this.ordem = request.getOrdem();
+        this.enunciado = request.getEnunciado();
+        this.gabarito = request.getGabarito();
+        this.disciplinaId = request.getDisciplinaId();
     }
 
     public UUID getId() {

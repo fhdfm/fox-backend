@@ -9,12 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.demo.domain.Matricula;
 import com.example.demo.domain.Status;
 import com.example.demo.domain.StatusPagamento;
-import com.example.demo.domain.TipoProduto;
 import com.example.demo.domain.Transacao;
 import com.example.demo.domain.UsuarioLogado;
-import com.example.demo.dto.CursoDTO;
 import com.example.demo.dto.MatriculaRequest;
-import com.example.demo.dto.SimuladoDTO;
 import com.example.demo.repositories.MatriculaRepository;
 import com.example.demo.services.impl.UsuarioServiceImpl;
 
@@ -62,17 +59,17 @@ public class MatriculaService {
         Matricula novaMatricula = new Matricula();
         
         novaMatricula.setUsuarioId(usuario.getId());
-        if (produto instanceof CursoDTO) {
-            novaMatricula.setProdutoId(((CursoDTO) produto).getId());
-            transacao.setDescricao("Matrícula em: " + ((CursoDTO) produto).getTitulo());
-            transacao.setValor(((CursoDTO) produto).getValor());
-            novaMatricula.setTipoProduto(TipoProduto.CURSO);
-        } else {
-            novaMatricula.setProdutoId(((SimuladoDTO) produto).getId());
-            transacao.setDescricao("Matrícula em: " + ((SimuladoDTO) produto).getTitulo());
-            transacao.setValor(((SimuladoDTO) produto).getValor());
-            novaMatricula.setTipoProduto(TipoProduto.SIMULADO);
-        }
+        // if (produto instanceof CursoDTO) {
+        //     novaMatricula.setProdutoId(((CursoDTO) produto).getId());
+        //     transacao.setDescricao("Matrícula em: " + ((CursoDTO) produto).getTitulo());
+        //     transacao.setValor(((CursoDTO) produto).getValor());
+        //     novaMatricula.setTipoProduto(TipoProduto.CURSO);
+        // } else {
+        //     novaMatricula.setProdutoId(((SimuladoDTO) produto).getId());
+        //     transacao.setDescricao("Matrícula em: " + ((SimuladoDTO) produto).getTitulo());
+        //     transacao.setValor(((SimuladoDTO) produto).getValor());
+        //     novaMatricula.setTipoProduto(TipoProduto.SIMULADO);
+        // }
 
         transacao = transacaoService.criarTransacao(transacao);
 

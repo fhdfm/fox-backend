@@ -6,11 +6,13 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.example.demo.domain.Disciplina;
 import com.example.demo.domain.ItemQuestaoSimulado;
 import com.example.demo.domain.QuestaoSimulado;
-import com.example.demo.dto.ItemQuestaoSimuladoDTO;
+import com.example.demo.dto.DisciplinaQuestoesResponse;
 import com.example.demo.dto.QuestaoResponse;
-import com.example.demo.dto.QuestaoSimuladoDTO;
+import com.example.demo.dto.QuestaoSimuladoAgrupadoDisciplinaResponse;
+import com.example.demo.dto.QuestaoSimuladoRequest;
 import com.example.demo.repositories.QuestaoSimuladoRepository;
 
 @Service
@@ -18,57 +20,57 @@ public class QuestaoSimuladoService {
     
     private final QuestaoSimuladoRepository questaoSimuladoRepository;
     private final ItemQuestaoSimuladoService itemQuestaoSimuladoService;
+    private final DisciplinaService disciplinaService;
 
-    public QuestaoSimuladoService(QuestaoSimuladoRepository questaoSimuladoRepository, 
-        ItemQuestaoSimuladoService itemQuestaoSimuladoService) {
+    public QuestaoSimuladoService(
+        QuestaoSimuladoRepository questaoSimuladoRepository, 
+        ItemQuestaoSimuladoService itemQuestaoSimuladoService,
+        DisciplinaService disciplinaService) {
         this.questaoSimuladoRepository = questaoSimuladoRepository;
         this.itemQuestaoSimuladoService = itemQuestaoSimuladoService;
+        this.disciplinaService = disciplinaService;
     }
 
-    public QuestaoSimuladoDTO findById(UUID id) {
-        QuestaoSimulado questaoSimulado = this.questaoSimuladoRepository.findById(id).get();
-        QuestaoSimuladoDTO questaoDTO = new QuestaoSimuladoDTO(questaoSimulado);
+    public QuestaoResponse findById(UUID id) {
+        
+        QuestaoSimulado questaoSimulado =
+            this.questaoSimuladoRepository.findById(id).orElseThrow(() -> 
+                new IllegalArgumentException("Questão não encontrada: " + id));
+
         List<ItemQuestaoSimulado> items = 
-            this.itemQuestaoSimuladoService.findByQuestaoSimuladoId(id);
-        List<ItemQuestaoSimuladoDTO> itemsDTO = new ArrayList<ItemQuestaoSimuladoDTO>();
-        for (ItemQuestaoSimulado item : items) {
-            ItemQuestaoSimuladoDTO itemDTO = new ItemQuestaoSimuladoDTO(item);
-            itemsDTO.add(itemDTO);
-        }
-        questaoDTO.setItems(itemsDTO);
-        return questaoDTO;
+            itemQuestaoSimuladoService.findByQuestaoSimuladoId(id);
+        
+        QuestaoResponse response = new QuestaoResponse(questaoSimulado, items);
+        
+        return response;
     }
 
-    public List<QuestaoSimuladoDTO> findBySimuladoId(UUID simuladoId) {
+    public QuestaoSimuladoAgrupadoDisciplinaResponse findBySimuladoId(
+        UUID cursoId, UUID simuladoId) {
 
-        List<QuestaoSimuladoDTO> result = new ArrayList<QuestaoSimuladoDTO>();
+        List<Disciplina> disciplinas = disciplinaService.findByCursoId(cursoId);
 
-        List<QuestaoSimulado> questoesSimulado = this.questaoSimuladoRepository.findBySimuladoIdOrderByOrdem(simuladoId);
-        // TODO: Implementar a busca do nome da disciplina
-        for (QuestaoSimulado questaoSimulado : questoesSimulado) {
-            QuestaoSimuladoDTO questaoDTO = new QuestaoSimuladoDTO(questaoSimulado);
-            
-            List<ItemQuestaoSimulado> items = 
-                this.itemQuestaoSimuladoService.findByQuestaoSimuladoId(
-                    questaoSimulado.getId());
-            List<ItemQuestaoSimuladoDTO> itemsDTO = new ArrayList<ItemQuestaoSimuladoDTO>();
-            for (ItemQuestaoSimulado item : items) {
-               ItemQuestaoSimuladoDTO itemDTO = new ItemQuestaoSimuladoDTO(item);
-               itemsDTO.add(itemDTO);
-            }
-            questaoDTO.setItems(itemsDTO);
-            result.add(questaoDTO);
+        List<DisciplinaQuestoesResponse> agrupamento =
+            new ArrayList<DisciplinaQuestoesResponse>();
+
+        for (Disciplina disciplina : disciplinas) {
+           List<QuestaoResponse> questoes = 
+            findQuestoesBySimuladoIdAndDisciplinaId(simuladoId, disciplina.getId());
+            agrupamento.add(new DisciplinaQuestoesResponse(disciplina, questoes));
         }
 
-        return result;
+        QuestaoSimuladoAgrupadoDisciplinaResponse response = 
+            new QuestaoSimuladoAgrupadoDisciplinaResponse(agrupamento);
+
+        return response;
     }
 
-    public UUID save(QuestaoSimuladoDTO questaoSimuladoDTO) {
-        validarQuestaoSimulado(questaoSimuladoDTO);
-        QuestaoSimulado questaoSimulado = new QuestaoSimulado(questaoSimuladoDTO);
+    public UUID save(UUID simuladoId, QuestaoSimuladoRequest request) {
+        QuestaoSimulado questaoSimulado = new QuestaoSimulado(request);
+        questaoSimulado.setSimuladoId(simuladoId);
         questaoSimulado = this.questaoSimuladoRepository.save(questaoSimulado);
         UUID newQuestaoId = questaoSimulado.getId();
-        questaoSimuladoDTO.getItems().forEach(item -> {
+        request.getRespostas().forEach(item -> {
             ItemQuestaoSimulado itemQuestaoSimulado = new ItemQuestaoSimulado(item);
             itemQuestaoSimulado.setQuestaoSimuladoId(newQuestaoId);
             this.itemQuestaoSimuladoService.save(itemQuestaoSimulado);
@@ -76,11 +78,34 @@ public class QuestaoSimuladoService {
         return newQuestaoId;
     }
 
-    private void validarQuestaoSimulado(QuestaoSimuladoDTO questaoSimuladoDTO) {
-        // Implementar validações
+    public QuestaoResponse save(
+        UUID simuladoId, UUID questaoId, QuestaoSimuladoRequest request) {
+        
+        QuestaoSimulado questaoSimulado = 
+        questaoSimuladoRepository.findById(questaoId).orElseThrow(
+            () -> new IllegalArgumentException("Questão não encontrada: " + questaoId));
+        
+        questaoSimulado.setEnunciado(request.getEnunciado());
+        questaoSimulado.setOrdem(request.getOrdem());
+        questaoSimulado.setDisciplinaId(request.getDisciplinaId());
+        questaoSimulado.setSimuladoId(simuladoId);
+
+        request.getRespostas().forEach(item -> {
+            
+            ItemQuestaoSimulado itemQuestaoSimulado =
+                itemQuestaoSimuladoService.findById(item.getId());
+            itemQuestaoSimulado.setQuestaoSimuladoId(questaoId);
+            itemQuestaoSimulado.setOrdem(item.getOrdem());
+            itemQuestaoSimulado.setDescricao(item.getDescricao());
+            
+            itemQuestaoSimuladoService.save(itemQuestaoSimulado);
+        });
+
+        return findById(questaoId);
     }
 
-    public List<QuestaoResponse> findQuestoesBySimuladoIdAndDisciplinaId(UUID simuladoId, UUID disciplinaId) {
+    public List<QuestaoResponse> findQuestoesBySimuladoIdAndDisciplinaId(
+        UUID simuladoId, UUID disciplinaId) {
         
         List<QuestaoResponse> result = new ArrayList<QuestaoResponse>();
         

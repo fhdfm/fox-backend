@@ -25,4 +25,8 @@ public class ItemQuestaoSimuladoService {
         itemQuestaoSimuladoRepository.save(itemQuestaoSimulado);
     }
 
+    public ItemQuestaoSimulado findById(UUID id) {
+        return itemQuestaoSimuladoRepository.findById(id).get();
+    }
+
 }
