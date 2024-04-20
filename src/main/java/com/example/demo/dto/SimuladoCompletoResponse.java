@@ -8,7 +8,7 @@ import java.util.UUID;
 import com.example.demo.domain.Simulado;
 import com.example.demo.util.FoxUtils;
 
-public class SimuladoComQuestoesResponse {
+public class SimuladoCompletoResponse {
     
     private UUID id;
     private String titulo;
@@ -21,10 +21,10 @@ public class SimuladoComQuestoesResponse {
 
     private List<DisciplinaQuestoesResponse> disciplinas;
 
-    public SimuladoComQuestoesResponse() {
+    public SimuladoCompletoResponse() {
     }
 
-    public SimuladoComQuestoesResponse(Simulado simulado, 
+    public SimuladoCompletoResponse(Simulado simulado, 
         List<DisciplinaQuestoesResponse> disciplinas) {
         this.id = simulado.getId();
         this.titulo = simulado.getTitulo();

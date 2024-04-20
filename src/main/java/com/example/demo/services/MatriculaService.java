@@ -1,6 +1,7 @@
 package com.example.demo.services;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -79,6 +80,10 @@ public class MatriculaService {
         novaMatricula.setUsuarioId(usuario.getId());
         
         return matriculaRepository.save(novaMatricula).getId();
+    }
+
+    public List<Matricula> findByUsuarioId(UUID usuarioId) {
+        return matriculaRepository.findByUsuarioIdAndStatus(usuarioId, Status.ATIVO);
     }
 
 }

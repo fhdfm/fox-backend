@@ -17,13 +17,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.demo.dto.QuestaoResponse;
-import com.example.demo.dto.QuestaoSimuladoAgrupadoDisciplinaResponse;
 import com.example.demo.dto.QuestaoSimuladoRequest;
-import com.example.demo.dto.SimuladoComQuestoesResponse;
+import com.example.demo.dto.QuestaoSimuladoResponse;
+import com.example.demo.dto.QuestoesSimuladoDisciplinaResponse;
+import com.example.demo.dto.SimuladoCompletoResponse;
 import com.example.demo.dto.SimuladoRequest;
 import com.example.demo.dto.SimuladoResponse;
-import com.example.demo.dto.SimuladoViewResponse;
+import com.example.demo.dto.SimuladoResumoResponse;
 import com.example.demo.services.QuestaoSimuladoService;
 import com.example.demo.services.SimuladoService;
 
@@ -48,7 +48,7 @@ public class SimuladoController {
     }
 
     @GetMapping(value = "/api/simulados")
-    public ResponseEntity<List<SimuladoViewResponse>> findAll(
+    public ResponseEntity<List<SimuladoResumoResponse>> findAll(
         @RequestParam(required = false) String filter) throws Exception {
         if (filter != null) {
             return ResponseEntity.ok(simuladoService.findByExample(filter));
@@ -73,7 +73,7 @@ public class SimuladoController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/api/admin/simulados/{id}")
-    public ResponseEntity<SimuladoComQuestoesResponse> findById(@PathVariable UUID id) {
+    public ResponseEntity<SimuladoCompletoResponse> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(simuladoService.findById(id));
     }
 
@@ -81,7 +81,7 @@ public class SimuladoController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/api/admin/simulados/{simuladoId}/questoes")
-    public ResponseEntity<QuestaoSimuladoAgrupadoDisciplinaResponse>
+    public ResponseEntity<QuestoesSimuladoDisciplinaResponse>
         findBySimuladoId(@PathVariable UUID simuladoId) {
         UUID cursoId = simuladoService.getCursoAssociado(simuladoId);
         return ResponseEntity.ok(
@@ -90,7 +90,7 @@ public class SimuladoController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/api/admin/simulados/{simuladoId}/questoes/{questaoId}")
-    public ResponseEntity<QuestaoResponse> findQuestaoById(
+    public ResponseEntity<QuestaoSimuladoResponse> findQuestaoById(
         @PathVariable UUID simuladoId, @PathVariable UUID questaoId) {
         return ResponseEntity.ok(this.questaoSimuladoService.findById(questaoId));
     }
@@ -107,11 +107,11 @@ public class SimuladoController {
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(value = "/api/simulados/{simuladoId}/questoes/{questaoId}", 
         consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<QuestaoResponse> atualizarQuestao(
+    public ResponseEntity<QuestaoSimuladoResponse> atualizarQuestao(
         @PathVariable UUID simuladoId, @PathVariable UUID questaoId,
         @RequestBody QuestaoSimuladoRequest request) {
         
-        QuestaoResponse response = questaoSimuladoService.save(
+        QuestaoSimuladoResponse response = questaoSimuladoService.save(
             simuladoId, questaoId, request);
         
         return ResponseEntity.ok(response);

@@ -2,11 +2,11 @@ package com.example.demo.dto;
 
 import java.util.List;
 
-public class QuestaoSimuladoAgrupadoDisciplinaResponse {
+public class QuestoesSimuladoDisciplinaResponse {
     
     private List<DisciplinaQuestoesResponse> disciplinas;
 
-    public QuestaoSimuladoAgrupadoDisciplinaResponse(
+    public QuestoesSimuladoDisciplinaResponse(
         List<DisciplinaQuestoesResponse> disciplinas) {
         this.disciplinas = disciplinas;
     }

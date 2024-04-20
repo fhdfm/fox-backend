@@ -11,9 +11,9 @@ import com.example.demo.domain.Disciplina;
 import com.example.demo.domain.ItemQuestaoSimulado;
 import com.example.demo.domain.QuestaoSimulado;
 import com.example.demo.dto.DisciplinaQuestoesResponse;
-import com.example.demo.dto.QuestaoResponse;
-import com.example.demo.dto.QuestaoSimuladoAgrupadoDisciplinaResponse;
 import com.example.demo.dto.QuestaoSimuladoRequest;
+import com.example.demo.dto.QuestaoSimuladoResponse;
+import com.example.demo.dto.QuestoesSimuladoDisciplinaResponse;
 import com.example.demo.repositories.QuestaoSimuladoRepository;
 
 @Service
@@ -32,7 +32,7 @@ public class QuestaoSimuladoService {
         this.disciplinaService = disciplinaService;
     }
 
-    public QuestaoResponse findById(UUID id) {
+    public QuestaoSimuladoResponse findById(UUID id) {
         
         QuestaoSimulado questaoSimulado =
             this.questaoSimuladoRepository.findById(id).orElseThrow(() -> 
@@ -41,12 +41,12 @@ public class QuestaoSimuladoService {
         List<ItemQuestaoSimulado> items = 
             itemQuestaoSimuladoService.findByQuestaoSimuladoId(id);
         
-        QuestaoResponse response = new QuestaoResponse(questaoSimulado, items);
+        QuestaoSimuladoResponse response = new QuestaoSimuladoResponse(questaoSimulado, items);
         
         return response;
     }
 
-    public QuestaoSimuladoAgrupadoDisciplinaResponse findBySimuladoId(
+    public QuestoesSimuladoDisciplinaResponse findBySimuladoId(
         UUID cursoId, UUID simuladoId) {
 
         List<Disciplina> disciplinas = disciplinaService.findByCursoId(cursoId);
@@ -55,13 +55,13 @@ public class QuestaoSimuladoService {
             new ArrayList<DisciplinaQuestoesResponse>();
 
         for (Disciplina disciplina : disciplinas) {
-           List<QuestaoResponse> questoes = 
+           List<QuestaoSimuladoResponse> questoes = 
             findQuestoesBySimuladoIdAndDisciplinaId(simuladoId, disciplina.getId());
             agrupamento.add(new DisciplinaQuestoesResponse(disciplina, questoes));
         }
 
-        QuestaoSimuladoAgrupadoDisciplinaResponse response = 
-            new QuestaoSimuladoAgrupadoDisciplinaResponse(agrupamento);
+        QuestoesSimuladoDisciplinaResponse response = 
+            new QuestoesSimuladoDisciplinaResponse(agrupamento);
 
         return response;
     }
@@ -72,7 +72,7 @@ public class QuestaoSimuladoService {
         questaoSimulado.setSimuladoId(simuladoId);
         questaoSimulado = this.questaoSimuladoRepository.save(questaoSimulado);
         UUID newQuestaoId = questaoSimulado.getId();
-        request.getRespostas().forEach(item -> {
+        request.getAlternativas().forEach(item -> {
             ItemQuestaoSimulado itemQuestaoSimulado = new ItemQuestaoSimulado(item);
             itemQuestaoSimulado.setQuestaoSimuladoId(newQuestaoId);
             this.itemQuestaoSimuladoService.save(itemQuestaoSimulado);
@@ -81,7 +81,7 @@ public class QuestaoSimuladoService {
     }
 
     @Transactional
-    public QuestaoResponse save(
+    public QuestaoSimuladoResponse save(
         UUID simuladoId, UUID questaoId, QuestaoSimuladoRequest request) {
         
         QuestaoSimulado questaoSimulado = 
@@ -93,7 +93,7 @@ public class QuestaoSimuladoService {
         questaoSimulado.setDisciplinaId(request.getDisciplinaId());
         questaoSimulado.setSimuladoId(simuladoId);
 
-        request.getRespostas().forEach(item -> {
+        request.getAlternativas().forEach(item -> {
             
             ItemQuestaoSimulado itemQuestaoSimulado =
                 itemQuestaoSimuladoService.findById(item.getId());
@@ -107,10 +107,10 @@ public class QuestaoSimuladoService {
         return findById(questaoId);
     }
 
-    public List<QuestaoResponse> findQuestoesBySimuladoIdAndDisciplinaId(
+    public List<QuestaoSimuladoResponse> findQuestoesBySimuladoIdAndDisciplinaId(
         UUID simuladoId, UUID disciplinaId) {
         
-        List<QuestaoResponse> result = new ArrayList<QuestaoResponse>();
+        List<QuestaoSimuladoResponse> result = new ArrayList<QuestaoSimuladoResponse>();
         
         List<QuestaoSimulado> questoesSimulado = 
             this.questaoSimuladoRepository.findBySimuladoIdAndDisciplinaIdOrderByOrdem(
@@ -120,7 +120,7 @@ public class QuestaoSimuladoService {
             List<ItemQuestaoSimulado> items = 
                 this.itemQuestaoSimuladoService.findByQuestaoSimuladoId(
                     questaoSimulado.getId());
-            QuestaoResponse questaoResponse = new QuestaoResponse(questaoSimulado, items);
+            QuestaoSimuladoResponse questaoResponse = new QuestaoSimuladoResponse(questaoSimulado, items);
             result.add(questaoResponse);
         }
         

@@ -32,7 +32,7 @@ public class UsuarioController {
         this.service = service;
     }
     
-    @PostMapping(value = "/signup", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/api/signup", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UUID> create(@RequestBody Usuario user) {
         UsuarioLogado savedUser = this.service.save(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedUser.getId());

@@ -9,7 +9,7 @@ public class QuestaoSimuladoRequest {
     private String enunciado;
     private Integer gabarito;
     private UUID disciplinaId;
-    private List<ItemQuestaoSimuladoRequest> respostas;
+    private List<ItemQuestaoSimuladoRequest> alternativas;
 
     public QuestaoSimuladoRequest() {
     }
@@ -46,11 +46,11 @@ public class QuestaoSimuladoRequest {
         this.disciplinaId = disciplinaId;
     }
 
-    public List<ItemQuestaoSimuladoRequest> getRespostas() {
-        return respostas;
+    public List<ItemQuestaoSimuladoRequest> getAlternativas() {
+        return alternativas;
     }
 
-    public void setRespostas(List<ItemQuestaoSimuladoRequest> respostas) {
-        this.respostas = respostas;
+    public void setRespostas(List<ItemQuestaoSimuladoRequest> alternativas) {
+        this.alternativas = alternativas;
     }
 }

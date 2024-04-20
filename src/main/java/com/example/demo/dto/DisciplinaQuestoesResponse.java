@@ -9,13 +9,13 @@ public class DisciplinaQuestoesResponse {
     
     private UUID id;
     private String nome;
-    private List<QuestaoResponse> questoes;
+    private List<QuestaoSimuladoResponse> questoes;
 
     public DisciplinaQuestoesResponse() {
     }
 
     public DisciplinaQuestoesResponse(Disciplina disciplina, 
-        List<QuestaoResponse> questoes) {    
+        List<QuestaoSimuladoResponse> questoes) {    
         this.id = disciplina.getId();
         this.nome = disciplina.getNome();
         this.questoes = questoes;
@@ -29,7 +29,7 @@ public class DisciplinaQuestoesResponse {
         return nome;
     }
 
-    public List<QuestaoResponse> getQuestoes() {
+    public List<QuestaoSimuladoResponse> getQuestoes() {
         return questoes;
     }
 

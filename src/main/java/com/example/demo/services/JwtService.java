@@ -1,6 +1,7 @@
 package com.example.demo.services;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.security.core.Authentication;
@@ -10,15 +11,18 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.domain.Matricula;
 import com.example.demo.domain.UsuarioLogado;
 
 @Service
 public class JwtService {
 
     private final JwtEncoder encoder;
+    private final MatriculaService matriculaService;
 
-    public JwtService(JwtEncoder jwtEncoder) {
+    public JwtService(JwtEncoder jwtEncoder, MatriculaService matriculaService) {
         this.encoder = jwtEncoder;
+        this.matriculaService = matriculaService;
     }
 
     public String generateToken(Authentication authentication) {
@@ -28,13 +32,19 @@ public class JwtService {
             .map(GrantedAuthority::getAuthority)
             .collect(Collectors.joining(" "));
 
+        UsuarioLogado usuario = (UsuarioLogado) authentication.getPrincipal();
+
+        List<Matricula> matriculas =
+            this.matriculaService.findByUsuarioId(usuario.getId());
+
         var claims = JwtClaimsSet.builder()
             .issuer("portal-fox")
             .issuedAt(now)
             .expiresAt(now.plusSeconds(3600))
             .subject(authentication.getName())
             .claim("scope", scopes)
-            .claim("nome", ((UsuarioLogado) authentication.getPrincipal()).getNome())
+            .claim("nome", usuario.getNome())
+            .claim("matriculas", matriculas)
             .build();
 
         return this.encoder.encode

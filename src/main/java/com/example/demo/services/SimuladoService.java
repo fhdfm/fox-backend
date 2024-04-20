@@ -14,11 +14,11 @@ import com.example.demo.domain.Disciplina;
 import com.example.demo.domain.Simulado;
 import com.example.demo.dto.CursoDTO;
 import com.example.demo.dto.DisciplinaQuestoesResponse;
-import com.example.demo.dto.QuestaoResponse;
-import com.example.demo.dto.SimuladoComQuestoesResponse;
+import com.example.demo.dto.QuestaoSimuladoResponse;
+import com.example.demo.dto.SimuladoCompletoResponse;
 import com.example.demo.dto.SimuladoRequest;
 import com.example.demo.dto.SimuladoResponse;
-import com.example.demo.dto.SimuladoViewResponse;
+import com.example.demo.dto.SimuladoResumoResponse;
 import com.example.demo.repositories.SimuladoRepository;
 import com.example.demo.util.FoxUtils;
 
@@ -100,7 +100,7 @@ public class SimuladoService {
             throw new IllegalArgumentException("Valor do simulado é obrigatório e deve ser maior que 0.");
     }
 
-    public SimuladoComQuestoesResponse findById(UUID id) {
+    public SimuladoCompletoResponse findById(UUID id) {
         
         Simulado simulado = simuladoRepository.findById(id).orElseThrow(
             () -> new IllegalArgumentException("Simulado não encontrado: " + id));
@@ -114,7 +114,7 @@ public class SimuladoService {
         for (Disciplina disciplina : disciplinas) {
             
             // buscar questões da disciplina
-            List<QuestaoResponse> questoes =
+            List<QuestaoSimuladoResponse> questoes =
                 questaoSimuladoService.findQuestoesBySimuladoIdAndDisciplinaId(
                     simulado.getId(), disciplina.getId());
 
@@ -123,8 +123,8 @@ public class SimuladoService {
             disciplinasResponse.add(disciplinaResponse);
         }
 
-        SimuladoComQuestoesResponse response = 
-            new SimuladoComQuestoesResponse(simulado, disciplinasResponse);
+        SimuladoCompletoResponse response = 
+            new SimuladoCompletoResponse(simulado, disciplinasResponse);
 
         return response;
     }
@@ -134,16 +134,16 @@ public class SimuladoService {
         simuladoRepository.deleteById(id);
     }
 
-    public List<SimuladoViewResponse> findAll() {
+    public List<SimuladoResumoResponse> findAll() {
         
         List<Simulado> simulados = simuladoRepository.findAll();
         
-        List<SimuladoViewResponse> result =
-            new ArrayList<SimuladoViewResponse>();
+        List<SimuladoResumoResponse> result =
+            new ArrayList<SimuladoResumoResponse>();
 
         for (Simulado s : simulados) {
             CursoDTO curso = cursoService.findById(s.getCursoId());
-            result.add(new SimuladoViewResponse(
+            result.add(new SimuladoResumoResponse(
                 s.getId(), s.getTitulo(), curso.getDescricao(), s.getDataInicio()));
         }
 
@@ -156,7 +156,7 @@ public class SimuladoService {
         return simulado.getCursoId();
     }
 
-    public List<SimuladoViewResponse> findByExample(String filter) throws Exception {
+    public List<SimuladoResumoResponse> findByExample(String filter) throws Exception {
        
         Simulado simulado = FoxUtils.criarObjetoDinamico(filter, Simulado.class);
         ExampleMatcher matcher = ExampleMatcher.matching()
@@ -168,11 +168,11 @@ public class SimuladoService {
               
         Iterable<Simulado> simulados = simuladoRepository.findAll(example);
         
-        List<SimuladoViewResponse> result = new ArrayList<SimuladoViewResponse>();
+        List<SimuladoResumoResponse> result = new ArrayList<SimuladoResumoResponse>();
 
         for (Simulado s : simulados) {
             CursoDTO curso = cursoService.findById(s.getCursoId());
-            result.add(new SimuladoViewResponse(
+            result.add(new SimuladoResumoResponse(
                 s.getId(), s.getTitulo(), curso.getDescricao(), s.getDataInicio()));
         }
 

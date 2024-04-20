@@ -9,7 +9,7 @@ import com.example.demo.domain.QuestaoSimulado;
 
 
 
-public class QuestaoResponse {
+public class QuestaoSimuladoResponse {
     
     private UUID id;
     private UUID simuladoId;
@@ -19,10 +19,10 @@ public class QuestaoResponse {
     private Integer gabarito;
     private List<ItemQuestaoResponse> alternativas;
 
-    public QuestaoResponse() {
+    public QuestaoSimuladoResponse() {
     }
 
-    public QuestaoResponse(QuestaoSimulado questao, List<ItemQuestaoSimulado> alternativas) {
+    public QuestaoSimuladoResponse(QuestaoSimulado questao, List<ItemQuestaoSimulado> alternativas) {
         
         this.id = questao.getId();
         this.simuladoId = questao.getSimuladoId();

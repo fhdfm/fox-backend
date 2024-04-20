@@ -6,17 +6,17 @@ import java.util.UUID;
 
 import com.example.demo.util.FoxUtils;
 
-public class SimuladoViewResponse {
+public class SimuladoResumoResponse {
     
     private UUID id;
     private String titulo;
     private String curso;
     private Date data;
 
-    public SimuladoViewResponse() {
+    public SimuladoResumoResponse() {
     }
 
-    public SimuladoViewResponse(UUID id, String titulo, String curso, LocalDateTime data) {
+    public SimuladoResumoResponse(UUID id, String titulo, String curso, LocalDateTime data) {
         this.id = id;
         this.titulo = titulo;
         this.curso = curso;
