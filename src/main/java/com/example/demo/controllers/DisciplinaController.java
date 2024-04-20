@@ -39,7 +39,8 @@ public class DisciplinaController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Disciplina> atualizar(@PathVariable UUID id, @RequestBody Disciplina disciplina) {
+    public ResponseEntity<Disciplina> atualizar(@PathVariable UUID id,
+        @RequestBody Disciplina disciplina) {
         disciplina.setId(id);
         return ResponseEntity.ok(disciplinaService.salvar(disciplina));
     }

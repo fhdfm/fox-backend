@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.domain.Disciplina;
 import com.example.demo.domain.ItemQuestaoSimulado;
@@ -65,6 +66,7 @@ public class QuestaoSimuladoService {
         return response;
     }
 
+    @Transactional
     public UUID save(UUID simuladoId, QuestaoSimuladoRequest request) {
         QuestaoSimulado questaoSimulado = new QuestaoSimulado(request);
         questaoSimulado.setSimuladoId(simuladoId);
@@ -78,6 +80,7 @@ public class QuestaoSimuladoService {
         return newQuestaoId;
     }
 
+    @Transactional
     public QuestaoResponse save(
         UUID simuladoId, UUID questaoId, QuestaoSimuladoRequest request) {
         

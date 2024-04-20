@@ -56,8 +56,6 @@ public class SimuladoController {
         return ResponseEntity.ok(simuladoService.findAll());
     }
 
-    /* Questões do Simulado */
-
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(value = "/api/admin/simulados/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SimuladoResponse> update(@PathVariable UUID id, 
@@ -79,6 +77,8 @@ public class SimuladoController {
         return ResponseEntity.ok(simuladoService.findById(id));
     }
 
+    /* Questões do Simulado */
+
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/api/admin/simulados/{simuladoId}/questoes")
     public ResponseEntity<QuestaoSimuladoAgrupadoDisciplinaResponse>
@@ -96,7 +96,8 @@ public class SimuladoController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping(value = "/api/simulados/{simuladoId}/questoes", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/api/simulados/{simuladoId}/questoes", 
+        consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UUID> salvarQuestao(@PathVariable UUID simuladoId, 
         @RequestBody QuestaoSimuladoRequest request) {
         UUID id = questaoSimuladoService.save(simuladoId, request);
@@ -104,7 +105,8 @@ public class SimuladoController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping(value = "/api/simulados/{simuladoId}/questoes/{questaoId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/api/simulados/{simuladoId}/questoes/{questaoId}", 
+        consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<QuestaoResponse> atualizarQuestao(
         @PathVariable UUID simuladoId, @PathVariable UUID questaoId,
         @RequestBody QuestaoSimuladoRequest request) {
