@@ -36,9 +36,8 @@ public class SecurityConfig {
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/admin/*").authenticated())
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/aluno/*").authenticated())
-                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+                .authorizeHttpRequests(auth -> auth.requestMatchers(
+                    "/api/admin/*", "/api/aluno/*").authenticated().anyRequest().permitAll())
                 .httpBasic(Customizer.withDefaults())
                 .oauth2ResourceServer(conf -> conf.jwt(Customizer.withDefaults()));
         return http.build();
