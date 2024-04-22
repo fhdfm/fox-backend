@@ -54,7 +54,11 @@ public class BancaService {
         bancaRepository.deleteById(id);
     }
 
-    public List<Banca> findByExample(String query) throws Exception {
+    public List<Banca> findAll(String query) throws Exception {
+        
+        if (query == null || query.isBlank())
+            return this.findAll();
+        
         Banca banca = FoxUtils.criarObjetoDinamico(query, Banca.class);
         ExampleMatcher matcher = ExampleMatcher.matching()
             .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING) // Correspondência parcial

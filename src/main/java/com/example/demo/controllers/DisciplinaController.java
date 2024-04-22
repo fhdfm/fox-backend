@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.domain.Disciplina;
@@ -53,8 +54,10 @@ public class DisciplinaController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public ResponseEntity<List<Disciplina>> listar() {
-        return ResponseEntity.ok(disciplinaService.findAll());
+    public ResponseEntity<List<Disciplina>> listar(
+        @RequestParam(required = false) String filter) throws Exception {
+        
+        return ResponseEntity.ok(disciplinaService.findAll(filter));
     }
 
     @PreAuthorize("hasRole('ADMIN')")

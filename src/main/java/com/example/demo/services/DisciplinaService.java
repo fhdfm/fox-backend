@@ -4,7 +4,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,6 +15,7 @@ import com.example.demo.domain.CursoDisciplina;
 import com.example.demo.domain.Disciplina;
 import com.example.demo.repositories.CursoDisciplinaRepository;
 import com.example.demo.repositories.DisciplinaRepository;
+import com.example.demo.util.FoxUtils;
 
 @Service
 public class DisciplinaService {
@@ -34,6 +38,29 @@ public class DisciplinaService {
             throw new IllegalArgumentException("Disciplina já cadastrada.");
 
         return disciplinaRepository.save(disciplina);
+    }
+
+    public List<Disciplina> findAll(String filter) throws Exception {
+
+        if (filter == null || filter.isBlank())
+            return this.findAll();
+
+        Disciplina disciplina = 
+            FoxUtils.criarObjetoDinamico(filter, Disciplina.class);
+        ExampleMatcher matcher = ExampleMatcher.matching()
+            .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING) // Correspondência parcial
+            .withIgnoreCase() // Ignorar case
+            .withIgnoreNullValues(); // Ignorar valores nulos            
+
+        Iterable<Disciplina> disciplinas = 
+            disciplinaRepository.findAll(
+                Example.of(disciplina, matcher));
+        
+        List<Disciplina> response = 
+            StreamSupport.stream(disciplinas.spliterator(), false)
+                .collect(Collectors.toList());
+
+        return response;
     }
 
     public List<Disciplina> findAll() {

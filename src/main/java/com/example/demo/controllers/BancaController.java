@@ -51,11 +51,9 @@ public class BancaController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public ResponseEntity<List<Banca>> listar(@RequestParam(required = false) String filter) throws Exception {
-        if (filter != null) {
-            return ResponseEntity.ok(bancaService.findByExample(filter));
-        }
-        return ResponseEntity.ok(bancaService.findAll());
+    public ResponseEntity<List<Banca>> listar(
+        @RequestParam(required = false) String filter) throws Exception {
+        return ResponseEntity.ok(bancaService.findAll(filter));
     }
 
     @PreAuthorize("hasRole('ADMIN')")

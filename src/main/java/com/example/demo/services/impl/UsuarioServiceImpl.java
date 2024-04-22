@@ -2,16 +2,20 @@ package com.example.demo.services.impl;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.example.demo.domain.PerfilUsuario;
 import com.example.demo.domain.Usuario;
 import com.example.demo.domain.UsuarioLogado;
 import com.example.demo.repositories.UsuarioRepository;
+import com.example.demo.util.FoxUtils;
 
 @Service
 public class UsuarioServiceImpl implements UserDetailsService {
@@ -48,11 +52,24 @@ public class UsuarioServiceImpl implements UserDetailsService {
                         .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado."));
     }
 
-    public List<Usuario> findAll(PerfilUsuario tipo) {
-        if (tipo != null) {
-            return this.usuarioRepository.findByPerfil(tipo);
-        }
-        return this.usuarioRepository.findAll();
+    public List<Usuario> findAll(String filter) throws Exception {
+
+        if (filter == null || filter.isBlank())
+            return this.findAll();
+
+        Usuario usuario = FoxUtils.criarObjetoDinamico(filter, Usuario.class);
+        ExampleMatcher matcher = ExampleMatcher.matching()
+            .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING) // Correspondência parcial
+            .withIgnoreCase() // Ignorar case
+            .withIgnoreNullValues(); // Ignorar valores nulos            
+
+        Iterable<Usuario> usuarios = 
+            this.usuarioRepository.findAll(
+                Example.of(usuario, matcher));
+        
+        return StreamSupport.stream(usuarios.spliterator(), false)
+            .collect(Collectors.toList());
+
     }
 
     public List<Usuario> findAll() {

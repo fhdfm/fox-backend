@@ -171,7 +171,7 @@ public class SimuladoService {
         return simulado.getCursoId();
     }
 
-    public UUID findIdByCursoId(UUID cursoId) {
+    public UUID findByCursoId(UUID cursoId) {
         Simulado simulado = simuladoRepository.findByCursoId(cursoId);
         return simulado.getId();
     }

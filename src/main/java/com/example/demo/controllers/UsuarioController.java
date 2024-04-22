@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.demo.domain.PerfilUsuario;
 import com.example.demo.domain.Usuario;
 import com.example.demo.domain.UsuarioLogado;
 import com.example.demo.dto.UsuarioDTO;
@@ -52,8 +51,10 @@ public class UsuarioController {
 
     @GetMapping(value = "/api/usuarios")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Usuario>> findAll(@RequestParam PerfilUsuario tipo) {
-        return ResponseEntity.ok(service.findAll(tipo));
+    public ResponseEntity<List<Usuario>> findAll(
+        @RequestParam(required = false) String filter) throws Exception {
+        
+        return ResponseEntity.ok(service.findAll(filter));
     }
 
     @GetMapping(value = "/api/usuarios/{id}")
