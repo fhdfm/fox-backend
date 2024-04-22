@@ -1,6 +1,5 @@
 package com.example.demo.dto;
 
-import java.time.LocalDateTime;
 import java.util.Date;
 
 import com.example.demo.domain.Simulado;
@@ -21,9 +20,7 @@ public class MatriculaSimuladoResponse extends MatriculaAtivaResponse {
         setId(simulado.getId());
         setTipoProduto(TipoProduto.SIMULADO);
         this.titulo = simulado.getTitulo();
-        LocalDateTime data = simulado.getDataInicio();
-        if (data != null)
-            this.data = FoxUtils.convertLocalDateTimeToDate(data);
+        this.data = FoxUtils.convertLocalDateTimeToDate(simulado.getDataInicio());
         this.quantidadeQuestoes = simulado.getQuantidadeQuestoes();
         this.duracao = simulado.getDuracao();
     }
