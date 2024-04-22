@@ -77,6 +77,7 @@ public class QuestaoSimuladoService {
             itemQuestaoSimulado.setQuestaoSimuladoId(newQuestaoId);
             this.itemQuestaoSimuladoService.save(itemQuestaoSimulado);
         });
+
         return newQuestaoId;
     }
 

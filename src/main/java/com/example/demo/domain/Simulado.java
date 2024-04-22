@@ -18,6 +18,7 @@ public class Simulado {
     private String descricao;
     private UUID cursoId;
     private Integer alternativasPorQuestao;
+    private Integer quantidadeQuestoes;
     private LocalDateTime dataInicio;
     private String duracao;
     private BigDecimal valor;
@@ -98,4 +99,13 @@ public class Simulado {
     public void setValor(BigDecimal valor) {
         this.valor = valor;
     }
+
+    public Integer getQuantidadeQuestoes() {
+        return quantidadeQuestoes;
+    }
+
+    public void setQuantidadeQuestoes(Integer quantidadeQuestoes) {
+        this.quantidadeQuestoes = quantidadeQuestoes;
+    }
+
 }

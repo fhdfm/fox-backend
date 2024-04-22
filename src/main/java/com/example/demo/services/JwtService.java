@@ -11,8 +11,8 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
-import com.example.demo.domain.Matricula;
 import com.example.demo.domain.UsuarioLogado;
+import com.example.demo.dto.MatriculaAtivaResponse;
 
 @Service
 public class JwtService {
@@ -34,8 +34,8 @@ public class JwtService {
 
         UsuarioLogado usuario = (UsuarioLogado) authentication.getPrincipal();
 
-        List<Matricula> matriculas =
-            this.matriculaService.findByUsuarioId(usuario.getId());
+        List<MatriculaAtivaResponse> matriculas = this.matriculaService
+            .getMatriculasAtivas(usuario.getId());
 
         var claims = JwtClaimsSet.builder()
             .issuer("portal-fox")
@@ -51,4 +51,6 @@ public class JwtService {
                 (JwtEncoderParameters.from(claims))
                     .getTokenValue();
     }
+
+ 
 }

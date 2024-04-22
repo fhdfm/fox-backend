@@ -39,6 +39,7 @@ CREATE TABLE simulados (
     data_inicio TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     duracao VARCHAR(50) NOT NULL,
     valor NUMERIC(10,2) NOT NULL,
+    quantidade_questoes INTEGER NULL,
     FOREIGN KEY (curso_id) REFERENCES cursos (id)
 );
 

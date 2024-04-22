@@ -20,7 +20,7 @@ public class AuthenticationController {
         this.authenticationService = authenticationService;
     }
 
-    @PostMapping(value = "/signin", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/api/signin", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> authenticate(Authentication authentication) {
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(this.authenticationService.authenticate(authentication));

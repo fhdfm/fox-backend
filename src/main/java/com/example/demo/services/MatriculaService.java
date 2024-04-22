@@ -1,6 +1,7 @@
 package com.example.demo.services;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -10,8 +11,10 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.demo.domain.Matricula;
 import com.example.demo.domain.Status;
 import com.example.demo.domain.StatusPagamento;
+import com.example.demo.domain.TipoProduto;
 import com.example.demo.domain.Transacao;
 import com.example.demo.domain.UsuarioLogado;
+import com.example.demo.dto.MatriculaAtivaResponse;
 import com.example.demo.dto.MatriculaRequest;
 import com.example.demo.repositories.MatriculaRepository;
 import com.example.demo.services.impl.UsuarioServiceImpl;
@@ -84,6 +87,37 @@ public class MatriculaService {
 
     public List<Matricula> findByUsuarioId(UUID usuarioId) {
         return matriculaRepository.findByUsuarioIdAndStatus(usuarioId, Status.ATIVO);
+    }
+
+    public List<MatriculaAtivaResponse> getMatriculasAtivas(UUID alunoId) {
+        
+        List<Matricula> matriculas = this.findByUsuarioId(alunoId);
+        
+        List<MatriculaAtivaResponse> matriculasAtivas =
+            new ArrayList<MatriculaAtivaResponse>();
+
+        if (matriculas == null || matriculas.isEmpty())
+            return matriculasAtivas;
+
+        for (Matricula matricula : matriculas) {
+            if (matricula.getTipoProduto() 
+                == TipoProduto.CURSO) {
+                matriculasAtivas.add(
+                    this.cursoService.getMatriculaCursoResponse(
+                        matricula.getProdutoId()));
+                UUID simuladoId = this.simuladoService.findIdByCursoId(matricula.getProdutoId());
+                if (simuladoId != null) {
+                    matriculasAtivas.add(
+                        this.simuladoService.getMatriculaSimulado(simuladoId));
+                }
+            } else {
+                matriculasAtivas.add(
+                    this.simuladoService.getMatriculaSimulado(
+                        matricula.getProdutoId()));
+            }
+        }
+
+        return matriculasAtivas;
     }
 
 }

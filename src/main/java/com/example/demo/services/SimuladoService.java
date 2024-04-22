@@ -14,6 +14,7 @@ import com.example.demo.domain.Disciplina;
 import com.example.demo.domain.Simulado;
 import com.example.demo.dto.CursoDTO;
 import com.example.demo.dto.DisciplinaQuestoesResponse;
+import com.example.demo.dto.MatriculaSimuladoResponse;
 import com.example.demo.dto.QuestaoSimuladoResponse;
 import com.example.demo.dto.SimuladoCompletoResponse;
 import com.example.demo.dto.SimuladoRequest;
@@ -45,9 +46,23 @@ public class SimuladoService {
         validarSimulado(request);
         
         Simulado simulado = new Simulado(request);
+        simulado.setQuantidadeQuestoes(0);
         simulado = simuladoRepository.save(simulado);
 
         return simulado.getId();
+    }
+
+    public void incrementarQuestoes(UUID id) {
+        Simulado simulado = simuladoRepository.findById(id).orElseThrow(
+            () -> new IllegalArgumentException("Simulado não encontrado: " + id));
+        simulado.setQuantidadeQuestoes(simulado.getQuantidadeQuestoes() + 1);
+        simuladoRepository.save(simulado);
+    }
+
+    public MatriculaSimuladoResponse getMatriculaSimulado(UUID id) {
+        Simulado simulado = simuladoRepository.findById(id).orElseThrow(
+            () -> new IllegalArgumentException("Simulado não encontrado: " + id));
+        return new MatriculaSimuladoResponse(simulado);
     }
 
     public SimuladoResponse save(UUID id, SimuladoRequest request) {
@@ -154,6 +169,11 @@ public class SimuladoService {
         Simulado simulado = simuladoRepository.findById(id).orElseThrow(
             () -> new IllegalArgumentException("Simulado não encontrado: " + id));
         return simulado.getCursoId();
+    }
+
+    public UUID findIdByCursoId(UUID cursoId) {
+        Simulado simulado = simuladoRepository.findByCursoId(cursoId);
+        return simulado.getId();
     }
 
     public List<SimuladoResumoResponse> findByExample(String filter) throws Exception {

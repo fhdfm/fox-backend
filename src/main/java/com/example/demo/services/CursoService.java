@@ -14,6 +14,7 @@ import com.example.demo.domain.Banca;
 import com.example.demo.domain.Curso;
 import com.example.demo.domain.Status;
 import com.example.demo.dto.CursoDTO;
+import com.example.demo.dto.MatriculaCursoResponse;
 import com.example.demo.repositories.CursoRepository;
 
 @Service
@@ -30,6 +31,16 @@ public class CursoService {
         this.cursoRepository = cursoRepository;
         this.bancaService = bancaService;
         this.disciplinaService = disciplinaService;
+    }
+
+    public MatriculaCursoResponse getMatriculaCursoResponse(UUID id) {
+        
+        Curso curso = this.cursoRepository.findById(id).orElseThrow(
+            () -> new IllegalArgumentException("Curso não encontrado."));
+
+        Banca banca = this.bancaService.findById(curso.getBancaId());
+        
+        return new MatriculaCursoResponse(curso, banca.getNome());
     }
 
     public UUID save(CursoDTO cursoDTO) {

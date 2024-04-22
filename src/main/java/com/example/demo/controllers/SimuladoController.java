@@ -101,6 +101,7 @@ public class SimuladoController {
     public ResponseEntity<UUID> salvarQuestao(@PathVariable UUID simuladoId, 
         @RequestBody QuestaoSimuladoRequest request) {
         UUID id = questaoSimuladoService.save(simuladoId, request);
+        simuladoService.incrementarQuestoes(simuladoId);
         return ResponseEntity.status(HttpStatus.CREATED).body(id);
     }
 
