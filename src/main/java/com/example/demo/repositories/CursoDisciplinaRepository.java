@@ -20,7 +20,7 @@ public class CursoDisciplinaRepository {
 
     public void save(CursoDisciplina cursoDisciplina) {
         jdbcTemplate.update(
-            "INSERT INTO cursos_disciplinas (curso_id, disciplina_id) VALUES (?, ?)",
+            "INSERT INTO curso_disciplina (curso_id, disciplina_id) VALUES (?, ?)",
             cursoDisciplina.getCursoId(),
             cursoDisciplina.getDisciplinaId()
         );
@@ -28,7 +28,7 @@ public class CursoDisciplinaRepository {
 
     public List<CursoDisciplina> findByCursoId(UUID cursoId) {
         return jdbcTemplate.query(
-            "SELECT * FROM cursos_disciplinas WHERE curso_id = ?",
+            "SELECT * FROM curso_disciplina WHERE curso_id = ?",
             (rs, rowNum) -> new CursoDisciplina(
                 UUID.fromString(rs.getString("curso_id")),
                 UUID.fromString(rs.getString("disciplina_id"))
@@ -39,7 +39,7 @@ public class CursoDisciplinaRepository {
 
     public Boolean existsByCursoId(UUID cursoId) {
         return jdbcTemplate.queryForObject(
-            "SELECT EXISTS(SELECT 1 FROM cursos_disciplinas WHERE curso_id = ?)",
+            "SELECT EXISTS(SELECT 1 FROM curso_disciplina WHERE curso_id = ?)",
             Boolean.class,
             cursoId
         );
@@ -47,14 +47,14 @@ public class CursoDisciplinaRepository {
 
     public void deleteByCursoId(UUID cursoId) {
         jdbcTemplate.update(
-            "DELETE FROM cursos_disciplinas WHERE curso_id = ?",
+            "DELETE FROM curso_disciplina WHERE curso_id = ?",
             cursoId
         );
     }
 
     public void deleteByCursoIdAndDisciplinaId(UUID cursoId, UUID disciplinaId) {
         jdbcTemplate.update(
-            "DELETE FROM cursos_disciplinas WHERE curso_id = ? AND disciplina_id = ?",
+            "DELETE FROM curso_disciplina WHERE curso_id = ? AND disciplina_id = ?",
             cursoId,
             disciplinaId
         );
