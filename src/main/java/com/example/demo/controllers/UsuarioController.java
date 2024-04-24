@@ -25,7 +25,6 @@ import com.example.demo.services.impl.UsuarioServiceImpl;
 @RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 public class UsuarioController {
 
-
     private final UsuarioServiceImpl service;
 
     public UsuarioController(UsuarioServiceImpl service) {
