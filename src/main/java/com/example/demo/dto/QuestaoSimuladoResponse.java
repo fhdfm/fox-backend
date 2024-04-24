@@ -16,7 +16,6 @@ public class QuestaoSimuladoResponse {
     private UUID disciplinaId;
     private Integer ordem;
     private String enunciado;
-    private Integer gabarito;
     private List<ItemQuestaoResponse> alternativas;
 
     public QuestaoSimuladoResponse() {
@@ -29,7 +28,6 @@ public class QuestaoSimuladoResponse {
         this.disciplinaId = questao.getDisciplinaId();
         this.ordem = questao.getOrdem();
         this.enunciado = questao.getEnunciado();
-        this.gabarito = questao.getGabarito();
 
         List<ItemQuestaoResponse> alternativasResponse = new ArrayList<ItemQuestaoResponse>();
         for (ItemQuestaoSimulado item : alternativas) {
@@ -56,10 +54,6 @@ public class QuestaoSimuladoResponse {
 
     public String getEnunciado() {
         return enunciado;
-    }
-
-    public Integer getGabarito() {
-        return gabarito;
     }
 
     public List<ItemQuestaoResponse> getAlternativas() {

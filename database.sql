@@ -8,7 +8,9 @@ CREATE TABLE usuarios (
     email VARCHAR(255) NOT NULL UNIQUE,
     nome VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
-    perfil VARCHAR(50) NOT NULL
+    perfil VARCHAR(50) NOT NULL,
+    cpf VARCHAR(11) NOT NULL,
+    status VARCHAR(50) NOT NULL
 );
 
 CREATE TABLE disciplinas (
@@ -26,7 +28,7 @@ CREATE TABLE cursos (
     banca UUID REFERENCES bancas(id) NOT NULL,
     escolaridade VARCHAR(100) NOT NULL,
     estado VARCHAR(100) NOT NULL,
-    cidade VARCHAR(100) NOT NULL,
+    cidade VARCHAR(100) NULL,
     valor NUMERIC(10,2) NOT NULL
 );
 
@@ -47,21 +49,16 @@ CREATE TABLE simulados (
 CREATE TABLE curso_disciplina (
     curso_id UUID NOT NULL,
     disciplina_id UUID NOT NULL,
-    --PRIMARY KEY (curso_id, disciplina_id),
+    PRIMARY KEY (curso_id, disciplina_id),
     FOREIGN KEY (curso_id) REFERENCES cursos(id),
     FOREIGN KEY (disciplina_id) REFERENCES disciplinas(id)
 );
-
--- workaround
---ALTER TABLE curso_disciplina
---ADD COLUMN id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL UNIQUE;
 
 CREATE TABLE questoes_simulado (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
     ordem INTEGER NOT NULL,
     simulado_id UUID NOT NULL,
     enunciado TEXT NOT NULL,
-    gabarito INTEGER NOT NULL,
     disciplina_id UUID NOT NULL,
     FOREIGN KEY (simulado_id) REFERENCES simulados(id),
     FOREIGN KEY (disciplina_id) REFERENCES disciplinas(id)
@@ -72,6 +69,7 @@ CREATE TABLE itens_questao_simulado (
     questao_simulado_id UUID NOT NULL,
     ordem INTEGER NOT NULL,
     descricao TEXT NOT NULL,
+    correta BOOLEAN NOT NULL,
     FOREIGN KEY (questao_simulado_id) REFERENCES questoes_simulado(id)
 );
 

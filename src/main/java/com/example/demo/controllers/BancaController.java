@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -38,13 +39,13 @@ public class BancaController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/{id}")
-    public ResponseEntity<Banca> buscar(UUID id) {
+    public ResponseEntity<Banca> buscar(@PathVariable UUID id) {
         return ResponseEntity.ok(bancaService.findById(id));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(value = "/{id}", consumes =  MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Banca> atualizar(UUID id, Banca banca) {
+    public ResponseEntity<Banca> atualizar(@PathVariable UUID id, Banca banca) {
         banca.setId(id);
         return ResponseEntity.ok(bancaService.salvar(banca));
     }
@@ -58,7 +59,7 @@ public class BancaController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(value = "/{id}")
-    public ResponseEntity<String> deletar(UUID id) {
+    public ResponseEntity<String> deletar(@PathVariable UUID id) {
         bancaService.delete(id);
         return ResponseEntity.ok("Banca deletada: " + id);
     }

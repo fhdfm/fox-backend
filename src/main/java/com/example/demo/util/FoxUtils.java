@@ -52,4 +52,22 @@ public class FoxUtils {
         return constructor.newInstance();
     }
 
+    public static boolean isNullOrEmpty(String value) {
+        return value == null || value.isEmpty();
+    }
+
+    public static boolean isNullOrEmpty(Object value) {
+        return value == null;
+    }
+
+    public static String validarCpf(String cpf) {
+        Cpf cpfUtil = new Cpf();
+        return cpfUtil.parse(cpf);
+    }
+
+    public static String formatarCpf(String cpf) {
+        Cpf cpfUtil = new Cpf();
+        return cpfUtil.format(cpf);
+    }
+
 }

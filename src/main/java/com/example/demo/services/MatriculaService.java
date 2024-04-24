@@ -13,9 +13,9 @@ import com.example.demo.domain.Status;
 import com.example.demo.domain.StatusPagamento;
 import com.example.demo.domain.TipoProduto;
 import com.example.demo.domain.Transacao;
-import com.example.demo.domain.UsuarioLogado;
 import com.example.demo.dto.MatriculaAtivaResponse;
 import com.example.demo.dto.MatriculaRequest;
+import com.example.demo.dto.UsuarioResponse;
 import com.example.demo.repositories.MatriculaRepository;
 import com.example.demo.services.impl.UsuarioServiceImpl;
 
@@ -44,7 +44,7 @@ public class MatriculaService {
         if (matricula.getUsuarioId() == null)
             throw new IllegalArgumentException("Usuário não informado");
         
-        UsuarioLogado usuario = this.usuarioService.findById(matricula.getUsuarioId());
+        UsuarioResponse usuario = this.usuarioService.findById(matricula.getUsuarioId());
             
         if (matricula.getProdutoId() == null)
             throw new IllegalArgumentException("Produto (curso/simulado) não informado");

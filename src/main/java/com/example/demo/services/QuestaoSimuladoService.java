@@ -101,6 +101,7 @@ public class QuestaoSimuladoService {
             itemQuestaoSimulado.setQuestaoSimuladoId(questaoId);
             itemQuestaoSimulado.setOrdem(item.getOrdem());
             itemQuestaoSimulado.setDescricao(item.getDescricao());
+            itemQuestaoSimulado.setCorreta(item.getCorreta());
             
             itemQuestaoSimuladoService.save(itemQuestaoSimulado);
         });

@@ -15,6 +15,7 @@ public class ItemQuestaoSimulado {
     private UUID questaoSimuladoId;
     private Integer ordem;
     private String descricao;
+    private Boolean correta;
 
     public ItemQuestaoSimulado() {
 
@@ -23,6 +24,7 @@ public class ItemQuestaoSimulado {
     public ItemQuestaoSimulado(ItemQuestaoSimuladoRequest request) {
         this.ordem = request.getOrdem();
         this.descricao = request.getDescricao();
+        this.correta = request.getCorreta();
     }
 
     public UUID getId() {
@@ -55,5 +57,13 @@ public class ItemQuestaoSimulado {
 
     public void setDescricao(String descricao) {
         this.descricao = descricao;
+    }
+
+    public Boolean getCorreta() {
+        return correta;
+    }
+
+    public void setCorreta(Boolean correta) {
+        this.correta = correta;
     }
 }

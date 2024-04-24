@@ -10,6 +10,7 @@ public class ItemQuestaoResponse {
     private UUID questaoId;
     private Integer ordem;
     private String descricao;
+    private Boolean correta;
 
     public ItemQuestaoResponse() {
     }
@@ -19,6 +20,7 @@ public class ItemQuestaoResponse {
         this.ordem = item.getOrdem();
         this.descricao = item.getDescricao();
         this.questaoId = item.getQuestaoSimuladoId();
+        this.correta = item.getCorreta();
     }
 
     public UUID getId() {
@@ -35,5 +37,9 @@ public class ItemQuestaoResponse {
 
     public UUID getQuestaoId() {
         return questaoId;
+    }
+
+    public Boolean getCorreta() {
+        return correta;
     }
 }

@@ -15,7 +15,6 @@ public class QuestaoSimulado {
     private Integer ordem;
     private UUID simuladoId;
     private String enunciado;
-    private Integer gabarito;
     private UUID disciplinaId;
 
     public QuestaoSimulado() {
@@ -25,7 +24,6 @@ public class QuestaoSimulado {
     public QuestaoSimulado(QuestaoSimuladoRequest request) {
         this.ordem = request.getOrdem();
         this.enunciado = request.getEnunciado();
-        this.gabarito = request.getGabarito();
         this.disciplinaId = request.getDisciplinaId();
     }
 
@@ -59,14 +57,6 @@ public class QuestaoSimulado {
 
     public void setEnunciado(String enunciado) {
         this.enunciado = enunciado;
-    }
-
-    public Integer getGabarito() {
-        return gabarito;
-    }
-
-    public void setGabarito(Integer gabarito) {
-        this.gabarito = gabarito;
     }
 
     public UUID getDisciplinaId() {

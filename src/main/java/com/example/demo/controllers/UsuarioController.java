@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.domain.Usuario;
 import com.example.demo.domain.UsuarioLogado;
-import com.example.demo.dto.UsuarioDTO;
+import com.example.demo.dto.UsuarioResponse;
 import com.example.demo.services.impl.UsuarioServiceImpl;
 
 @RestController
@@ -37,30 +38,25 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedUser.getId());
     }
 
-    @PostMapping(value = "/api/usuarios")
-    @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO') or hasRole('ADMIN')")
-    public ResponseEntity<String> save(@RequestBody UsuarioDTO user) {
-        return null;
+    @DeleteMapping(value = "/api/admin/usuarios/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> desativar(@PathVariable UUID id) {
+        this.service.desativar(id);
+        return ResponseEntity.ok("Usuário desativado com sucesso.");
     }
 
-    @DeleteMapping(value = "/api/usuarios/{id}")
+    @GetMapping(value = "/api/admin/usuarios")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> delete(String id) {
-        return null;
-    }
-
-    @GetMapping(value = "/api/usuarios")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Usuario>> findAll(
+    public ResponseEntity<List<UsuarioResponse>> findAll(
         @RequestParam(required = false) String filter) throws Exception {
         
         return ResponseEntity.ok(service.findAll(filter));
     }
 
-    @GetMapping(value = "/api/usuarios/{id}")
-    @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO') or hasRole('ADMIN')")
-    public ResponseEntity<UsuarioDTO> findById(String id) {
-        return null;
+    @GetMapping(value = "/api/admin/usuarios/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UsuarioResponse> findById(@PathVariable UUID id) {
+        return ResponseEntity.ok(service.findById(id));
     }
 
 }

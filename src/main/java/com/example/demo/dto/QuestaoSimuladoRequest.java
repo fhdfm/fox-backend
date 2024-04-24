@@ -7,7 +7,6 @@ public class QuestaoSimuladoRequest {
     
     private Integer ordem;
     private String enunciado;
-    private Integer gabarito;
     private UUID disciplinaId;
     private List<ItemQuestaoSimuladoRequest> alternativas;
 
@@ -28,14 +27,6 @@ public class QuestaoSimuladoRequest {
 
     public void setEnunciado(String enunciado) {
         this.enunciado = enunciado;
-    }
-
-    public Integer getGabarito() {
-        return gabarito;
-    }
-
-    public void setGabarito(Integer gabarito) {
-        this.gabarito = gabarito;
     }
 
     public UUID getDisciplinaId() {

@@ -7,6 +7,7 @@ public class ItemQuestaoSimuladoRequest {
     private UUID id;
     private Integer ordem;
     private String descricao;
+    private Boolean correta;
 
     public ItemQuestaoSimuladoRequest() {
     }
@@ -33,5 +34,13 @@ public class ItemQuestaoSimuladoRequest {
 
     public void setDescricao(String descricao) {
         this.descricao = descricao;
+    }
+
+    public Boolean getCorreta() {
+        return correta;
+    }
+
+    public void setCorreta(Boolean correta) {
+        this.correta = correta;
     }
 }

@@ -98,7 +98,8 @@ public class DisciplinaService {
     }
 
     public void removerDisciplina(CursoDisciplina cursoDisciplina) {
-        cursoDisciplinaRepository.delete(cursoDisciplina);
+        cursoDisciplinaRepository.deleteByCursoIdAndDisciplinaId(
+            cursoDisciplina.getCursoId(), cursoDisciplina.getDisciplinaId());
     }
 
     public void deletar(UUID disciplinaId) {

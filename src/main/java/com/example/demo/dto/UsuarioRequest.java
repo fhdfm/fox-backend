@@ -1,43 +1,27 @@
-package com.example.demo.domain;
+package com.example.demo.dto;
 
 import java.util.UUID;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Table;
+import com.example.demo.domain.PerfilUsuario;
 
-import com.example.demo.dto.UsuarioRequest;
-
-@Table("usuarios")
-public class Usuario {
-
-    @Id
+public class UsuarioRequest {
+    
     private UUID id;
     private String email;
     private String nome;
     private String password;
     private PerfilUsuario perfil;
     private String cpf;
-    private StatusUsuario status;
 
-    public Usuario() {
+    public UsuarioRequest() {
     }
 
-    public Usuario(UsuarioRequest request) {
-        this.id = request.getId();
-        this.email = request.getEmail();
-        this.nome = request.getNome();
-        this.password = request.getPassword();
-        this.perfil = request.getPerfil();
-        this.cpf = request.getCpf();
-        this.status = StatusUsuario.ATIVO;
+    public UsuarioRequest(UUID id) {
+        this.id = id;
     }
 
     public UUID getId() {
         return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
     }
 
     public String getEmail() {
@@ -68,7 +52,7 @@ public class Usuario {
         return perfil;
     }
 
-    public void setRole(PerfilUsuario perfil) {
+    public void setPerfil(PerfilUsuario perfil) {
         this.perfil = perfil;
     }
 
@@ -79,13 +63,4 @@ public class Usuario {
     public void setCpf(String cpf) {
         this.cpf = cpf;
     }
-
-    public StatusUsuario getStatus() {
-        return status;
-    }
-
-    public void setStatus(StatusUsuario status) {
-        this.status = status;
-    }
-
 }
