@@ -111,7 +111,7 @@ public class SimuladoService {
         if (request.getDuracao() == null || request.getDuracao().isEmpty())
             throw new IllegalArgumentException("Duração do simulado é obrigatória.");
 
-        if (request.getValor() == null || request.getValor().compareTo(BigDecimal.ZERO) > 0)
+        if (request.getValor() == null || request.getValor().compareTo(BigDecimal.ZERO) <= 0)
             throw new IllegalArgumentException("Valor do simulado é obrigatório e deve ser maior que 0.");
     }
 
