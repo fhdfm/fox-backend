@@ -116,6 +116,10 @@ public class SimuladoService {
     }
 
     public SimuladoCompletoResponse findById(UUID id) {
+        return this.findById(id, true);
+    }
+
+    public SimuladoCompletoResponse findById(UUID id, boolean exibirCorreta) {
         
         Simulado simulado = simuladoRepository.findById(id).orElseThrow(
             () -> new IllegalArgumentException("Simulado não encontrado: " + id));
@@ -131,7 +135,7 @@ public class SimuladoService {
             // buscar questões da disciplina
             List<QuestaoSimuladoResponse> questoes =
                 questaoSimuladoService.findQuestoesBySimuladoIdAndDisciplinaId(
-                    simulado.getId(), disciplina.getId());
+                    simulado.getId(), disciplina.getId(), exibirCorreta);
 
             DisciplinaQuestoesResponse disciplinaResponse = 
                 new DisciplinaQuestoesResponse(disciplina, questoes);

@@ -21,6 +21,17 @@ public class ItemQuestaoSimuladoService {
         return itemQuestaoSimuladoRepository.findByQuestaoSimuladoIdOrderByOrdem(questaoSimuladoId);
     }
 
+    public List<ItemQuestaoSimulado> findByQuestaoSimuladoIdAndCorreta(
+        UUID questaoSimuladoId, Boolean exibirCorreta) {
+        if (exibirCorreta)
+            return this.findByQuestaoSimuladoId(questaoSimuladoId);
+        
+        List<ItemQuestaoSimulado> itens =
+            itemQuestaoSimuladoRepository.findByQuestaoSimuladoIdOrderByOrdem(questaoSimuladoId);
+        itens.forEach(item -> item.setCorreta(false));
+        return itens;
+    }
+
     public void save(ItemQuestaoSimulado itemQuestaoSimulado) {
         itemQuestaoSimuladoRepository.save(itemQuestaoSimulado);
     }

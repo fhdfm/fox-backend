@@ -73,6 +73,20 @@ CREATE TABLE itens_questao_simulado (
     FOREIGN KEY (questao_simulado_id) REFERENCES questoes_simulado(id)
 );
 
+CREATE TABLE respostas_simulado (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+    simulado_id UUID NOT NULL,
+    usuario_id UUID NOT NULL,
+    data_inicio TIMESTAMP NOT NULL,
+    data_fim TIMESTAMP,
+    acertos INTEGER,
+    acertos_ultimas_15 INTEGER,
+    status VARCHAR(20) NOT NULL,
+    FOREIGN KEY (simulado_id) REFERENCES simulados(id),
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+);
+
+
 CREATE TABLE curso_simulado_key (
     id UUID NOT NULL UNIQUE
 );

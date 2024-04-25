@@ -111,6 +111,12 @@ public class QuestaoSimuladoService {
 
     public List<QuestaoSimuladoResponse> findQuestoesBySimuladoIdAndDisciplinaId(
         UUID simuladoId, UUID disciplinaId) {
+        return findQuestoesBySimuladoIdAndDisciplinaId(
+            simuladoId, disciplinaId, true);
+    }
+
+    public List<QuestaoSimuladoResponse> findQuestoesBySimuladoIdAndDisciplinaId(
+        UUID simuladoId, UUID disciplinaId, boolean exibirCorreta) {
         
         List<QuestaoSimuladoResponse> result = new ArrayList<QuestaoSimuladoResponse>();
         
@@ -119,9 +125,14 @@ public class QuestaoSimuladoService {
                 simuladoId, disciplinaId);
         
         for (QuestaoSimulado questaoSimulado : questoesSimulado) {
-            List<ItemQuestaoSimulado> items = 
-                this.itemQuestaoSimuladoService.findByQuestaoSimuladoId(
-                    questaoSimulado.getId());
+            List<ItemQuestaoSimulado> items = null;
+            if (exibirCorreta) {
+                items = this.itemQuestaoSimuladoService.findByQuestaoSimuladoId(questaoSimulado.getId());
+            } else {
+                items = this.itemQuestaoSimuladoService.findByQuestaoSimuladoIdAndCorreta(
+                    questaoSimulado.getId(), false);
+            
+            }
             QuestaoSimuladoResponse questaoResponse = new QuestaoSimuladoResponse(questaoSimulado, items);
             result.add(questaoResponse);
         }

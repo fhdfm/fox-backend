@@ -15,7 +15,7 @@ public class ItemQuestaoResponse {
     public ItemQuestaoResponse() {
     }
 
-    public ItemQuestaoResponse(ItemQuestaoSimulado item)  {
+    public ItemQuestaoResponse(ItemQuestaoSimulado item) {
         this.id = item.getId();
         this.ordem = item.getOrdem();
         this.descricao = item.getDescricao();

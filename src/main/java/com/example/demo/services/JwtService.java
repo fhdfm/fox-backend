@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,8 @@ public class JwtService {
     private final JwtEncoder encoder;
     private final MatriculaService matriculaService;
 
-    public JwtService(JwtEncoder jwtEncoder, MatriculaService matriculaService) {
+    public JwtService(JwtEncoder jwtEncoder, JwtDecoder jwtDecoder, 
+        MatriculaService matriculaService) {
         this.encoder = jwtEncoder;
         this.matriculaService = matriculaService;
     }
@@ -51,6 +53,4 @@ public class JwtService {
                 (JwtEncoderParameters.from(claims))
                     .getTokenValue();
     }
-
- 
 }
