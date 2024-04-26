@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,7 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.dto.QuestaoSimuladoRequest;
 import com.example.demo.dto.QuestaoSimuladoResponse;
 import com.example.demo.dto.QuestoesSimuladoDisciplinaResponse;
-import com.example.demo.dto.RespostaSimuladoInicioRequest;
 import com.example.demo.dto.SimuladoCompletoResponse;
 import com.example.demo.dto.SimuladoRequest;
 import com.example.demo.dto.SimuladoResponse;
@@ -132,13 +133,13 @@ public class SimuladoController {
     @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO')")
     @PostMapping(value = "/api/alunos/simulados/{simuladoId}/iniciar", 
         consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<SimuladoCompletoResponse> iniciarSimulado(@PathVariable UUID simuladoId, 
-        @RequestBody RespostaSimuladoInicioRequest request) {
+    public ResponseEntity<SimuladoCompletoResponse> iniciarSimulado(
+        @PathVariable UUID simuladoId) {
         
-        UUID usuarioId = request.getUsuarioId();    
-        authenticationService.validarRequisicao(usuarioId);
+        Authentication authentication =
+            SecurityContextHolder.getContext().getAuthentication();
 
-        respostaSimuladoService.iniciar(simuladoId, usuarioId);
+        respostaSimuladoService.iniciar(simuladoId, authentication.getName());
 
         return ResponseEntity.ok(simuladoService.findById(simuladoId, false));
     }

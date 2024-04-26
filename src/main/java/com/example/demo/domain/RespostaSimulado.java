@@ -6,7 +6,7 @@ import java.util.UUID;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
-@Table("respostas_simulados")
+@Table("respostas_simulado")
 public class RespostaSimulado {
 
     @Id
