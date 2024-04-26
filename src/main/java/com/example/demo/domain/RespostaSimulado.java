@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 @Table("respostas_simulado")
@@ -16,6 +17,7 @@ public class RespostaSimulado {
     private LocalDateTime dataInicio;
     private LocalDateTime dataFim;
     private Integer acertos;
+    @Column("acertos_ultimas_15")
     private Integer acertosUltimas15;
     private StatusSimulado status;
     
