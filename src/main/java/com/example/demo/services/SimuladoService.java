@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import com.example.demo.domain.Disciplina;
 import com.example.demo.domain.Simulado;
 import com.example.demo.dto.CursoDTO;
+import com.example.demo.dto.DataResponse;
 import com.example.demo.dto.DisciplinaQuestoesResponse;
 import com.example.demo.dto.MatriculaSimuladoResponse;
 import com.example.demo.dto.QuestaoSimuladoResponse;
@@ -41,6 +42,14 @@ public class SimuladoService {
         this.questaoSimuladoService = questaoSimuladoService;
     }
 
+    /** todo - remover */
+    public void updateDataInicio(UUID simuladoId, LocalDateTime dataInicio) {
+        Simulado simulado = simuladoRepository.findById(simuladoId).orElseThrow(
+            () -> new IllegalArgumentException("Simulado não encontrado: " + simuladoId));
+        simulado.setDataInicio(dataInicio);
+        simuladoRepository.save(simulado);
+    }
+
     public UUID save(SimuladoRequest request) {
         
         validarSimulado(request);
@@ -63,6 +72,12 @@ public class SimuladoService {
         Simulado simulado = simuladoRepository.findById(id).orElseThrow(
             () -> new IllegalArgumentException("Simulado não encontrado: " + id));
         return new MatriculaSimuladoResponse(simulado);
+    }
+
+    public Simulado obterPorId(UUID id) {
+        Simulado simulado = simuladoRepository.findById(id).orElseThrow(
+            () -> new IllegalArgumentException("Simulado não encontrado: " + id));
+        return simulado;
     }
 
     public SimuladoResponse save(UUID id, SimuladoRequest request) {
@@ -145,7 +160,28 @@ public class SimuladoService {
         SimuladoCompletoResponse response = 
             new SimuladoCompletoResponse(simulado, disciplinasResponse);
 
+        LocalDateTime dataInicio = simulado.getDataInicio();
+        response.setDatas(new DataResponse(
+            dataInicio, this.calcularHoraFim(
+                dataInicio, simulado.getDuracao())));
+
         return response;
+    }
+
+    public LocalDateTime calcularHoraFim(UUID simuladoId) {
+        Simulado simulado = simuladoRepository.findById(simuladoId).orElseThrow(
+            () -> new IllegalArgumentException("Simulado não encontrado: " + simuladoId));
+        return this.calcularHoraFim(
+            simulado.getDataInicio(), simulado.getDuracao());
+    }
+
+    public LocalDateTime calcularHoraFim(LocalDateTime dataInicio, String duracao) {
+        String[] duracaoSplit = duracao.split(":");
+        int horas = Integer.parseInt(duracaoSplit[0]);
+        int minutos = Integer.parseInt(duracaoSplit[1]);
+        dataInicio = dataInicio.plusHours(horas);
+        dataInicio = dataInicio.plusMinutes(minutos);
+        return dataInicio;
     }
 
     public void delete(UUID id) {

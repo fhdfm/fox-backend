@@ -7,4 +7,6 @@ import com.example.demo.repositories.custom.CustomCrudRepository;
 
 public interface RespostaSimuladoRepository extends CustomCrudRepository<RespostaSimulado, UUID> {
 
+    RespostaSimulado findBySimuladoIdAndUsuarioId(UUID simuladoId, UUID usuarioId);
+
 }

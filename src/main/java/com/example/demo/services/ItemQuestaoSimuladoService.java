@@ -40,4 +40,8 @@ public class ItemQuestaoSimuladoService {
         return itemQuestaoSimuladoRepository.findById(id).get();
     }
 
+    public Boolean estaCorreta(UUID id, UUID questaoSimuladoId) {
+        return itemQuestaoSimuladoRepository.obterResposta(id, questaoSimuladoId);
+    }
+
 }

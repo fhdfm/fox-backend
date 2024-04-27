@@ -19,6 +19,8 @@ public class SimuladoCompletoResponse {
     private String duracao;
     private BigDecimal valor;
 
+    private DataResponse datas;
+
     private List<DisciplinaQuestoesResponse> disciplinas;
 
     public SimuladoCompletoResponse() {
@@ -71,5 +73,13 @@ public class SimuladoCompletoResponse {
 
     public List<DisciplinaQuestoesResponse> getDisciplinas() {
         return disciplinas;
+    }
+
+    public DataResponse getDatas() {
+        return datas;
+    }
+
+    public void setDatas(DataResponse datas) {
+        this.datas = datas;
     }
 }

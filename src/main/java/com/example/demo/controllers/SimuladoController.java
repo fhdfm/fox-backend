@@ -1,5 +1,6 @@
 package com.example.demo.controllers;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,11 +23,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.dto.QuestaoSimuladoRequest;
 import com.example.demo.dto.QuestaoSimuladoResponse;
 import com.example.demo.dto.QuestoesSimuladoDisciplinaResponse;
+import com.example.demo.dto.RespostaSimuladoRequest;
 import com.example.demo.dto.SimuladoCompletoResponse;
 import com.example.demo.dto.SimuladoRequest;
 import com.example.demo.dto.SimuladoResponse;
 import com.example.demo.dto.SimuladoResumoResponse;
-import com.example.demo.services.AuthenticationService;
 import com.example.demo.services.QuestaoSimuladoService;
 import com.example.demo.services.RespostaSimuladoService;
 import com.example.demo.services.SimuladoService;
@@ -37,19 +38,24 @@ public class SimuladoController {
     
     private final SimuladoService simuladoService;
     private final QuestaoSimuladoService questaoSimuladoService;
-    private final AuthenticationService authenticationService;
     private final RespostaSimuladoService respostaSimuladoService;
 
     public SimuladoController(SimuladoService simuladoService, 
         QuestaoSimuladoService questaoSimuladoService, 
-        AuthenticationService authenticationService, 
         RespostaSimuladoService respostaSimuladoService) {
         
         this.simuladoService = simuladoService;
         this.questaoSimuladoService = questaoSimuladoService;
-        this.authenticationService = authenticationService;
         this.respostaSimuladoService = respostaSimuladoService;
 
+    }
+
+    @PostMapping(value = "/simulados/{simuladoId}/data-inicio", 
+        consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> atualizarDataInicio(
+        @PathVariable UUID simuladoId, @RequestBody LocalDateTime dataInicio) {
+        simuladoService.updateDataInicio(simuladoId, dataInicio);
+        return ResponseEntity.ok("Data inicial alterada com sucesso.");
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -141,6 +147,26 @@ public class SimuladoController {
 
         respostaSimuladoService.iniciar(simuladoId, authentication.getName());
 
-        return ResponseEntity.ok(simuladoService.findById(simuladoId, false));
+        return ResponseEntity.ok(
+            simuladoService.findById(
+                simuladoId, false));
+    }
+
+    @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO')")
+    @PostMapping(value = "/api/alunos/simulados/{simuladoId}/finalizar", 
+        consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UUID> finalizarSimulado(@PathVariable UUID simuladoId, 
+        @RequestBody List<RespostaSimuladoRequest> respostas) {
+        
+        Authentication authentication =
+            SecurityContextHolder.getContext().getAuthentication();
+        String login = authentication.getName();
+
+        respostaSimuladoService.finalizar(
+            simuladoId, login, respostas);
+
+        return ResponseEntity.ok(
+            this.respostaSimuladoService.finalizar(
+                simuladoId, login, respostas));
     }
 }
