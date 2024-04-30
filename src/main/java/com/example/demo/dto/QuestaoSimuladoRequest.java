@@ -41,7 +41,7 @@ public class QuestaoSimuladoRequest {
         return alternativas;
     }
 
-    public void setRespostas(List<ItemQuestaoSimuladoRequest> alternativas) {
+    public void setAlternativas(List<ItemQuestaoSimuladoRequest> alternativas) {
         this.alternativas = alternativas;
     }
 }
