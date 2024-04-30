@@ -199,7 +199,7 @@ public class SimuladoService {
         for (Simulado s : simulados) {
             CursoDTO curso = cursoService.findById(s.getCursoId());
             result.add(new SimuladoResumoResponse(
-                s.getId(), s.getTitulo(), curso.getDescricao(), s.getDataInicio()));
+                s.getId(), s.getTitulo(), curso.getTitulo(), s.getDataInicio()));
         }
 
         return result;
@@ -233,7 +233,7 @@ public class SimuladoService {
         for (Simulado s : simulados) {
             CursoDTO curso = cursoService.findById(s.getCursoId());
             result.add(new SimuladoResumoResponse(
-                s.getId(), s.getTitulo(), curso.getDescricao(), s.getDataInicio()));
+                s.getId(), s.getTitulo(), curso.getTitulo(), s.getDataInicio()));
         }
 
         return result;
