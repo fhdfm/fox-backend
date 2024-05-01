@@ -64,7 +64,7 @@ public class DisciplinaController {
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<String> deletar(@PathVariable UUID id) {
         disciplinaService.deletar(id);
-        return ResponseEntity.ok("Disciplina deletada. " + id);
+        return ResponseEntity.status(HttpStatus.OK).body("Disciplina deletada com sucesso: " + id);
     }
 
 }

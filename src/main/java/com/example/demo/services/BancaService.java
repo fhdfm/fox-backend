@@ -28,10 +28,22 @@ public class BancaService {
         if (banca == null || banca.getNome().isBlank())
             throw new IllegalArgumentException("Informe o nome da banca.");
         
-        if (bancaRepository.existsByNome(banca.getNome()))
-            throw new IllegalArgumentException("Banca já cadastrada.");
+        UUID id = banca.getId();    
+        if (id == null) {
+            if (bancaRepository.existsByNome(banca.getNome()))
+                throw new IllegalArgumentException("Banca já cadastrada.");
+            return bancaRepository.save(banca);
+        } 
             
-        return bancaRepository.save(banca);
+        Banca bancaDB = bancaRepository.findById(id).orElseThrow(
+            () -> new IllegalArgumentException("Banca não encontrada."));
+        
+        if (!bancaDB.getNome().equals(banca.getNome()) 
+            && bancaRepository.existsByNome(banca.getNome())) 
+            throw new IllegalArgumentException("Banca já cadastrada.");
+
+        bancaDB.setNome(banca.getNome());
+        return bancaRepository.save(bancaDB);
     }
 
     public List<Banca> findAll() {

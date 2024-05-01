@@ -61,7 +61,7 @@ public class BancaController {
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<String> deletar(@PathVariable UUID id) {
         bancaService.delete(id);
-        return ResponseEntity.ok("Banca deletada: " + id);
+        return ResponseEntity.status(HttpStatus.OK).body("Banca deletada com sucesso.");
     }
 
 }

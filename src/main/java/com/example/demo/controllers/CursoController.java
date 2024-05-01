@@ -50,7 +50,7 @@ public class CursoController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> delete(@PathVariable UUID id) {
         this.cursoService.delete(id);
-        return ResponseEntity.ok("Curso deletado com sucesso.");
+        return ResponseEntity.status(HttpStatus.OK).body("Curso deletado com sucesso.");
     }
 
     @GetMapping(value = "/api/cursos")
@@ -73,7 +73,7 @@ public class CursoController {
     public ResponseEntity<String> adicionarDisciplinas(@PathVariable UUID cursoId, 
         @RequestBody AddDisciplinaRequest disciplinas) {
         this.disciplinaService.adicionarDisciplinas(cursoId, disciplinas.getIds());
-        return ResponseEntity.ok("Disciplina(s) adicionada(s) com sucesso.");
+        return ResponseEntity.status(HttpStatus.OK).body("Disciplina adicionada com sucesso.");
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -81,6 +81,6 @@ public class CursoController {
     public ResponseEntity<String> removerDisciplina(@PathVariable UUID cursoId, @PathVariable UUID disciplinaId) {
         CursoDisciplina cursoDisciplina = new CursoDisciplina(cursoId, disciplinaId);
         this.disciplinaService.removerDisciplina(cursoDisciplina);
-        return ResponseEntity.ok("Disciplina removida com sucesso.");
+        return ResponseEntity.status(HttpStatus.OK).body("Disciplina removida com sucesso: " + disciplinaId);
     }
 }

@@ -47,7 +47,6 @@ public class SimuladoController {
         this.simuladoService = simuladoService;
         this.questaoSimuladoService = questaoSimuladoService;
         this.respostaSimuladoService = respostaSimuladoService;
-
     }
 
     @PostMapping(value = "/simulados/{simuladoId}/data-inicio", 
@@ -55,7 +54,7 @@ public class SimuladoController {
     public ResponseEntity<String> atualizarDataInicio(
         @PathVariable UUID simuladoId, @RequestBody LocalDateTime dataInicio) {
         simuladoService.updateDataInicio(simuladoId, dataInicio);
-        return ResponseEntity.ok("Data inicial alterada com sucesso.");
+        return ResponseEntity.status(HttpStatus.OK).body("Data de início atualizada com sucesso.");
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -86,7 +85,8 @@ public class SimuladoController {
     @DeleteMapping(value = "/api/admin/simulados/{id}")
     public ResponseEntity<String> delete(@PathVariable UUID id) {
         simuladoService.delete(id);
-        return ResponseEntity.ok("Simulado deletado com sucesso. ID: " + id);
+        return ResponseEntity.status(HttpStatus.OK)
+            .body("Simulado deletado com sucesso." + id);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
