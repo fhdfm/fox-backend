@@ -40,7 +40,24 @@ public class FoxUtils {
             String valor = chaveValor[1].trim();
             Field field = clazz.getDeclaredField(chave);
             field.setAccessible(true);
-            field.set(objeto, valor);
+
+            if (field.getType().isEnum()) {
+                Object[] enums = field.getType().getEnumConstants();
+                Object enumValue = null;
+                for (Object e : enums) {
+                    if (((Enum<?>) e).name().equalsIgnoreCase(valor)) {
+                        enumValue = e;
+                        break;
+                    }
+                }
+
+                if (enumValue == null) {
+                    throw new IllegalArgumentException("Valor inválido para o enum: " + valor);
+                }
+                field.set(objeto, enumValue);
+            } else {
+                field.set(objeto, valor);
+            }
         }
 
         return objeto;

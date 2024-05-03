@@ -31,7 +31,7 @@ public class DisciplinaService {
 
     public Disciplina salvar(Disciplina disciplina) {
         
-        if (disciplina == null || disciplina.getNome().isBlank())
+        if (disciplina.getNome() == null || disciplina.getNome().isBlank())
             throw new IllegalArgumentException("Informe o nome da disciplina.");
 
         UUID id = disciplina.getId();

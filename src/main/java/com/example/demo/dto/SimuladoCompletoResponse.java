@@ -20,6 +20,7 @@ public class SimuladoCompletoResponse {
     private BigDecimal valor;
 
     private DataResponse datas;
+    private boolean iniciado;
 
     private List<DisciplinaQuestoesResponse> disciplinas;
 
@@ -37,6 +38,7 @@ public class SimuladoCompletoResponse {
         this.duracao = simulado.getDuracao();
         this.valor = simulado.getValor();
         this.disciplinas = disciplinas;
+        this.iniciado = false;
     }
 
     public UUID getId() {
@@ -81,5 +83,13 @@ public class SimuladoCompletoResponse {
 
     public void setDatas(DataResponse datas) {
         this.datas = datas;
+    }
+
+    public boolean getIniciado() {
+        return iniciado;
+    }
+
+    public void setIniciado(boolean iniciado) {
+        this.iniciado = iniciado;
     }
 }

@@ -111,13 +111,23 @@ public class RespostaSimuladoService {
         return resposta.getId();
     }
 
-
-
     private void estaFinalizandoAposHorario(
         LocalDateTime dataInicio, String duracao, LocalDateTime horarioEnvio) {
         
         LocalDateTime horarioFim = simuladoService.calcularHoraFim(dataInicio, duracao);
         if (horarioEnvio.isAfter(horarioFim))
             throw new IllegalArgumentException("Simulado finalizado após o horário limite.");
+    }
+
+    public boolean isIniciado(UUID id, UUID usuarioId) {
+       
+        RespostaSimulado resposta = 
+            this.respostaSimuladoRepository.findBySimuladoIdAndUsuarioId(
+                id, usuarioId);
+        
+        if (resposta != null)
+            return resposta.getStatus() == StatusSimulado.EM_ANDAMENTO;
+
+        return false;
     }
 }

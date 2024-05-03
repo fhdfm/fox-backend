@@ -25,7 +25,7 @@ public class BancaService {
 
     public Banca salvar(Banca banca) {
         
-        if (banca == null || banca.getNome().isBlank())
+        if (banca.getNome() == null || banca.getNome().isBlank())
             throw new IllegalArgumentException("Informe o nome da banca.");
         
         UUID id = banca.getId();    

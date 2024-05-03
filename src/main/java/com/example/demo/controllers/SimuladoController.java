@@ -1,6 +1,5 @@
 package com.example.demo.controllers;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -49,13 +48,13 @@ public class SimuladoController {
         this.respostaSimuladoService = respostaSimuladoService;
     }
 
-    @PostMapping(value = "/simulados/{simuladoId}/data-inicio", 
-        consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> atualizarDataInicio(
-        @PathVariable UUID simuladoId, @RequestBody LocalDateTime dataInicio) {
-        simuladoService.updateDataInicio(simuladoId, dataInicio);
-        return ResponseEntity.status(HttpStatus.OK).body("Data de início atualizada com sucesso.");
-    }
+    // @PostMapping(value = "/simulados/{simuladoId}/data-inicio", 
+    //     consumes = MediaType.APPLICATION_JSON_VALUE)
+    // public ResponseEntity<String> atualizarDataInicio(
+    //     @PathVariable UUID simuladoId, @RequestBody LocalDateTime dataInicio) {
+    //     simuladoService.updateDataInicio(simuladoId, dataInicio);
+    //     return ResponseEntity.status(HttpStatus.OK).body("Data de início atualizada com sucesso.");
+    // }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "/api/admin/simulados", consumes = MediaType.APPLICATION_JSON_VALUE)

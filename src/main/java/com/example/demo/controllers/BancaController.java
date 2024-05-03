@@ -45,7 +45,7 @@ public class BancaController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(value = "/{id}", consumes =  MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Banca> atualizar(@PathVariable UUID id, Banca banca) {
+    public ResponseEntity<Banca> atualizar(@PathVariable UUID id, @RequestBody Banca banca) {
         banca.setId(id);
         return ResponseEntity.ok(bancaService.salvar(banca));
     }
