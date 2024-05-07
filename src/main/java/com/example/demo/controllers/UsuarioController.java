@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.domain.Usuario;
 import com.example.demo.domain.UsuarioLogado;
+import com.example.demo.dto.ProdutoResponse;
 import com.example.demo.dto.UsuarioResponse;
+import com.example.demo.services.ProdutoService;
 import com.example.demo.services.impl.UsuarioServiceImpl;
 
 @RestController
@@ -26,9 +28,12 @@ import com.example.demo.services.impl.UsuarioServiceImpl;
 public class UsuarioController {
 
     private final UsuarioServiceImpl service;
+    private final ProdutoService produtoService;
 
-    public UsuarioController(UsuarioServiceImpl service) {
+    public UsuarioController(UsuarioServiceImpl service, 
+        ProdutoService produtoService) {
         this.service = service;
+        this.produtoService = produtoService;
     }
     
     @PostMapping(value = "/api/signup", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -42,6 +47,12 @@ public class UsuarioController {
     public ResponseEntity<String> desativar(@PathVariable UUID id) {
         this.service.desativar(id);
         return ResponseEntity.ok("Usuário desativado com sucesso.");
+    }
+
+    @GetMapping(value = "/api/admin/usuarios/{id}/produtos-nao-matriculados")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<ProdutoResponse>> obterProdutosNaoMatriculados(@PathVariable UUID id) {
+        return ResponseEntity.ok(produtoService.obterProdutosNaoMatriculados(id));
     }
 
     @GetMapping(value = "/api/admin/usuarios")

@@ -13,8 +13,10 @@ import com.example.demo.domain.Status;
 import com.example.demo.domain.StatusPagamento;
 import com.example.demo.domain.TipoProduto;
 import com.example.demo.domain.Transacao;
+import com.example.demo.dto.CursoDTO;
 import com.example.demo.dto.MatriculaRequest;
 import com.example.demo.dto.ProdutoResponse;
+import com.example.demo.dto.SimuladoCompletoResponse;
 import com.example.demo.dto.UsuarioResponse;
 import com.example.demo.repositories.MatriculaRepository;
 import com.example.demo.services.impl.UsuarioServiceImpl;
@@ -36,6 +38,53 @@ public class MatriculaService {
         this.simuladoService = simuladoService;
         this.cursoService = cursoService;
         this.usuarioService = usuarioService;
+    }
+
+    @Transactional
+    public UUID matricularContingencia(MatriculaRequest matricula) {
+
+        if (matricula.getUsuarioId() == null)
+            throw new IllegalArgumentException("Usuário não informado");
+        
+        UsuarioResponse usuario = this.usuarioService.findById(matricula.getUsuarioId());
+            
+        if (matricula.getProdutoId() == null)
+            throw new IllegalArgumentException("Produto (curso/simulado) não informado");
+        
+        Object produto = this.cursoService.findById(matricula.getProdutoId());
+        if (produto == null) {
+            produto = this.simuladoService.findById(matricula.getProdutoId());
+        }
+
+        if (produto == null)
+            throw new IllegalArgumentException("Produto (curso/simulado) não inválido");
+
+        Transacao transacao = new Transacao();
+        transacao.setData(LocalDate.now());
+
+        Matricula novaMatricula = new Matricula();
+        
+        novaMatricula.setUsuarioId(usuario.getId());
+        if (produto instanceof CursoDTO) {
+            novaMatricula.setProdutoId(((CursoDTO) produto).getId());
+            transacao.setDescricao("Matrícula em: " + ((CursoDTO) produto).getTitulo());
+            transacao.setValor(((CursoDTO) produto).getValor());
+            novaMatricula.setTipoProduto(TipoProduto.CURSO);
+        } else {
+            novaMatricula.setProdutoId(((SimuladoCompletoResponse) produto).getId());
+            transacao.setDescricao("Matrícula em: " + ((SimuladoCompletoResponse) produto).getTitulo());
+            transacao.setValor(((SimuladoCompletoResponse) produto).getValor());
+            novaMatricula.setTipoProduto(TipoProduto.SIMULADO);
+        }
+
+        transacao = transacaoService.criarTransacao(transacao);
+
+        novaMatricula.setStatus(transacao.getStatus() 
+            == StatusPagamento.PAGO ? Status.ATIVO : Status.INATIVO);
+        novaMatricula.setTransacaoId(transacao.getId());
+        novaMatricula.setUsuarioId(usuario.getId());
+        
+        return matriculaRepository.save(novaMatricula).getId();
     }
 
     @Transactional

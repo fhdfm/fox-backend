@@ -20,16 +20,13 @@ public class JwtService {
 
     private final JwtEncoder encoder;
     private final MatriculaService matriculaService;
-    private final ProdutoService produtoService;
 
     public JwtService(JwtEncoder jwtEncoder, 
         JwtDecoder jwtDecoder, 
-        MatriculaService matriculaService, 
-        ProdutoService produtoService) {
+        MatriculaService matriculaService) {
         
         this.encoder = jwtEncoder;
         this.matriculaService = matriculaService;
-        this.produtoService = produtoService;
 
     }
 
@@ -45,9 +42,6 @@ public class JwtService {
         List<ProdutoResponse> matriculas = this.matriculaService
             .getMatriculasAtivas(usuario.getId());
 
-        List<ProdutoResponse> produtos = this.produtoService
-            .obterProdutosNaoMatriculados(usuario.getId()); 
-
         var claims = JwtClaimsSet.builder()
             .issuer("portal-fox")
             .issuedAt(now)
@@ -56,7 +50,6 @@ public class JwtService {
             .claim("scope", scopes)
             .claim("nome", usuario.getNome())
             .claim("matriculas", matriculas)
-            .claim("produtos", produtos)
             .build();
 
         return this.encoder.encode
