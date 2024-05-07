@@ -40,9 +40,7 @@ public class ProdutoService {
                 
                 ProdutoCursoResponse produto = new ProdutoCursoResponse();
                 produto.setId(UUID.fromString(rs.getString("id")));
-                String tipoProdutoStr = rs.getString("tipo_produto");
-                TipoProduto tipoProduto = TipoProduto.valueOf(tipoProdutoStr);
-                produto.setTipoProduto(tipoProduto);
+                produto.setTipoProduto(TipoProduto.CURSO);
                 produto.setTitulo(rs.getString("titulo"));
                 produto.setBanca(rs.getString("nome"));
                 String escolaridadeStr = rs.getString("escolaridade");
@@ -61,7 +59,7 @@ public class ProdutoService {
         }, Status.ATIVO.name(), usuarioId, TipoProduto.CURSO.name());
         
         String simuladosNaoMatriculados = """
-            select s.*, b.nome from simulados s join bancas b on s.banca_id = b.id 
+            select s.* from simulados s  
             where not exists (select 1 from matriculas m where m.produto_id = s.id 
             and m.usuario_id = ? and m.tipo_produto = ?) 
             and not exists (select 1 from matriculas m join cursos c on m.produto_id = c.id 
