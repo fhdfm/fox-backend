@@ -58,7 +58,7 @@ public class ProdutoService {
                 produtos.add(produto);
 
                 return produto;
-        }, usuarioId, TipoProduto.CURSO, Status.ATIVO);
+        }, Status.ATIVO.name(), usuarioId, TipoProduto.CURSO.name());
         
         String simuladosNaoMatriculados = """
             select s.*, b.nome from simulados s join bancas b on s.banca_id = b.id 
@@ -85,7 +85,8 @@ public class ProdutoService {
                 return produto;
 
             }, 
-            usuarioId, TipoProduto.SIMULADO, Status.ATIVO, usuarioId, TipoProduto.CURSO);
+            usuarioId, TipoProduto.SIMULADO.name(), Status.ATIVO.name(), 
+            usuarioId, TipoProduto.CURSO.name());
 
         return produtos;
     }
