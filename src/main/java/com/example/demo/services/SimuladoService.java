@@ -15,7 +15,7 @@ import com.example.demo.domain.Simulado;
 import com.example.demo.dto.CursoDTO;
 import com.example.demo.dto.DataResponse;
 import com.example.demo.dto.DisciplinaQuestoesResponse;
-import com.example.demo.dto.MatriculaSimuladoResponse;
+import com.example.demo.dto.ProdutoSimuladoResponse;
 import com.example.demo.dto.QuestaoSimuladoResponse;
 import com.example.demo.dto.SimuladoCompletoResponse;
 import com.example.demo.dto.SimuladoRequest;
@@ -36,6 +36,7 @@ public class SimuladoService {
         CursoService cursoService, 
         DisciplinaService disciplinaService,
         QuestaoSimuladoService questaoSimuladoService) {
+        
         this.simuladoRepository = simuladoRepository;
         this.cursoService = cursoService;
         this.disciplinaService = disciplinaService;
@@ -68,10 +69,10 @@ public class SimuladoService {
         simuladoRepository.save(simulado);
     }
 
-    public MatriculaSimuladoResponse getMatriculaSimulado(UUID id) {
+    public ProdutoSimuladoResponse getMatriculaSimulado(UUID id) {
         Simulado simulado = simuladoRepository.findById(id).orElseThrow(
             () -> new IllegalArgumentException("Simulado não encontrado: " + id));
-        return new MatriculaSimuladoResponse(simulado);
+        return new ProdutoSimuladoResponse(simulado);
     }
 
     public Simulado obterPorId(UUID id) {

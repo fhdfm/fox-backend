@@ -119,15 +119,4 @@ public class RespostaSimuladoService {
             throw new IllegalArgumentException("Simulado finalizado após o horário limite.");
     }
 
-    public boolean isIniciado(UUID id, UUID usuarioId) {
-       
-        RespostaSimulado resposta = 
-            this.respostaSimuladoRepository.findBySimuladoIdAndUsuarioId(
-                id, usuarioId);
-        
-        if (resposta != null)
-            return resposta.getStatus() == StatusSimulado.EM_ANDAMENTO;
-
-        return false;
-    }
 }

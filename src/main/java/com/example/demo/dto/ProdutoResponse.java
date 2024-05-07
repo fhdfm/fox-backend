@@ -4,12 +4,12 @@ import java.util.UUID;
 
 import com.example.demo.domain.TipoProduto;
 
-public abstract class MatriculaAtivaResponse {
+public abstract class ProdutoResponse {
     
     private UUID id;
     private TipoProduto tipoProduto;
 
-    public MatriculaAtivaResponse() {
+    public ProdutoResponse() {
     }
 
     public void setId(UUID id) {

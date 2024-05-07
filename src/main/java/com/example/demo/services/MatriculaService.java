@@ -13,8 +13,8 @@ import com.example.demo.domain.Status;
 import com.example.demo.domain.StatusPagamento;
 import com.example.demo.domain.TipoProduto;
 import com.example.demo.domain.Transacao;
-import com.example.demo.dto.MatriculaAtivaResponse;
 import com.example.demo.dto.MatriculaRequest;
+import com.example.demo.dto.ProdutoResponse;
 import com.example.demo.dto.UsuarioResponse;
 import com.example.demo.repositories.MatriculaRepository;
 import com.example.demo.services.impl.UsuarioServiceImpl;
@@ -89,12 +89,12 @@ public class MatriculaService {
         return matriculaRepository.findByUsuarioIdAndStatus(usuarioId, Status.ATIVO);
     }
 
-    public List<MatriculaAtivaResponse> getMatriculasAtivas(UUID alunoId) {
+    public List<ProdutoResponse> getMatriculasAtivas(UUID alunoId) {
         
         List<Matricula> matriculas = this.findByUsuarioId(alunoId);
         
-        List<MatriculaAtivaResponse> matriculasAtivas =
-            new ArrayList<MatriculaAtivaResponse>();
+        List<ProdutoResponse> matriculasAtivas =
+            new ArrayList<ProdutoResponse>();
 
         if (matriculas == null || matriculas.isEmpty())
             return matriculasAtivas;

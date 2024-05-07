@@ -13,18 +13,24 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.domain.UsuarioLogado;
-import com.example.demo.dto.MatriculaAtivaResponse;
+import com.example.demo.dto.ProdutoResponse;
 
 @Service
 public class JwtService {
 
     private final JwtEncoder encoder;
     private final MatriculaService matriculaService;
+    private final ProdutoService produtoService;
 
-    public JwtService(JwtEncoder jwtEncoder, JwtDecoder jwtDecoder, 
-        MatriculaService matriculaService) {
+    public JwtService(JwtEncoder jwtEncoder, 
+        JwtDecoder jwtDecoder, 
+        MatriculaService matriculaService, 
+        ProdutoService produtoService) {
+        
         this.encoder = jwtEncoder;
         this.matriculaService = matriculaService;
+        this.produtoService = produtoService;
+
     }
 
     public String generateToken(Authentication authentication) {
@@ -36,8 +42,11 @@ public class JwtService {
 
         UsuarioLogado usuario = (UsuarioLogado) authentication.getPrincipal();
 
-        List<MatriculaAtivaResponse> matriculas = this.matriculaService
+        List<ProdutoResponse> matriculas = this.matriculaService
             .getMatriculasAtivas(usuario.getId());
+
+        List<ProdutoResponse> produtos = this.produtoService
+            .obterProdutosNaoMatriculados(usuario.getId()); 
 
         var claims = JwtClaimsSet.builder()
             .issuer("portal-fox")
@@ -47,6 +56,7 @@ public class JwtService {
             .claim("scope", scopes)
             .claim("nome", usuario.getNome())
             .claim("matriculas", matriculas)
+            .claim("produtos", produtos)
             .build();
 
         return this.encoder.encode

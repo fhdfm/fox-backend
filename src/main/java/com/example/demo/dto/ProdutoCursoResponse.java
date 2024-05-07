@@ -8,7 +8,7 @@ import com.example.demo.domain.Status;
 import com.example.demo.domain.TipoProduto;
 import com.example.demo.util.FoxUtils;
 
-public class MatriculaCursoResponse extends MatriculaAtivaResponse {
+public class ProdutoCursoResponse extends ProdutoResponse {
     
     private String titulo;
     private String banca;
@@ -17,10 +17,10 @@ public class MatriculaCursoResponse extends MatriculaAtivaResponse {
     private Date dataTermino;
     private Status status;
 
-    public MatriculaCursoResponse() {
+    public ProdutoCursoResponse() {
     }
 
-    public MatriculaCursoResponse(Curso curso, String banca) {
+    public ProdutoCursoResponse(Curso curso, String banca) {
         setId(curso.getId());
         setTipoProduto(TipoProduto.CURSO);
         this.titulo = curso.getTitulo();
