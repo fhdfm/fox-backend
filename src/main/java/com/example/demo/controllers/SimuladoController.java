@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.domain.RespostaSimulado;
+import com.example.demo.domain.StatusSimulado;
 import com.example.demo.dto.QuestaoSimuladoRequest;
 import com.example.demo.dto.QuestaoSimuladoResponse;
 import com.example.demo.dto.QuestoesSimuladoDisciplinaResponse;
@@ -152,6 +154,33 @@ public class SimuladoController {
     }
 
     @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO')")
+    @GetMapping(value = "/api/alunos/simulados/{simuladoId}/status")
+    public ResponseEntity<String> obterStatus(@PathVariable UUID simuladoId) {
+        Authentication authentication =
+            SecurityContextHolder.getContext().getAuthentication();
+        StatusSimulado status = this.respostaSimuladoService
+            .obterStatus(simuladoId, authentication.getName());
+        return ResponseEntity.status(HttpStatus.OK).body(status.name());
+    }
+
+    @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO')")
+    @PostMapping(value = "/api/alunos/simulados/{simuladoId}/salvar", 
+        consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UUID> salvar(@PathVariable UUID simuladoId, 
+        @RequestBody RespostaSimuladoRequest respostas) {
+
+        Authentication authentication =
+            SecurityContextHolder.getContext().getAuthentication();
+        String login = authentication.getName();
+        
+        UUID respostaSimuladoId =
+            this.respostaSimuladoService.salvar(
+                simuladoId, login, respostas);
+
+        return ResponseEntity.status(HttpStatus.OK).body(respostaSimuladoId);
+    }
+
+    @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO')")
     @PostMapping(value = "/api/alunos/simulados/{simuladoId}/finalizar", 
         consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UUID> finalizarSimulado(@PathVariable UUID simuladoId, 
@@ -160,9 +189,6 @@ public class SimuladoController {
         Authentication authentication =
             SecurityContextHolder.getContext().getAuthentication();
         String login = authentication.getName();
-
-        respostaSimuladoService.finalizar(
-            simuladoId, login, respostas);
 
         return ResponseEntity.ok(
             this.respostaSimuladoService.finalizar(

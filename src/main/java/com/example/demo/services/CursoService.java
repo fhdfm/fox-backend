@@ -87,6 +87,10 @@ public class CursoService {
         this.cursoRepository.deleteById(id);
     }
 
+    public Curso obterPorId(UUID id) {
+        return this.cursoRepository.findById(id).orElse(null);
+    }
+
     public CursoDTO findById(UUID id) {
         
         if (id == null) {

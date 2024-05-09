@@ -55,6 +55,52 @@ public class RespostaSimuladoService {
         return resposta.getId();
     }
 
+    public StatusSimulado obterStatus(UUID simuladoId, String login) {
+
+        UsuarioLogado user = usuarioService.loadUserByUsername(login);
+
+        RespostaSimulado respostaSimulado = 
+            this.respostaSimuladoRepository.findBySimuladoIdAndUsuarioId(
+                simuladoId, user.getId());
+        
+        if (respostaSimulado == null)
+            return StatusSimulado.NAO_INICIADO;
+        
+        return respostaSimulado.getStatus();
+    }
+
+    public UUID salvar(UUID simuladoId, String login, 
+        RespostaSimuladoRequest resposta) {
+        
+        UsuarioLogado user =
+            this.usuarioService.loadUserByUsername(login);
+        
+        UUID respostaSimuladoId =
+        this.respostaSimuladoRepository.findBySimuladoIdAndUsuarioId(
+            simuladoId, user.getId()).getId();
+        
+        RespostaSimuladoQuestao respostaDB =
+            this.respostaQuestaoSimuladoRepository.findByRespostaSimuladoIdAndQuestaoId(
+            respostaSimuladoId, resposta.getQuestaoId());
+
+        Boolean acertou = itemQuestaoSimuladoService.estaCorreta(
+            resposta.getItemQuestaoId(), resposta.getQuestaoId());
+
+        if (respostaDB == null) {
+            RespostaSimuladoQuestao respostaQuestao =
+            new RespostaSimuladoQuestao(
+                respostaSimuladoId, resposta.getQuestaoId(), 
+                resposta.getItemQuestaoId(), acertou);
+            respostaDB = respostaQuestaoSimuladoRepository.save(respostaQuestao);
+        } else {
+            respostaDB.setCorreta(acertou);
+            respostaDB.setItemQuestaoId(resposta.getItemQuestaoId());
+            respostaQuestaoSimuladoRepository.save(respostaDB);
+        }
+        
+        return respostaDB.getId();
+    }
+
     @Transactional
     public UUID finalizar(UUID simuladoId, String login, 
         List<RespostaSimuladoRequest> respostas) {
@@ -68,6 +114,10 @@ public class RespostaSimuladoService {
         UsuarioLogado user =
             usuarioService.loadUserByUsername(login);
         
+        RespostaSimulado respostaSimulado =
+            this.respostaSimuladoRepository.findBySimuladoIdAndUsuarioId(
+            simuladoId, user.getId());
+
         int acertos = 0;
         int acertosUltimas15 = 0;
 
@@ -78,7 +128,7 @@ public class RespostaSimuladoService {
         for (RespostaSimuladoRequest resposta : respostas) {
 
             Boolean acertou = itemQuestaoSimuladoService.estaCorreta(
-                simuladoId, simuladoId);
+                resposta.getItemQuestaoId(), resposta.getQuestaoId());
            
             if (acertou) {
                 acertos++;
@@ -89,7 +139,8 @@ public class RespostaSimuladoService {
             }           
 
             RespostaSimuladoQuestao respostaQuestao =
-                new RespostaSimuladoQuestao(simuladoId, resposta.getQuestaoId(), 
+                new RespostaSimuladoQuestao(
+                    respostaSimulado.getId(), resposta.getQuestaoId(), 
                     resposta.getItemQuestaoId(), acertou);
 
             respostaQuestaoSimuladoRepository.save(respostaQuestao);
@@ -97,18 +148,14 @@ public class RespostaSimuladoService {
             i++;
         }
         
-        RespostaSimulado resposta =
-            this.respostaSimuladoRepository.findBySimuladoIdAndUsuarioId(
-                simuladoId, user.getId());
-        
-        resposta.setAcertos(acertos);
-        resposta.setAcertosUltimas15(acertosUltimas15);
-        resposta.setDataFim(horaFim);
-        resposta.setStatus(StatusSimulado.FINALIZADO);
+        respostaSimulado.setAcertos(acertos);
+        respostaSimulado.setAcertosUltimas15(acertosUltimas15);
+        respostaSimulado.setDataFim(horaFim);
+        respostaSimulado.setStatus(StatusSimulado.FINALIZADO);
 
-        this.respostaSimuladoRepository.save(resposta);
+        this.respostaSimuladoRepository.save(respostaSimulado);
 
-        return resposta.getId();
+        return respostaSimulado.getId();
     }
 
     private void estaFinalizandoAposHorario(

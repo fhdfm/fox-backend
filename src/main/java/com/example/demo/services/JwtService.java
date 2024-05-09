@@ -49,6 +49,7 @@ public class JwtService {
             .subject(authentication.getName())
             .claim("scope", scopes)
             .claim("nome", usuario.getNome())
+            .claim("id", usuario.getId())
             .claim("matriculas", matriculas)
             .build();
 

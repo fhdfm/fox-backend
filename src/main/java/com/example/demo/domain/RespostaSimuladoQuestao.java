@@ -10,7 +10,7 @@ public class RespostaSimuladoQuestao {
     
     @Id
     private UUID id;
-    private UUID simuladoId;
+    private UUID respostaSimuladoId;
     private UUID questaoId;
     private UUID itemQuestaoId;
     private boolean correta;
@@ -19,10 +19,10 @@ public class RespostaSimuladoQuestao {
 
     }
 
-    public RespostaSimuladoQuestao(UUID simuladoId, UUID questaoId, 
+    public RespostaSimuladoQuestao(UUID respostaSimuladoId, UUID questaoId, 
         UUID itemQuestaoId, boolean correta) {
         
-        this.simuladoId = simuladoId;
+        this.respostaSimuladoId = respostaSimuladoId;
         this.questaoId = questaoId;
         this.itemQuestaoId = itemQuestaoId;
         this.correta = correta;
@@ -37,12 +37,12 @@ public class RespostaSimuladoQuestao {
         this.id = id;
     }
 
-    public UUID getSimuladoId() {
-        return simuladoId;
+    public UUID getRespostaSimuladoId() {
+        return respostaSimuladoId;
     }
 
-    public void setSimuladoId(UUID simuladoId) {
-        this.simuladoId = simuladoId;
+    public void setRespostaSimuladoId(UUID respostaSimuladoId) {
+        this.respostaSimuladoId = respostaSimuladoId;
     }
 
     public UUID getQuestaoId() {

@@ -51,7 +51,7 @@ public class MatriculaService {
         if (matricula.getProdutoId() == null)
             throw new IllegalArgumentException("Produto (curso/simulado) não informado");
         
-        Object produto = this.cursoService.findById(matricula.getProdutoId());
+        Object produto = this.cursoService.obterPorId(matricula.getProdutoId());
         if (produto == null) {
             produto = this.simuladoService.findById(matricula.getProdutoId());
         }
