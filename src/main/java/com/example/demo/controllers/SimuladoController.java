@@ -194,4 +194,22 @@ public class SimuladoController {
             this.respostaSimuladoService.finalizar(
                 simuladoId, login, respostas));
     }
+
+    @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO')")
+    @GetMapping(path = "/api/alunos/simulados/{simuladoId}/corrente")
+    public ResponseEntity<SimuladoCompletoResponse> obterSimuladoCorrente(
+        @PathVariable UUID simuladoId) {
+        
+       SimuladoCompletoResponse response =
+            this.simuladoService.findById(simuladoId);
+
+       Authentication authentication =
+            SecurityContextHolder.getContext().getAuthentication();
+       String login = authentication.getName();            
+       
+       response = this.respostaSimuladoService.obterRespostas(
+            response, login);
+    
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 }

@@ -12,7 +12,11 @@ import com.example.demo.domain.RespostaSimuladoQuestao;
 import com.example.demo.domain.Simulado;
 import com.example.demo.domain.StatusSimulado;
 import com.example.demo.domain.UsuarioLogado;
+import com.example.demo.dto.DisciplinaQuestoesResponse;
+import com.example.demo.dto.ItemQuestaoResponse;
+import com.example.demo.dto.QuestaoSimuladoResponse;
 import com.example.demo.dto.RespostaSimuladoRequest;
+import com.example.demo.dto.SimuladoCompletoResponse;
 import com.example.demo.repositories.RespostaQuestaoSimuladoRepository;
 import com.example.demo.repositories.RespostaSimuladoRepository;
 import com.example.demo.services.impl.UsuarioServiceImpl;
@@ -166,4 +170,37 @@ public class RespostaSimuladoService {
             throw new IllegalArgumentException("Simulado finalizado após o horário limite.");
     }
 
+    public SimuladoCompletoResponse obterRespostas(
+        SimuladoCompletoResponse simulado, String login) {
+
+        UsuarioLogado usuarioLogado =
+            this.usuarioService.loadUserByUsername(login);
+        
+        RespostaSimulado respostaSimulado = this.respostaSimuladoRepository
+            .findBySimuladoIdAndUsuarioId(simulado.getId(), usuarioLogado.getId());
+
+        for (DisciplinaQuestoesResponse disciplinas : simulado.getDisciplinas()) {
+            preencherQuestoesAluno(disciplinas.getQuestoes(), respostaSimulado.getId());
+        }
+
+        return simulado;
+    }
+
+    private void preencherQuestoesAluno(List<QuestaoSimuladoResponse> questoes, UUID respostaId) {
+        for (QuestaoSimuladoResponse questao : questoes) {
+            RespostaSimuladoQuestao resposta = 
+                respostaQuestaoSimuladoRepository.findByRespostaSimuladoIdAndQuestaoId(
+                    respostaId, questao.getId());
+            preencherItem(questao.getAlternativas(), resposta.getItemQuestaoId());
+        }
+    }
+
+    private void preencherItem(List<ItemQuestaoResponse> alternativas, UUID id) {
+        for (ItemQuestaoResponse alternativa : alternativas) {
+            if (id == alternativa.getId()) {
+                alternativa.setItemMarcado(id);
+                break;
+            }
+        }
+    }
 }
