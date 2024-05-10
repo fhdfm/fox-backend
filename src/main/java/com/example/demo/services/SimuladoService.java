@@ -217,6 +217,10 @@ public class SimuladoService {
         return simulado.getId();
     }
 
+    public Boolean existsByCursoId(UUID cursoId) {
+        return this.simuladoRepository.existsByCursoId(cursoId);
+    }
+
     public List<SimuladoResumoResponse> findByExample(String filter) throws Exception {
        
         Simulado simulado = FoxUtils.criarObjetoDinamico(filter, Simulado.class);

@@ -155,10 +155,12 @@ public class MatriculaService {
                 matriculasAtivas.add(
                     this.cursoService.getMatriculaCursoResponse(
                         matricula.getProdutoId()));
-                UUID simuladoId = this.simuladoService.findByCursoId(matricula.getProdutoId());
-                if (simuladoId != null) {
-                    matriculasAtivas.add(
-                        this.simuladoService.getMatriculaSimulado(simuladoId));
+                if (simuladoService.existsByCursoId(matricula.getProdutoId())) {
+                    UUID simuladoId = this.simuladoService.findByCursoId(matricula.getProdutoId());
+                    if (simuladoId != null) {
+                        matriculasAtivas.add(
+                            this.simuladoService.getMatriculaSimulado(simuladoId));
+                    }
                 }
             } else {
                 matriculasAtivas.add(

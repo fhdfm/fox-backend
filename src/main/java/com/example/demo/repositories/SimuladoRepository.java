@@ -8,5 +8,6 @@ import com.example.demo.repositories.custom.CustomCrudRepository;
 public interface SimuladoRepository extends CustomCrudRepository<Simulado, UUID> {
     
     Simulado findByCursoId(UUID cursoId);
+    Boolean existsByCursoId(UUID cursoId);
 
 }
