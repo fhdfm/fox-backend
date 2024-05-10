@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.demo.domain.Curso;
 import com.example.demo.domain.Matricula;
 import com.example.demo.domain.Status;
 import com.example.demo.domain.StatusPagamento;
@@ -65,10 +66,10 @@ public class MatriculaService {
         Matricula novaMatricula = new Matricula();
         
         novaMatricula.setUsuarioId(usuario.getId());
-        if (produto instanceof CursoDTO) {
-            novaMatricula.setProdutoId(((CursoDTO) produto).getId());
-            transacao.setDescricao("Matrícula em: " + ((CursoDTO) produto).getTitulo());
-            transacao.setValor(((CursoDTO) produto).getValor());
+        if (produto instanceof Curso) {
+            novaMatricula.setProdutoId(((Curso) produto).getId());
+            transacao.setDescricao("Matrícula em: " + ((Curso) produto).getTitulo());
+            transacao.setValor(((Curso) produto).getValor());
             novaMatricula.setTipoProduto(TipoProduto.CURSO);
         } else {
             novaMatricula.setProdutoId(((SimuladoCompletoResponse) produto).getId());
