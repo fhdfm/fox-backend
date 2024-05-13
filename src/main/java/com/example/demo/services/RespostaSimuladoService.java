@@ -48,13 +48,18 @@ public class RespostaSimuladoService {
         UsuarioLogado user =
             usuarioService.loadUserByUsername(login);
 
-        RespostaSimulado resposta = new RespostaSimulado();
-        resposta.setUsuarioId(user.getId());
-        resposta.setSimuladoId(simuladoId);
-        resposta.setDataInicio(LocalDateTime.now());
-        resposta.setStatus(StatusSimulado.EM_ANDAMENTO);
+        RespostaSimulado resposta = 
+            this.respostaSimuladoRepository.findBySimuladoIdAndUsuarioId(
+                simuladoId, user.getId());
 
-        resposta = this.respostaSimuladoRepository.save(resposta);
+        if (resposta == null || resposta.getId() == null) {
+            resposta = new RespostaSimulado();
+            resposta.setUsuarioId(user.getId());
+            resposta.setSimuladoId(simuladoId);
+            resposta.setDataInicio(LocalDateTime.now());
+            resposta.setStatus(StatusSimulado.EM_ANDAMENTO);
+            resposta = this.respostaSimuladoRepository.save(resposta);
+        }
 
         return resposta.getId();
     }
