@@ -183,9 +183,11 @@ public class RespostaSimuladoService {
         
         RespostaSimulado respostaSimulado = this.respostaSimuladoRepository
             .findBySimuladoIdAndUsuarioId(simulado.getId(), usuarioLogado.getId());
-
-        for (DisciplinaQuestoesResponse disciplinas : simulado.getDisciplinas()) {
-            preencherQuestoesAluno(disciplinas.getQuestoes(), respostaSimulado.getId());
+        
+        if (respostaSimulado != null) {
+            for (DisciplinaQuestoesResponse disciplinas : simulado.getDisciplinas()) {
+                preencherQuestoesAluno(disciplinas.getQuestoes(), respostaSimulado.getId());
+            }
         }
 
         return simulado;
@@ -196,14 +198,15 @@ public class RespostaSimuladoService {
             RespostaSimuladoQuestao resposta = 
                 respostaQuestaoSimuladoRepository.findByRespostaSimuladoIdAndQuestaoId(
                     respostaId, questao.getId());
-            preencherItem(questao.getAlternativas(), resposta.getItemQuestaoId());
+            if (resposta != null)
+                preencherItem(questao.getAlternativas(), resposta.getItemQuestaoId());
         }
     }
 
     private void preencherItem(List<ItemQuestaoResponse> alternativas, UUID id) {
         for (ItemQuestaoResponse alternativa : alternativas) {
-            if (id == alternativa.getId()) {
-                alternativa.setItemMarcado(id);
+            if (id.equals(alternativa.getId())) {
+                alternativa.setItemMarcado(true);
                 break;
             }
         }

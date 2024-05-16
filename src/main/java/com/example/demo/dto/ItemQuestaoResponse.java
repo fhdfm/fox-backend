@@ -11,7 +11,7 @@ public class ItemQuestaoResponse {
     private Integer ordem;
     private String descricao;
     private Boolean correta;
-    private UUID itemMarcado;
+    private boolean itemMarcado = false;
 
     public ItemQuestaoResponse() {
     }
@@ -44,11 +44,11 @@ public class ItemQuestaoResponse {
         return correta;
     }
 
-    public void setItemMarcado(UUID itemMarcado) {
+    public void setItemMarcado(Boolean itemMarcado) {
         this.itemMarcado = itemMarcado;
     }
 
-    public UUID getItemMarcado() {
+    public Boolean getItemMarcado() {
         return this.itemMarcado;
     }
 }
