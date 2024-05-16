@@ -19,9 +19,15 @@ import com.example.demo.util.FoxUtils;
 public class ProdutoService {
     
     private final JdbcTemplate jdbcTemplate;
+    private final MatriculaService matriculaService;
 
-    public ProdutoService(JdbcTemplate jdbcTemplate) {
+    public ProdutoService(JdbcTemplate jdbcTemplate, MatriculaService matriculaService) {
         this.jdbcTemplate = jdbcTemplate;
+        this.matriculaService = matriculaService;
+    }
+
+    public List<ProdutoResponse> getMatriculasAtivas(UUID alunoId) {
+        return this.matriculaService.getMatriculasAtivas(alunoId);
     }
 
     public List<ProdutoResponse> obterProdutosNaoMatriculados(UUID usuarioId) {

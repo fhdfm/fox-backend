@@ -42,6 +42,32 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedUser.getId());
     }
 
+    @PostMapping(value = "/api/forgot-password", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> forgotPassword(@RequestBody String email) {
+        if (email == null || email.isBlank())
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("Email não pode ser vazio.");
+
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(this.service.recuperarPassword(email));
+    }
+
+    @PostMapping(value = "/api/reset-password", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> resetPassword(@RequestBody String token, 
+        @RequestBody String password) {
+        
+        if (token == null || token.isBlank())
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("Token não pode ser vazio.");
+
+        if (password == null || password.isBlank())
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("Senha não pode ser vazia.");
+
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(this.service.alterarPassowrd(token, password));
+    }
+
     @DeleteMapping(value = "/api/admin/usuarios/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> desativar(@PathVariable UUID id) {
@@ -54,6 +80,12 @@ public class UsuarioController {
     public ResponseEntity<List<ProdutoResponse>> obterProdutosNaoMatriculados(@PathVariable UUID id) {
         return ResponseEntity.ok(produtoService.obterProdutosNaoMatriculados(id));
     }
+
+    @GetMapping(value = "/api/alunos/usuarios/{id}/produtos-matriculados")
+    @PreAuthorize("hasRole('USUARIO') or hasRole('EXTERNO')")
+    public ResponseEntity<List<ProdutoResponse>> obterProdutosMatriculados(@PathVariable UUID id) {
+        return ResponseEntity.ok(produtoService.getMatriculasAtivas(id));
+    }    
 
     @GetMapping(value = "/api/admin/usuarios")
     @PreAuthorize("hasRole('ADMIN')")

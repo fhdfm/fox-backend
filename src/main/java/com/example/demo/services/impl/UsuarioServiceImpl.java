@@ -12,12 +12,17 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.example.demo.domain.Password;
 import com.example.demo.domain.StatusUsuario;
 import com.example.demo.domain.Usuario;
 import com.example.demo.domain.UsuarioLogado;
 import com.example.demo.dto.UsuarioResponse;
+import com.example.demo.repositories.PasswordRepository;
 import com.example.demo.repositories.UsuarioRepository;
+import com.example.demo.services.EmailService;
+import com.example.demo.services.JwtService;
 import com.example.demo.util.FoxUtils;
 
 @Service
@@ -25,11 +30,61 @@ public class UsuarioServiceImpl implements UserDetailsService {
 
     private final PasswordEncoder encoder;
     private final UsuarioRepository usuarioRepository;
+    private final PasswordRepository passwordRepository;
+    private final JwtService jwtService;
+    private final EmailService emailService;
 
     public UsuarioServiceImpl(UsuarioRepository usuarioRepository, 
-        PasswordEncoder encoder) {
+        PasswordEncoder encoder, JwtService jwtService, 
+        PasswordRepository passwordRepository, 
+        EmailService emailService) {
+        
         this.usuarioRepository = usuarioRepository;
         this.encoder = encoder;
+        this.jwtService = jwtService;
+        this.passwordRepository = passwordRepository;
+        this.emailService = emailService;
+    }
+
+    @Transactional
+    public String recuperarPassword(String email) {
+        
+      Usuario usuario = this.usuarioRepository.findByEmail(email)
+          .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));  
+        
+      String token = this.jwtService.generatePasswordToken(email);
+      
+      Password password = new Password(token, usuario.getId());
+      this.passwordRepository.save(password);
+      
+      try {
+        this.emailService.sendEmail(email, "Recuperação de senha", 
+          "Clique <a href='recuperar-senha?token=" + token + "'>aqui</a> para recuperar sua senha.");      
+      } catch (Exception e) { 
+            throw new IllegalArgumentException("Erro ao enviar e-mail.");
+      }
+
+      return "Link enviado para: " + email;
+    }
+
+    @Transactional
+    public String alterarPassowrd(String token, String password) {
+        
+        if (!jwtService.validarToken(token)) {
+            throw new IllegalArgumentException("Token inválido ou expirado.");
+        }
+
+        Password passwordEntity = this.passwordRepository.findById(token)
+            .orElseThrow(() -> new IllegalArgumentException("Token inválido."));
+
+        Usuario usuario = this.usuarioRepository.findById(passwordEntity.getUsuarioId())
+            .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+
+        usuario.setPassword(this.encoder.encode(password));
+        this.usuarioRepository.save(usuario);
+        this.passwordRepository.delete(passwordEntity);
+
+        return "Senha alterada com sucesso.";
     }
 
     @Override

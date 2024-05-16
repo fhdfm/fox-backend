@@ -162,3 +162,9 @@ CREATE TABLE matriculas (
     FOREIGN KEY (produto_id) REFERENCES curso_simulado_key(id),
     FOREIGN KEY (transacao_id) REFERENCES transacoes(id)
 );
+
+CREATE TABLE recuperar_password (
+    token VARCHAR(255) NOT NULL PRIMARY KEY,
+    usuario_id UUID NOT NULL,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+);

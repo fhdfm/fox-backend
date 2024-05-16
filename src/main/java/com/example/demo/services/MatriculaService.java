@@ -14,7 +14,6 @@ import com.example.demo.domain.Status;
 import com.example.demo.domain.StatusPagamento;
 import com.example.demo.domain.TipoProduto;
 import com.example.demo.domain.Transacao;
-import com.example.demo.dto.CursoDTO;
 import com.example.demo.dto.MatriculaRequest;
 import com.example.demo.dto.ProdutoResponse;
 import com.example.demo.dto.SimuladoCompletoResponse;

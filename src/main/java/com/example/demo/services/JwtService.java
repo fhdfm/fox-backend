@@ -1,11 +1,11 @@
 package com.example.demo.services;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
@@ -13,21 +13,34 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.domain.UsuarioLogado;
-import com.example.demo.dto.ProdutoResponse;
 
 @Service
 public class JwtService {
 
     private final JwtEncoder encoder;
-    private final MatriculaService matriculaService;
+    private final JwtDecoder decoder;
 
-    public JwtService(JwtEncoder jwtEncoder, 
-        JwtDecoder jwtDecoder, 
-        MatriculaService matriculaService) {
+    public JwtService(JwtEncoder jwtEncoder, JwtDecoder jwtDecoder) {
         
+        this.decoder = jwtDecoder;
         this.encoder = jwtEncoder;
-        this.matriculaService = matriculaService;
 
+    }
+
+    public String generatePasswordToken(String email) {
+        Instant now = Instant.now();
+        
+        var claims = JwtClaimsSet.builder()
+            .issuer("portal-fox")
+            .issuedAt(now)
+            .expiresAt(now.plusSeconds(3600))
+            .subject(email)
+            .claim("scope", "password_reset")
+            .build();
+
+        return this.encoder.encode
+                (JwtEncoderParameters.from(claims))
+                    .getTokenValue();
     }
 
     public String generateToken(Authentication authentication) {
@@ -39,9 +52,6 @@ public class JwtService {
 
         UsuarioLogado usuario = (UsuarioLogado) authentication.getPrincipal();
 
-        List<ProdutoResponse> matriculas = this.matriculaService
-            .getMatriculasAtivas(usuario.getId());
-
         var claims = JwtClaimsSet.builder()
             .issuer("portal-fox")
             .issuedAt(now)
@@ -50,11 +60,21 @@ public class JwtService {
             .claim("scope", scopes)
             .claim("nome", usuario.getNome())
             .claim("id", usuario.getId())
-            .claim("matriculas", matriculas)
             .build();
 
         return this.encoder.encode
                 (JwtEncoderParameters.from(claims))
                     .getTokenValue();
+    }
+
+    @SuppressWarnings("all")
+    public boolean validarToken(String token) {
+        try {
+            Jwt jwt = this.decoder.decode(token);
+            Instant expiration = jwt.getExpiresAt();
+            return expiration.isAfter(Instant.now());
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
