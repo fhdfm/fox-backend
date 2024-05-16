@@ -12,6 +12,6 @@ public interface ItemQuestaoSimuladoRepository extends ListCrudRepository<ItemQu
     
     List<ItemQuestaoSimulado> findByQuestaoSimuladoIdOrderByOrdem(UUID questaoSimuladoId);
 
-    @Query("SELECT correta FROM item_questao_simulado WHERE id = :id AND questao_simulado_id = :questaoSimuladoId")
+    @Query("SELECT correta FROM itens_questao_simulado WHERE id = :id AND questao_simulado_id = :questaoSimuladoId")
     Boolean obterResposta(UUID id, UUID questaoSimuladoId);
 }
