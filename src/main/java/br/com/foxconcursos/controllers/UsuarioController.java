@@ -1,0 +1,104 @@
+package br.com.foxconcursos.controllers;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import br.com.foxconcursos.domain.Usuario;
+import br.com.foxconcursos.domain.UsuarioLogado;
+import br.com.foxconcursos.dto.AlterarPasswordRequest;
+import br.com.foxconcursos.dto.ProdutoResponse;
+import br.com.foxconcursos.dto.UsuarioResponse;
+import br.com.foxconcursos.services.ProdutoService;
+import br.com.foxconcursos.services.impl.UsuarioServiceImpl;
+
+@RestController
+@RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+public class UsuarioController {
+
+    private final UsuarioServiceImpl service;
+    private final ProdutoService produtoService;
+
+    public UsuarioController(UsuarioServiceImpl service, 
+        ProdutoService produtoService) {
+        this.service = service;
+        this.produtoService = produtoService;
+    }
+    
+    @PostMapping(value = "/api/signup", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UUID> create(@RequestBody Usuario user) {
+        UsuarioLogado savedUser = this.service.save(user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedUser.getId());
+    }
+
+    @PostMapping(value = "/api/forgot-password", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> forgotPassword(@RequestBody String email) {
+        if (email == null || email.isBlank())
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("Email não pode ser vazio.");
+
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(this.service.recuperarPassword(email));
+    }
+
+    @PostMapping(value = "/api/reset-password", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> resetPassword(@RequestBody AlterarPasswordRequest request) {
+        
+        if (request.getToken() == null || request.getToken().isBlank())
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("Token não pode ser vazio.");
+
+        if (request.getNovaSenha() == null || request.getNovaSenha().isBlank())
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("Senha não pode ser vazia.");
+
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(this.service.alterarPassowrd(request.getToken(), request.getNovaSenha()));
+    }
+
+    @DeleteMapping(value = "/api/admin/usuarios/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> desativar(@PathVariable UUID id) {
+        this.service.desativar(id);
+        return ResponseEntity.ok("Usuário desativado com sucesso.");
+    }
+
+    @GetMapping(value = "/api/admin/usuarios/{id}/produtos-nao-matriculados")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<ProdutoResponse>> obterProdutosNaoMatriculados(@PathVariable UUID id) {
+        return ResponseEntity.ok(produtoService.obterProdutosNaoMatriculados(id));
+    }
+
+    @GetMapping(value = "/api/alunos/usuarios/{id}/produtos-matriculados")
+    @PreAuthorize("hasRole('USUARIO') or hasRole('EXTERNO')")
+    public ResponseEntity<List<ProdutoResponse>> obterProdutosMatriculados(@PathVariable UUID id) {
+        return ResponseEntity.ok(produtoService.getMatriculasAtivas(id));
+    }    
+
+    @GetMapping(value = "/api/admin/usuarios")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<UsuarioResponse>> findAll(
+        @RequestParam(required = false) String filter) throws Exception {
+        
+        return ResponseEntity.ok(service.findAll(filter));
+    }
+
+    @GetMapping(value = "/api/admin/usuarios/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UsuarioResponse> findById(@PathVariable UUID id) {
+        return ResponseEntity.ok(service.findById(id));
+    }
+
+}

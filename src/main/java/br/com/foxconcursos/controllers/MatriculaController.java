@@ -1,0 +1,42 @@
+package br.com.foxconcursos.controllers;
+
+import java.util.UUID;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import br.com.foxconcursos.dto.MatriculaRequest;
+import br.com.foxconcursos.services.MatriculaService;
+
+@RestController
+public class MatriculaController {
+    
+    private final MatriculaService matriculaService;
+
+    public MatriculaController(MatriculaService matriculaService) {
+        this.matriculaService = matriculaService;
+    }
+
+    // @PreAuthorize("hasRole('ROLE_ALUNO') || hasRole('ROLE_EXTERNO')")
+    // @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    // public ResponseEntity<UUID> matricular(@RequestBody MatriculaRequest request) {
+    //     UUID matriculaId = this.matriculaService.matricular(request);
+    //     return ResponseEntity.status(HttpStatus.CREATED).body(matriculaId);
+    // }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PostMapping(path = "/api/admin/matricula", 
+        consumes = MediaType.APPLICATION_JSON_VALUE, 
+        produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UUID> matricular(@RequestBody MatriculaRequest request) {
+        UUID matriculaId = this.matriculaService.matricularContingencia(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(matriculaId);
+    }
+
+
+}
