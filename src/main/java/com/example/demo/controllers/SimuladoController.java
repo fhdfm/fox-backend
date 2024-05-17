@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.demo.domain.RespostaSimulado;
 import com.example.demo.domain.StatusSimulado;
 import com.example.demo.dto.QuestaoSimuladoRequest;
 import com.example.demo.dto.QuestaoSimuladoResponse;
@@ -199,13 +198,20 @@ public class SimuladoController {
     @GetMapping(path = "/api/alunos/simulados/{simuladoId}/corrente")
     public ResponseEntity<SimuladoCompletoResponse> obterSimuladoCorrente(
         @PathVariable UUID simuladoId) {
-        
-       SimuladoCompletoResponse response =
-            this.simuladoService.findById(simuladoId);
+       
+        Authentication authentication =
+        SecurityContextHolder.getContext().getAuthentication();
+        String login = authentication.getName();
 
-       Authentication authentication =
-            SecurityContextHolder.getContext().getAuthentication();
-       String login = authentication.getName();            
+        StatusSimulado status =
+            this.respostaSimuladoService.obterStatus(
+                simuladoId, authentication.getName());     
+
+       SimuladoCompletoResponse response = null;
+         if (status == StatusSimulado.FINALIZADO)
+            this.simuladoService.findById(simuladoId);
+        else
+            this.simuladoService.findById(simuladoId, false);     
        
        response = this.respostaSimuladoService.obterRespostas(
             response, login);

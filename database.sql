@@ -164,7 +164,7 @@ CREATE TABLE matriculas (
 );
 
 CREATE TABLE recuperar_password (
-    token VARCHAR(255) NOT NULL PRIMARY KEY,
+    token TEXT NOT NULL PRIMARY KEY,
     usuario_id UUID NOT NULL,
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );

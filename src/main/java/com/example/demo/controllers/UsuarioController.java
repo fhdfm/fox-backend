@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.domain.Usuario;
 import com.example.demo.domain.UsuarioLogado;
+import com.example.demo.dto.AlterarPasswordRequest;
 import com.example.demo.dto.ProdutoResponse;
 import com.example.demo.dto.UsuarioResponse;
 import com.example.demo.services.ProdutoService;
@@ -53,19 +54,18 @@ public class UsuarioController {
     }
 
     @PostMapping(value = "/api/reset-password", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> resetPassword(@RequestBody String token, 
-        @RequestBody String password) {
+    public ResponseEntity<String> resetPassword(@RequestBody AlterarPasswordRequest request) {
         
-        if (token == null || token.isBlank())
+        if (request.getToken() == null || request.getToken().isBlank())
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body("Token não pode ser vazio.");
 
-        if (password == null || password.isBlank())
+        if (request.getNovaSenha() == null || request.getNovaSenha().isBlank())
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body("Senha não pode ser vazia.");
 
         return ResponseEntity.status(HttpStatus.OK)
-            .body(this.service.alterarPassowrd(token, password));
+            .body(this.service.alterarPassowrd(request.getToken(), request.getNovaSenha()));
     }
 
     @DeleteMapping(value = "/api/admin/usuarios/{id}")

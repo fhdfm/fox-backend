@@ -24,7 +24,7 @@ public class EmailService {
         helper.setTo(destinatario);
         helper.setSubject(assunto);
         helper.setText(textoEmHtml, true);
-        helper.setFrom("fox@fox.com.br");
+        helper.setFrom("fox@trial-v69oxl5ovqrg785k.mlsender.net");
 
         this.mailSender.send(message);
     }

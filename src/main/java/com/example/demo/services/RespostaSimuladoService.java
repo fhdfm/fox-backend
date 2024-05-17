@@ -147,10 +147,19 @@ public class RespostaSimuladoService {
                 
             }           
 
-            RespostaSimuladoQuestao respostaQuestao =
-                new RespostaSimuladoQuestao(
+            RespostaSimuladoQuestao respostaQuestao = 
+                respostaQuestaoSimuladoRepository.findByRespostaSimuladoIdAndQuestaoId(
+                    respostaSimulado.getId(), resposta.getQuestaoId());
+            
+            if (respostaQuestao == null) {
+                respostaQuestao = new RespostaSimuladoQuestao(
                     respostaSimulado.getId(), resposta.getQuestaoId(), 
-                    resposta.getItemQuestaoId(), acertou);
+                    resposta.getItemQuestaoId(), acertou); 
+            } else {
+                respostaQuestao.setCorreta(acertou);
+                respostaQuestao.setItemQuestaoId(resposta.getItemQuestaoId());
+            }
+
 
             respostaQuestaoSimuladoRepository.save(respostaQuestao);
 

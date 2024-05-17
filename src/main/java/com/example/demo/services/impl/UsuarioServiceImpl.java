@@ -54,13 +54,13 @@ public class UsuarioServiceImpl implements UserDetailsService {
         
       String token = this.jwtService.generatePasswordToken(email);
       
-      Password password = new Password(token, usuario.getId());
-      this.passwordRepository.save(password);
+      this.passwordRepository.save(token, usuario.getId());
       
       try {
         this.emailService.sendEmail(email, "Recuperação de senha", 
           "Clique <a href='recuperar-senha?token=" + token + "'>aqui</a> para recuperar sua senha.");      
       } catch (Exception e) { 
+        e.printStackTrace();
             throw new IllegalArgumentException("Erro ao enviar e-mail.");
       }
 
@@ -74,15 +74,17 @@ public class UsuarioServiceImpl implements UserDetailsService {
             throw new IllegalArgumentException("Token inválido ou expirado.");
         }
 
-        Password passwordEntity = this.passwordRepository.findById(token)
-            .orElseThrow(() -> new IllegalArgumentException("Token inválido."));
+        Password passwordEntity = this.passwordRepository.findByToken(token);
+        if (passwordEntity == null) {
+            throw new IllegalArgumentException("Token inválido.");
+        }
 
         Usuario usuario = this.usuarioRepository.findById(passwordEntity.getUsuarioId())
             .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
 
         usuario.setPassword(this.encoder.encode(password));
         this.usuarioRepository.save(usuario);
-        this.passwordRepository.delete(passwordEntity);
+        this.passwordRepository.delete(token);
 
         return "Senha alterada com sucesso.";
     }
