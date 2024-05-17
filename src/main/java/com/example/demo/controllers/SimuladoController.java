@@ -209,9 +209,9 @@ public class SimuladoController {
 
        SimuladoCompletoResponse response = null;
          if (status == StatusSimulado.FINALIZADO)
-            this.simuladoService.findById(simuladoId);
+           response = this.simuladoService.findById(simuladoId);
         else
-            this.simuladoService.findById(simuladoId, false);     
+           response = this.simuladoService.findById(simuladoId, false);     
        
        response = this.respostaSimuladoService.obterRespostas(
             response, login);

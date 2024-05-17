@@ -2,13 +2,8 @@ package com.example.demo.domain;
 
 import java.util.UUID;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Table;
-
-@Table("recuperar_senha")
 public class Password {
 
-    @Id
     private String token;
     private UUID usuarioId;
 
