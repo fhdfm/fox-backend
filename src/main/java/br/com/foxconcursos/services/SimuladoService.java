@@ -43,14 +43,6 @@ public class SimuladoService {
         this.questaoSimuladoService = questaoSimuladoService;
     }
 
-    /** todo - remover */
-    // public void updateDataInicio(UUID simuladoId, LocalDateTime dataInicio) {
-    //     Simulado simulado = simuladoRepository.findById(simuladoId).orElseThrow(
-    //         () -> new IllegalArgumentException("Simulado não encontrado: " + simuladoId));
-    //     simulado.setDataInicio(dataInicio);
-    //     simuladoRepository.save(simulado);
-    // }
-
     public UUID save(SimuladoRequest request) {
         
         validarSimulado(request);
@@ -242,6 +234,10 @@ public class SimuladoService {
         }
 
         return result;
+    }
+
+    public int obterQuantidadeQuestoes(UUID id) {
+        return simuladoRepository.obterQuantidadeQuestoes(id);
     }
 
 }

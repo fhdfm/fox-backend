@@ -1,9 +1,11 @@
 package br.com.foxconcursos.services;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,11 +17,14 @@ import br.com.foxconcursos.domain.UsuarioLogado;
 import br.com.foxconcursos.dto.DisciplinaQuestoesResponse;
 import br.com.foxconcursos.dto.ItemQuestaoResponse;
 import br.com.foxconcursos.dto.QuestaoSimuladoResponse;
+import br.com.foxconcursos.dto.RankingSimuladoResponse;
 import br.com.foxconcursos.dto.RespostaSimuladoRequest;
+import br.com.foxconcursos.dto.ResultadoSimuladoResponse;
 import br.com.foxconcursos.dto.SimuladoCompletoResponse;
 import br.com.foxconcursos.repositories.RespostaQuestaoSimuladoRepository;
 import br.com.foxconcursos.repositories.RespostaSimuladoRepository;
 import br.com.foxconcursos.services.impl.UsuarioServiceImpl;
+import br.com.foxconcursos.util.FoxUtils;
 
 @Service
 public class RespostaSimuladoService {
@@ -29,17 +34,20 @@ public class RespostaSimuladoService {
     private final RespostaQuestaoSimuladoRepository respostaQuestaoSimuladoRepository;
     private final UsuarioServiceImpl usuarioService;
     private final ItemQuestaoSimuladoService itemQuestaoSimuladoService;
+    private final JdbcTemplate jdbcTemplate;
 
     public RespostaSimuladoService(RespostaSimuladoRepository respostaSimuladoRepository, 
         RespostaQuestaoSimuladoRepository respostaQuestaoSimuladoRepository,
         UsuarioServiceImpl usuarioService, SimuladoService simuladoService, 
-        ItemQuestaoSimuladoService itemQuestaoSimuladoService) {
+        ItemQuestaoSimuladoService itemQuestaoSimuladoService, 
+        JdbcTemplate jdbcTemplate) {
         
         this.usuarioService = usuarioService;
         this.respostaSimuladoRepository = respostaSimuladoRepository;
         this.respostaQuestaoSimuladoRepository = respostaQuestaoSimuladoRepository;
         this.simuladoService = simuladoService;
         this.itemQuestaoSimuladoService = itemQuestaoSimuladoService;
+        this.jdbcTemplate = jdbcTemplate;
 
     }
 
@@ -126,26 +134,11 @@ public class RespostaSimuladoService {
         RespostaSimulado respostaSimulado =
             this.respostaSimuladoRepository.findBySimuladoIdAndUsuarioId(
             simuladoId, user.getId());
-
-        int acertos = 0;
-        int acertosUltimas15 = 0;
-
-        int quantidadeQuestoes = simulado.getQuantidadeQuestoes();
-        int inicio = quantidadeQuestoes - 15;
-        int i = 1;
         
         for (RespostaSimuladoRequest resposta : respostas) {
 
             Boolean acertou = itemQuestaoSimuladoService.estaCorreta(
-                resposta.getItemQuestaoId(), resposta.getQuestaoId());
-           
-            if (acertou) {
-                acertos++;
-                
-                if (i > inicio)
-                    acertosUltimas15++;
-                
-            }           
+                resposta.getItemQuestaoId(), resposta.getQuestaoId());         
 
             RespostaSimuladoQuestao respostaQuestao = 
                 respostaQuestaoSimuladoRepository.findByRespostaSimuladoIdAndQuestaoId(
@@ -160,18 +153,17 @@ public class RespostaSimuladoService {
                 respostaQuestao.setItemQuestaoId(resposta.getItemQuestaoId());
             }
 
-
             respostaQuestaoSimuladoRepository.save(respostaQuestao);
-
-            i++;
         }
         
-        respostaSimulado.setAcertos(acertos);
-        respostaSimulado.setAcertosUltimas15(acertosUltimas15);
+        respostaSimulado.setAcertos(0);
+        respostaSimulado.setAcertosUltimas15(0);
         respostaSimulado.setDataFim(horaFim);
         respostaSimulado.setStatus(StatusSimulado.FINALIZADO);
 
         this.respostaSimuladoRepository.save(respostaSimulado);
+
+        contabilizar(simuladoId, user.getId());
 
         return respostaSimulado.getId();
     }
@@ -219,5 +211,110 @@ public class RespostaSimuladoService {
                 break;
             }
         }
+    }
+
+    private void contabilizar(UUID simuladoId, UUID usuarioId) {
+        
+        RespostaSimulado resposta = 
+            this.respostaSimuladoRepository.findBySimuladoIdAndUsuarioIdAndStatus(
+                simuladoId, usuarioId, StatusSimulado.FINALIZADO);
+        
+        int totalQuestoes = simuladoService.obterQuantidadeQuestoes(simuladoId);
+        int corte15Ultimas = totalQuestoes - 15;
+
+        int acertos = 0;
+        int acertosUltimas15 = 0;
+
+        int contador = 1;
+        
+        for (RespostaSimuladoQuestao respostaQuestao : 
+            respostaQuestaoSimuladoRepository.findByRespostaSimuladoId(
+                resposta.getId())) {
+
+            if (respostaQuestao.isCorreta()) {
+                acertos++;
+                if (contador > corte15Ultimas)
+                    acertosUltimas15++;
+            }
+            
+            contador++;
+        }
+
+        resposta.setAcertos(acertos);
+        resposta.setAcertosUltimas15(acertosUltimas15);
+        
+        this.respostaSimuladoRepository.save(resposta);
+    }
+
+    public ResultadoSimuladoResponse obterRanking(UUID simuladoId) {
+        ResultadoSimuladoResponse response = new ResultadoSimuladoResponse();
+
+        Simulado simulado = simuladoService.obterPorId(simuladoId);
+
+        response.setNome(simulado.getTitulo());
+        response.setData(
+            FoxUtils.convertLocalDateTimeToDate(
+                simulado.getDataInicio()));
+        
+        List<RankingSimuladoResponse> ranking = new ArrayList<RankingSimuladoResponse>();
+
+        String sql = """
+                select u.nome, r.acertos from respostas_simulado r 
+                inner join usuarios u on u.id = r.usuario_id where simulado_id = ? 
+                order by acertos, acertos_ultimas_15 desc 
+                """;
+
+        jdbcTemplate.query(sql, (rs, rowNum) -> {
+            RankingSimuladoResponse rsr = new RankingSimuladoResponse();
+            rsr.setNome(rs.getString("nome"));
+            rsr.setAcertos(rs.getInt("acertos"));
+            rsr.setClassificacao(rowNum + 1);
+            ranking.add(rsr);
+
+            return rsr;
+        }, 
+        simuladoId);
+
+        response.setRanking(ranking);
+
+        return response;
+    }
+
+    public ResultadoSimuladoResponse obterRanking(UUID simuladoId, String login) {
+        
+        UsuarioLogado usuarioLogado = 
+            this.usuarioService.loadUserByUsername(login);
+        
+        ResultadoSimuladoResponse response = new ResultadoSimuladoResponse();
+
+        Simulado simulado = simuladoService.obterPorId(simuladoId);
+
+        response.setNome(simulado.getTitulo());
+        response.setData(
+            FoxUtils.convertLocalDateTimeToDate(
+                simulado.getDataInicio()));
+        
+        List<RankingSimuladoResponse> ranking = new ArrayList<RankingSimuladoResponse>();
+
+        String sql = """
+                select u.nome, r.acertos from respostas_simulado r 
+                inner join usuarios u on u.id = r.usuario_id where simulado_id = ? 
+                and r.usuario_id = ? order by acertos, acertos_ultimas_15 desc 
+                """;
+
+        jdbcTemplate.query(sql, (rs, rowNum) -> {
+            RankingSimuladoResponse rsr = new RankingSimuladoResponse();
+            rsr.setNome(rs.getString("nome"));
+            rsr.setAcertos(rs.getInt("acertos"));
+            ranking.add(rsr);
+
+            return rsr;
+        }, 
+        simuladoId,
+        usuarioLogado.getId());
+
+        response.setRanking(ranking);
+
+        return response;
     }
 }

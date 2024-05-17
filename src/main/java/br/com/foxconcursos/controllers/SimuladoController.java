@@ -24,6 +24,7 @@ import br.com.foxconcursos.dto.QuestaoSimuladoRequest;
 import br.com.foxconcursos.dto.QuestaoSimuladoResponse;
 import br.com.foxconcursos.dto.QuestoesSimuladoDisciplinaResponse;
 import br.com.foxconcursos.dto.RespostaSimuladoRequest;
+import br.com.foxconcursos.dto.ResultadoSimuladoResponse;
 import br.com.foxconcursos.dto.SimuladoCompletoResponse;
 import br.com.foxconcursos.dto.SimuladoRequest;
 import br.com.foxconcursos.dto.SimuladoResponse;
@@ -217,5 +218,27 @@ public class SimuladoController {
             response, login);
     
         return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO') or hasRole('ADMIN')")
+    @GetMapping(path = "/api/alunos/simulados/{simuladoId}/ranking-geral")
+    public ResponseEntity<ResultadoSimuladoResponse> obterRankingGeral(
+        @PathVariable UUID simuladoId) {
+        
+        return ResponseEntity.status(HttpStatus.OK).body(
+            this.respostaSimuladoService.obterRanking(simuladoId));
+    }
+
+    @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO') or hasRole('ADMIN')")
+    @GetMapping(path = "/api/alunos/simulados/{simuladoId}/ranking-individual")
+    public ResponseEntity<ResultadoSimuladoResponse> obterRankingIndividual(
+        @PathVariable UUID simuladoId) {
+        
+        Authentication authentication =
+            SecurityContextHolder.getContext().getAuthentication();
+        String login = authentication.getName();
+        
+        return ResponseEntity.status(HttpStatus.OK).body(
+            this.respostaSimuladoService.obterRanking(simuladoId, login));
     }
 }
