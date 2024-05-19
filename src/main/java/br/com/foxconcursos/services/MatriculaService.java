@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.com.foxconcursos.domain.Curso;
 import br.com.foxconcursos.domain.Matricula;
+import br.com.foxconcursos.domain.Simulado;
 import br.com.foxconcursos.domain.Status;
 import br.com.foxconcursos.domain.StatusPagamento;
 import br.com.foxconcursos.domain.TipoProduto;
@@ -155,10 +156,12 @@ public class MatriculaService {
                     this.cursoService.getMatriculaCursoResponse(
                         matricula.getProdutoId()));
                 if (simuladoService.existsByCursoId(matricula.getProdutoId())) {
-                    UUID simuladoId = this.simuladoService.findByCursoId(matricula.getProdutoId());
-                    if (simuladoId != null) {
-                        matriculasAtivas.add(
-                            this.simuladoService.getMatriculaSimulado(simuladoId));
+                    List<Simulado> simulados = this.simuladoService.findByCursoId(matricula.getProdutoId());
+                    if (simulados != null) {
+                        for (Simulado simulado : simulados) {
+                            matriculasAtivas.add(
+                                this.simuladoService.getMatriculaSimulado(simulado.getId()));
+                        }
                     }
                 }
             } else {

@@ -204,9 +204,8 @@ public class SimuladoService {
         return simulado.getCursoId();
     }
 
-    public UUID findByCursoId(UUID cursoId) {
-        Simulado simulado = simuladoRepository.findByCursoId(cursoId);
-        return simulado.getId();
+    public List<Simulado> findByCursoId(UUID cursoId) {
+        return simuladoRepository.findByCursoId(cursoId);
     }
 
     public Boolean existsByCursoId(UUID cursoId) {
