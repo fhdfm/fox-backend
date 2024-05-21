@@ -84,7 +84,7 @@ public class UsuarioController {
     @GetMapping(value = "/api/alunos/usuarios/{id}/produtos-matriculados")
     @PreAuthorize("hasRole('USUARIO') or hasRole('EXTERNO')")
     public ResponseEntity<List<ProdutoResponse>> obterProdutosMatriculados(@PathVariable UUID id) {
-        return ResponseEntity.ok(produtoService.getMatriculasAtivas(id));
+        return ResponseEntity.ok(produtoService.obterProdutosMatriculados(id));
     }    
 
     @GetMapping(value = "/api/admin/usuarios")

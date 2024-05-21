@@ -1,7 +1,9 @@
 package br.com.foxconcursos.services;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -19,16 +21,14 @@ import br.com.foxconcursos.util.FoxUtils;
 public class ProdutoService {
     
     private final JdbcTemplate jdbcTemplate;
-    private final MatriculaService matriculaService;
 
-    public ProdutoService(JdbcTemplate jdbcTemplate, MatriculaService matriculaService) {
+    public ProdutoService(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-        this.matriculaService = matriculaService;
     }
 
-    public List<ProdutoResponse> getMatriculasAtivas(UUID alunoId) {
-        return this.matriculaService.getMatriculasAtivas(alunoId);
-    }
+    // public List<ProdutoResponse> getMatriculasAtivas(UUID alunoId) {
+    //     return this.matriculaService.getMatriculasAtivas(alunoId);
+    // }
 
     public List<ProdutoResponse> obterProdutosNaoMatriculados(UUID usuarioId) {
         
@@ -95,4 +95,93 @@ public class ProdutoService {
         return produtos;
     }
 
+    public List<ProdutoResponse> obterProdutosMatriculados(UUID usuarioId) {
+        
+        List<ProdutoResponse> produtos = new ArrayList<ProdutoResponse>();
+        Set<UUID> simuladosAdicionados = new HashSet<UUID>();
+
+        // Query para obter cursos e seus simulados associados aos quais o usuário está matriculado
+        String queryCursosMatriculados = """
+            SELECT c.*, b.nome, s.id AS simulado_id, s.titulo AS simulado_titulo, s.data_inicio AS simulado_data_inicio, 
+                   s.quantidade_questoes AS simulado_quantidade_questoes, s.duracao AS simulado_duracao
+            FROM matriculas m
+            JOIN cursos c ON m.produto_id = c.id AND m.tipo_produto = 'CURSO'
+            JOIN bancas b ON c.banca_id = b.id
+            LEFT JOIN simulados s ON s.curso_id = c.id
+            WHERE m.usuario_id = ? AND m.status = 'ATIVO'
+        """;
+
+        jdbcTemplate.query(queryCursosMatriculados, (rs, rowNum) -> {
+            // Adiciona o curso
+            ProdutoCursoResponse curso = new ProdutoCursoResponse();
+            curso.setId(UUID.fromString(rs.getString("id")));
+            curso.setTipoProduto(TipoProduto.CURSO);
+            curso.setTitulo(rs.getString("titulo"));
+            curso.setBanca(rs.getString("nome"));
+            curso.setEscolaridade(
+                Escolaridade.valueOf(
+                    rs.getString("escolaridade")));
+            curso.setDataInicio(
+                FoxUtils.convertLocalDateToDate(
+                    rs.getObject("data_inicio", 
+                    java.time.LocalDate.class)));
+            curso.setDataTermino(
+                FoxUtils.convertLocalDateToDate(
+                    rs.getObject("data_termino", 
+                    java.time.LocalDate.class)));
+            curso.setStatus(Status.valueOf(rs.getString("status")));
+            produtos.add(curso);
+
+            // Verifica se há simulados associados ao curso e adiciona
+            UUID simuladoId = rs.getObject("simulado_id", UUID.class);
+            if (simuladoId != null && !simuladosAdicionados.contains(simuladoId)) {
+                ProdutoSimuladoResponse simulado = new ProdutoSimuladoResponse();
+                simulado.setId(simuladoId);
+                simulado.setTipoProduto(TipoProduto.SIMULADO);
+                simulado.setTitulo(rs.getString("simulado_titulo"));
+                simulado.setData(
+                    FoxUtils.convertLocalDateTimeToDate(
+                        rs.getObject("simulado_data_inicio", 
+                        java.time.LocalDateTime.class)));
+                simulado.setQuantidadeQuestoes(
+                    rs.getInt("simulado_quantidade_questoes"));
+                simulado.setDuracao(rs.getString("simulado_duracao"));
+                produtos.add(simulado);
+                simuladosAdicionados.add(simuladoId);
+            }
+
+            return null;
+        }, usuarioId);
+
+        // Query para obter simulados aos quais o usuário está diretamente matriculado
+        String querySimuladosMatriculados = """
+            SELECT s.*
+            FROM matriculas m
+            JOIN simulados s ON m.produto_id = s.id AND m.tipo_produto = 'SIMULADO'
+            WHERE m.usuario_id = ? AND m.status = 'ATIVO'
+        """;
+
+        jdbcTemplate.query(querySimuladosMatriculados, (rs, rowNum) -> {
+            UUID simuladoId = UUID.fromString(rs.getString("id"));
+            if (!simuladosAdicionados.contains(simuladoId)) {
+                ProdutoSimuladoResponse produto = new ProdutoSimuladoResponse();
+                produto.setId(simuladoId);
+                produto.setTipoProduto(TipoProduto.SIMULADO);
+                produto.setTitulo(rs.getString("titulo"));
+                produto.setData(
+                    FoxUtils.convertLocalDateTimeToDate(
+                        rs.getObject("data_inicio", 
+                        java.time.LocalDateTime.class)));
+                produto.setQuantidadeQuestoes(
+                    rs.getInt("quantidade_questoes"));
+                produto.setDuracao(rs.getString("duracao"));
+                produtos.add(produto);
+                simuladosAdicionados.add(simuladoId);
+            }
+            return null;
+        }, usuarioId);
+
+        return produtos;
+    }
+    
 }
