@@ -261,7 +261,7 @@ public class RespostaSimuladoService {
         String sql = """
                 select u.nome, r.acertos from respostas_simulado r 
                 inner join usuarios u on u.id = r.usuario_id where simulado_id = ? 
-                order by acertos, acertos_ultimas_15 desc 
+                order by acertos desc, acertos_ultimas_15 desc 
                 """;
 
         jdbcTemplate.query(sql, (rs, rowNum) -> {
@@ -299,7 +299,7 @@ public class RespostaSimuladoService {
         String sql = """
                 select u.nome, r.acertos from respostas_simulado r 
                 inner join usuarios u on u.id = r.usuario_id where simulado_id = ? 
-                and r.usuario_id = ? order by acertos, acertos_ultimas_15 desc 
+                and r.usuario_id = ? order by acertos desc, acertos_ultimas_15 desc 
                 """;
 
         jdbcTemplate.query(sql, (rs, rowNum) -> {
