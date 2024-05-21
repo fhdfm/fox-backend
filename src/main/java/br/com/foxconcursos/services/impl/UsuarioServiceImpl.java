@@ -101,6 +101,15 @@ public class UsuarioServiceImpl implements UserDetailsService {
         if (usuario == null) {
             throw new IllegalArgumentException("Usuario não pode ser nulo.");
         }
+
+        if (usuario.getEmail() == null || usuario.getEmail().isBlank()) {
+            throw new IllegalArgumentException("Email é obrigatório.");
+        }
+
+        if (this.usuarioRepository.existsByEmail(usuario.getEmail())) {
+            throw new IllegalArgumentException("Email já cadastrado.");
+        }
+
         usuario.setPassword(this.encoder.encode(usuario.getPassword()));
         usuario.setStatus(StatusUsuario.ATIVO);
         Usuario savedUser = this.usuarioRepository.save(usuario);
