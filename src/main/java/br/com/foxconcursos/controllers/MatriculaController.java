@@ -30,7 +30,9 @@ public class MatriculaController {
     }
 
     @PreAuthorize("hasRole('ROLE_ALUNO') || hasRole('ROLE_EXTERNO')")
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = "/api/alunos/matricula", 
+        consumes = MediaType.APPLICATION_JSON_VALUE, 
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Long> matricular(@RequestBody PagamentoRequest request) {
         //UUID matriculaId = this.matriculaService.matricular(request);
         Payment payment = mpService.checkout(request);
