@@ -26,10 +26,6 @@ public class ProdutoService {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    // public List<ProdutoResponse> getMatriculasAtivas(UUID alunoId) {
-    //     return this.matriculaService.getMatriculasAtivas(alunoId);
-    // }
-
     public List<ProdutoResponse> obterProdutosNaoMatriculados(UUID usuarioId) {
         
         List<ProdutoResponse> produtos = new ArrayList<ProdutoResponse>();
