@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mercadopago.resources.payment.Payment;
+import com.mercadopago.resources.preference.Preference;
 
 import br.com.foxconcursos.dto.MatriculaRequest;
 import br.com.foxconcursos.dto.PagamentoRequest;
@@ -37,6 +38,14 @@ public class MatriculaController {
         //UUID matriculaId = this.matriculaService.matricular(request);
         Payment payment = mpService.checkout(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(payment != null ? payment.getId() : 0L);
+    }
+
+    @PreAuthorize("hasRole('ROLE_ALUNO') || hasRole('ROLE_EXTERNO')")
+    @PostMapping(path = "/api/alunos/pre-matricula")
+    public ResponseEntity<String> prematricula() {
+       
+       Preference preference = new Preference();
+       return ResponseEntity.status(HttpStatus.CREATED).body(preference.getId());
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
