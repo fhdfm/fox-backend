@@ -1,5 +1,8 @@
 package br.com.foxconcursos.controllers;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
@@ -10,6 +13,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.mercadopago.client.preference.PreferenceClient;
+import com.mercadopago.client.preference.PreferenceItemRequest;
+import com.mercadopago.client.preference.PreferenceRequest;
 import com.mercadopago.resources.payment.Payment;
 import com.mercadopago.resources.preference.Preference;
 
@@ -42,9 +48,27 @@ public class MatriculaController {
 
     @PreAuthorize("hasRole('ROLE_ALUNO') || hasRole('ROLE_EXTERNO')")
     @PostMapping(path = "/api/alunos/pre-matricula")
-    public ResponseEntity<String> prematricula() {
+    public ResponseEntity<String> prematricula() throws Exception {
        
-       Preference preference = new Preference();
+
+            PreferenceItemRequest itemRequest =
+                PreferenceItemRequest.builder()
+                    .id("1234")
+                    .title("Games")
+                    .description("PS5")
+                    .pictureUrl("http://picture.com/PS5")
+                    .categoryId("games")
+                    .quantity(2)
+                    .currencyId("BRL")
+                    .unitPrice(new BigDecimal("4000"))
+                    .build();
+            List<PreferenceItemRequest> items = new ArrayList<>();
+            items.add(itemRequest);
+            PreferenceRequest preferenceRequest = PreferenceRequest.builder()
+            .items(items).build();
+            PreferenceClient client = new PreferenceClient();
+            Preference preference = client.create(preferenceRequest);
+
        return ResponseEntity.status(HttpStatus.CREATED).body(preference.getId());
     }
 
