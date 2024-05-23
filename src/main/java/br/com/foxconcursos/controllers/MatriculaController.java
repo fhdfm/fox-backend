@@ -21,6 +21,7 @@ import com.mercadopago.resources.preference.Preference;
 
 import br.com.foxconcursos.dto.MatriculaRequest;
 import br.com.foxconcursos.dto.PagamentoRequest;
+import br.com.foxconcursos.dto.TesteMP;
 import br.com.foxconcursos.services.MPService;
 import br.com.foxconcursos.services.MatriculaService;
 
@@ -34,6 +35,13 @@ public class MatriculaController {
         MPService mpService) {
         this.matriculaService = matriculaService;
         this.mpService = mpService;
+    }
+
+    @PostMapping(path = "/api/teste", 
+        consumes = MediaType.APPLICATION_JSON_VALUE, 
+        produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> myeggs(@RequestBody TesteMP testeMP) {
+        return ResponseEntity.status(HttpStatus.OK).body(testeMP.toString());
     }
 
     @PreAuthorize("hasRole('ROLE_ALUNO') || hasRole('ROLE_EXTERNO')")
