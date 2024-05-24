@@ -57,10 +57,12 @@ public class UsuarioServiceImpl implements UserDetailsService {
       this.passwordRepository.save(token, usuario.getId());
       
       try {
-        this.emailService.sendEmail(email, "Recuperação de senha", 
-          "Clique <a href='recuperar-senha?token=" + token + "'>aqui</a> para recuperar sua senha.");      
+        this.emailService.sendEmail(
+            email, 
+            "Recuperação de senha", 
+            gerarEmail(usuario.getNome(), token));      
       } catch (Exception e) { 
-        e.printStackTrace();
+            e.printStackTrace();
             throw new IllegalArgumentException("Erro ao enviar e-mail.");
       }
 
@@ -97,7 +99,6 @@ public class UsuarioServiceImpl implements UserDetailsService {
     }
 
     public UsuarioLogado save(Usuario usuario) {
-        
         if (usuario == null) {
             throw new IllegalArgumentException("Usuario não pode ser nulo.");
         }
@@ -160,5 +161,101 @@ public class UsuarioServiceImpl implements UserDetailsService {
             () -> new IllegalArgumentException("Usuário não encontrado."));
         usuario.setStatus(StatusUsuario.INATIVO);
         this.usuarioRepository.save(usuario);
+    }
+
+    private String gerarEmail(String nome, String token) {
+        return 
+            """
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+            <style>
+                body,
+                html {
+                    height: 100%;
+                    margin: 0;
+                    padding: 0;
+                    font-family: Arial, sans-serif;
+                }
+        
+                .wrapper {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    height: 100%;
+                    background-color: #06050e;
+                }
+        
+                .card {
+                    width: 40%;
+                    text-align: center;
+                    margin: 100px 0;
+                    padding: 20px;
+                    background-color: white;
+                    border-radius: 10px;
+                }
+        
+                .titulo {
+                    font-size: 24px;
+                    font-weight: 700;
+                }
+        
+                .content {
+                    font-size: 18px;
+                }
+        
+                .card_senha {
+                    background-color: rgb(255, 68, 0);
+                    padding: 1rem 3rem;
+                    border-radius: 12px;
+                    border: none;
+                    margin: 30px 0 0 0 ;
+                    cursor: pointer;
+                    color: white;
+                    font-weight: 600;
+                    font-size: 1.3rem;
+                }
+        
+                .card_senha:hover {
+                    background-color: rgb(206, 58, 5);
+                    transition: 0.5s;
+                }
+            </style>
+        </head>
+        <body>
+        <div class="wrapper">
+            <table
+                    role="presentation"
+                    cellspacing="0"
+                    cellpadding="0"
+                    border="0"
+                    width="100%"
+            >
+                <tr>
+                    <td align="center">
+                        <div class="card">
+                            <!-- Conteúdo do card -->
+                            <span class="titulo">
+                                Olá {NOME_ALUNO}!
+                            </span>
+                            <br/>
+                            <p class="subtitulo">
+                                Clique no link abaixo para que você possa alterar sua nova senha. Você será redirecionado para
+                                uma página do <strong style="color: rgb(255, 68, 0);">Fox Concursos</strong>!
+                            </p>
+        
+                            <button class="card_senha" onclick="window.location.href='https://www.foxconcursos.com.br/security/recuperar-senha?token={TOKEN}';">Clique aqui!</button>
+        
+                        </div>
+                    </td>
+                </tr>
+        
+            </table>
+        </div>
+        </body>
+        </html>
+        """.replace("{NOME_ALUNO}", nome).replace("{TOKEN}", token);
     }
 }
