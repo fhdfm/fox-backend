@@ -3,6 +3,7 @@ package br.com.foxconcursos.repositories;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -26,13 +27,17 @@ public class PasswordRepository {
     }
 
     public Password findByToken(String token) {
-        return jdbcTemplate.queryForObject(
-            "SELECT token, usuario_id FROM recuperar_password WHERE token = ?",
-            (rs, rowNum) -> new Password(
-                rs.getString("token"), 
-                UUID.fromString(rs.getString("usuario_id"))),
-            token
-        );
+        try {
+            return jdbcTemplate.queryForObject(
+                "SELECT token, usuario_id FROM recuperar_password WHERE token = ?",
+                (rs, rowNum) -> new Password(
+                    rs.getString("token"), 
+                    UUID.fromString(rs.getString("usuario_id"))),
+                token
+            );
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
     }
 
     public List<Password> findAll() {

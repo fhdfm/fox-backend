@@ -78,7 +78,7 @@ public class UsuarioServiceImpl implements UserDetailsService {
 
         Password passwordEntity = this.passwordRepository.findByToken(token);
         if (passwordEntity == null) {
-            throw new IllegalArgumentException("Token inválido.");
+            throw new IllegalArgumentException("Token inválido ou expirado.");
         }
 
         Usuario usuario = this.usuarioRepository.findById(passwordEntity.getUsuarioId())
