@@ -246,7 +246,7 @@ public class UsuarioServiceImpl implements UserDetailsService {
                                 uma página do <strong style="color: rgb(255, 68, 0);">Fox Concursos</strong>!
                             </p>
         
-                            <button class="card_senha" onclick="window.location.href='https://www.foxconcursos.com.br/security/recuperar-senha?token={TOKEN}';">Clique aqui!</button>
+                            <a class="card_senha" href="https://www.foxconcursos.com.br/security/recuperar-senha?token={TOKEN}">Clique aqui!</a>
         
                         </div>
                     </td>
