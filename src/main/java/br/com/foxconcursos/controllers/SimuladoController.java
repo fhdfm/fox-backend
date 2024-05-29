@@ -183,16 +183,14 @@ public class SimuladoController {
     @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO')")
     @PostMapping(value = "/api/alunos/simulados/{simuladoId}/finalizar", 
         consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UUID> finalizarSimulado(@PathVariable UUID simuladoId, 
-        @RequestBody List<RespostaSimuladoRequest> respostas) {
+    public ResponseEntity<UUID> finalizarSimulado(@PathVariable UUID simuladoId) {
         
         Authentication authentication =
             SecurityContextHolder.getContext().getAuthentication();
         String login = authentication.getName();
 
         return ResponseEntity.ok(
-            this.respostaSimuladoService.finalizar(
-                simuladoId, login, respostas));
+            this.respostaSimuladoService.finalizar(simuladoId, login));
     }
 
     @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO')")

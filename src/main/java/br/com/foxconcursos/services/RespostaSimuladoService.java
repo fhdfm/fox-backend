@@ -119,8 +119,26 @@ public class RespostaSimuladoService {
     }
 
     @Transactional
-    public UUID finalizar(UUID simuladoId, String login, 
-        List<RespostaSimuladoRequest> respostas) {
+    public void finalizarViaJob(UUID simuladoId) {
+        
+        List<RespostaSimulado> respostas = 
+            this.respostaSimuladoRepository.findBySimuladoIdAndStatus(
+                simuladoId, StatusSimulado.EM_ANDAMENTO);
+        
+        for (RespostaSimulado resposta : respostas) {
+            
+            resposta.setAcertos(0);
+            resposta.setAcertosUltimas15(0);
+            resposta.setDataFim(LocalDateTime.now());
+            resposta.setStatus(StatusSimulado.FINALIZADO);
+            this.respostaSimuladoRepository.save(resposta);            
+
+            contabilizar(simuladoId, resposta.getUsuarioId());
+        }
+    }
+
+    @Transactional
+    public UUID finalizar(UUID simuladoId, String login) {
         
         LocalDateTime horaFim = LocalDateTime.now();
         
@@ -135,26 +153,26 @@ public class RespostaSimuladoService {
             this.respostaSimuladoRepository.findBySimuladoIdAndUsuarioId(
             simuladoId, user.getId());
         
-        for (RespostaSimuladoRequest resposta : respostas) {
+        // for (RespostaSimuladoRequest resposta : respostas) {
 
-            Boolean acertou = itemQuestaoSimuladoService.estaCorreta(
-                resposta.getItemQuestaoId(), resposta.getQuestaoId());         
+        //     Boolean acertou = itemQuestaoSimuladoService.estaCorreta(
+        //         resposta.getItemQuestaoId(), resposta.getQuestaoId());         
 
-            RespostaSimuladoQuestao respostaQuestao = 
-                respostaQuestaoSimuladoRepository.findByRespostaSimuladoIdAndQuestaoId(
-                    respostaSimulado.getId(), resposta.getQuestaoId());
+        //     RespostaSimuladoQuestao respostaQuestao = 
+        //         respostaQuestaoSimuladoRepository.findByRespostaSimuladoIdAndQuestaoId(
+        //             respostaSimulado.getId(), resposta.getQuestaoId());
             
-            if (respostaQuestao == null) {
-                respostaQuestao = new RespostaSimuladoQuestao(
-                    respostaSimulado.getId(), resposta.getQuestaoId(), 
-                    resposta.getItemQuestaoId(), acertou); 
-            } else {
-                respostaQuestao.setCorreta(acertou);
-                respostaQuestao.setItemQuestaoId(resposta.getItemQuestaoId());
-            }
+        //     if (respostaQuestao == null) {
+        //         respostaQuestao = new RespostaSimuladoQuestao(
+        //             respostaSimulado.getId(), resposta.getQuestaoId(), 
+        //             resposta.getItemQuestaoId(), acertou); 
+        //     } else {
+        //         respostaQuestao.setCorreta(acertou);
+        //         respostaQuestao.setItemQuestaoId(resposta.getItemQuestaoId());
+        //     }
 
-            respostaQuestaoSimuladoRepository.save(respostaQuestao);
-        }
+        //     respostaQuestaoSimuladoRepository.save(respostaQuestao);
+        // }
         
         respostaSimulado.setAcertos(0);
         respostaSimulado.setAcertosUltimas15(0);
@@ -167,6 +185,8 @@ public class RespostaSimuladoService {
 
         return respostaSimulado.getId();
     }
+
+    
 
     private void estaFinalizandoAposHorario(
         LocalDateTime dataInicio, String duracao, LocalDateTime horarioEnvio) {
@@ -211,6 +231,19 @@ public class RespostaSimuladoService {
                 break;
             }
         }
+    }
+
+    public void finalizar() {
+        String sql = """
+            select simulado_id, usuario_id from respostas_simulado 
+            where status = 'EM_ANDAMENTO' and data_fim < now()
+            """;
+
+        jdbcTemplate.query(sql, (rs, rowNum) -> {
+            contabilizar(UUID.fromString(rs.getString("simulado_id")), 
+                UUID.fromString(rs.getString("usuario_id")));
+            return null;
+        });
     }
 
     private void contabilizar(UUID simuladoId, UUID usuarioId) {
@@ -316,5 +349,10 @@ public class RespostaSimuladoService {
         response.setRanking(ranking);
 
         return response;
+    }
+
+    public List<UUID> recuperarSimuladosNaoFinalizados(LocalDateTime horaAtual) {
+        return this.respostaSimuladoRepository
+            .recuperarSimuladosNaoFinalizados(horaAtual);
     }
 }
