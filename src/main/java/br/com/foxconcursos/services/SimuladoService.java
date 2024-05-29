@@ -6,13 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import br.com.foxconcursos.domain.Disciplina;
 import br.com.foxconcursos.domain.Simulado;
-import br.com.foxconcursos.dto.CursoDTO;
 import br.com.foxconcursos.dto.DataResponse;
 import br.com.foxconcursos.dto.DisciplinaQuestoesResponse;
 import br.com.foxconcursos.dto.ProdutoSimuladoResponse;
@@ -31,16 +29,19 @@ public class SimuladoService {
     private final CursoService cursoService;
     private final DisciplinaService disciplinaService;
     private final QuestaoSimuladoService questaoSimuladoService;
+    private final JdbcTemplate jdbcTemplate;
 
     public SimuladoService(SimuladoRepository simuladoRepository, 
         CursoService cursoService, 
         DisciplinaService disciplinaService,
-        QuestaoSimuladoService questaoSimuladoService) {
+        QuestaoSimuladoService questaoSimuladoService,
+        JdbcTemplate jdbcTemplate) {
         
         this.simuladoRepository = simuladoRepository;
         this.cursoService = cursoService;
         this.disciplinaService = disciplinaService;
         this.questaoSimuladoService = questaoSimuladoService;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     public UUID save(SimuladoRequest request) {
@@ -183,33 +184,28 @@ public class SimuladoService {
     }
 
     public List<SimuladoResumoResponse> findAll() {
-        
-        long start = System.currentTimeMillis();
-        List<Simulado> simulados = simuladoRepository.findAll();
-        long endSimulados = System.currentTimeMillis();
-
-        showTime(start, endSimulados, "simuladoRepository.findAll()");
-        
+       
         List<SimuladoResumoResponse> result =
             new ArrayList<SimuladoResumoResponse>();
 
-        long startCurso = System.currentTimeMillis();
-        for (Simulado s : simulados) {
-            CursoDTO curso = cursoService.findById(s.getCursoId());
-            result.add(new SimuladoResumoResponse(
-                s.getId(), s.getTitulo(), curso.getTitulo(), s.getDataInicio()));
-        }
-        long endCurso = System.currentTimeMillis();
-        showTime(startCurso, endCurso, "for (Simulado s : simulados)");
+        String sql = """
+                    select s.id, s.titulo, s.data_inicio, c.titulo as curso 
+                    from simulados s inner join cursos c on c.id = s.curso_id 
+                    order by s.data_inicio desc
+                """;
+        jdbcTemplate.query(sql, (rs, rowNum) -> {
+            SimuladoResumoResponse obj = new SimuladoResumoResponse(
+                UUID.fromString(rs.getString("id")),
+                rs.getString("titulo"),
+                rs.getString("curso"),
+                rs.getTimestamp("data_inicio").toLocalDateTime());  
 
-        long end = System.currentTimeMillis();
-        showTime(start, end, "findAll()");
+            result.add(obj);
+            
+            return obj;
+        }); 
 
         return result;
-    }
-
-    private void showTime(long start, long end, String bloco) {
-        System.out.println(bloco + ": " + (end - start) / 1000.0 );
     }
 
     public UUID getCursoAssociado(UUID id) {
@@ -228,23 +224,44 @@ public class SimuladoService {
 
     public List<SimuladoResumoResponse> findByExample(String filter) throws Exception {
        
-        Simulado simulado = FoxUtils.criarObjetoDinamico(filter, Simulado.class);
-        ExampleMatcher matcher = ExampleMatcher.matching()
-            .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING) // Correspondência parcial
-            .withIgnoreCase() // Ignorar case
-            .withIgnoreNullValues(); // Ignorar valores nulos
-        
-        Example<Simulado> example = Example.of(simulado, matcher);
-              
-        Iterable<Simulado> simulados = simuladoRepository.findAll(example);
-        
-        List<SimuladoResumoResponse> result = new ArrayList<SimuladoResumoResponse>();
+        List<SimuladoResumoResponse> result =
+            new ArrayList<SimuladoResumoResponse>();           
 
-        for (Simulado s : simulados) {
-            CursoDTO curso = cursoService.findById(s.getCursoId());
-            result.add(new SimuladoResumoResponse(
-                s.getId(), s.getTitulo(), curso.getTitulo(), s.getDataInicio()));
-        }
+        Simulado simulado = FoxUtils.criarObjetoDinamico(filter, Simulado.class);
+
+        String sql = """
+                select s.id, s.titulo, s.data_inicio, c.titulo as curso 
+                from simulados s inner join cursos c on c.id = s.curso_id where 1=1 
+            """;
+
+        if (simulado.getId() != null)
+            sql += " and s.id = '" + simulado.getId() + "' ";
+        if (simulado.getTitulo() != null)
+            sql += " and s.titulo ilike '%" + simulado.getTitulo() + "%' ";
+        if (simulado.getDescricao() != null)
+            sql += " and s.descricao ilike '%" + simulado.getDescricao() + "%' ";
+        if (simulado.getAlternativasPorQuestao() != null)
+            sql += " and s.alternativas_por_questao = " + simulado.getAlternativasPorQuestao() + " ";
+        if (simulado.getQuantidadeQuestoes() != null)
+            sql += " and s.quantidade_questoes = " + simulado.getQuantidadeQuestoes() + " ";
+        if (simulado.getDataInicio() != null)
+            sql += " and s.data_inicio = '" + simulado.getDataInicio() + "' ";
+        if (simulado.getValor() != null)
+            sql += " and s.valor = " + simulado.getValor() + " ";
+
+        sql += " order by s.data_inicio desc";
+
+        jdbcTemplate.query(sql, (rs, rowNum) -> {
+            SimuladoResumoResponse obj = new SimuladoResumoResponse(
+                UUID.fromString(rs.getString("id")),
+                rs.getString("titulo"),
+                rs.getString("curso"),
+                rs.getTimestamp("data_inicio").toLocalDateTime());  
+
+            result.add(obj);
+            
+            return obj;
+        }); 
 
         return result;
     }
