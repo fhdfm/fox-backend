@@ -175,6 +175,7 @@ public class SimuladoService {
         int minutos = Integer.parseInt(duracaoSplit[1]);
         dataInicio = dataInicio.plusHours(horas);
         dataInicio = dataInicio.plusMinutes(minutos);
+        dataInicio = dataInicio.plusSeconds(59);
         return dataInicio;
     }
 
