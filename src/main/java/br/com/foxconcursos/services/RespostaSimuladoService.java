@@ -3,6 +3,7 @@ package br.com.foxconcursos.services;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -56,17 +57,19 @@ public class RespostaSimuladoService {
         UsuarioLogado user =
             usuarioService.loadUserByUsername(login);
 
-        RespostaSimulado resposta = 
+        Optional<RespostaSimulado> respostaDB = 
             this.respostaSimuladoRepository.findBySimuladoIdAndUsuarioId(
                 simuladoId, user.getId());
-
-        if (resposta == null || resposta.getId() == null) {
-            resposta = new RespostaSimulado();
+        
+        RespostaSimulado resposta = new RespostaSimulado();
+        if (respostaDB.isEmpty()) {
             resposta.setUsuarioId(user.getId());
             resposta.setSimuladoId(simuladoId);
             resposta.setDataInicio(LocalDateTime.now());
             resposta.setStatus(StatusSimulado.EM_ANDAMENTO);
             resposta = this.respostaSimuladoRepository.save(resposta);
+        } else {
+            resposta = respostaDB.get();
         }
 
         return resposta.getId();
@@ -76,14 +79,14 @@ public class RespostaSimuladoService {
 
         UsuarioLogado user = usuarioService.loadUserByUsername(login);
 
-        RespostaSimulado respostaSimulado = 
+        Optional<RespostaSimulado> respostaSimulado = 
             this.respostaSimuladoRepository.findBySimuladoIdAndUsuarioId(
                 simuladoId, user.getId());
         
-        if (respostaSimulado == null)
+        if (respostaSimulado.isEmpty())
             return StatusSimulado.NAO_INICIADO;
         
-        return respostaSimulado.getStatus();
+        return respostaSimulado.get().getStatus();
     }
 
     public UUID salvar(UUID simuladoId, String login, 
@@ -92,30 +95,35 @@ public class RespostaSimuladoService {
         UsuarioLogado user =
             this.usuarioService.loadUserByUsername(login);
         
-        UUID respostaSimuladoId =
-        this.respostaSimuladoRepository.findBySimuladoIdAndUsuarioId(
-            simuladoId, user.getId()).getId();
+        Optional<RespostaSimulado> respostaSimulado = 
+            this.respostaSimuladoRepository.findBySimuladoIdAndUsuarioId(
+                simuladoId, user.getId());
         
-        RespostaSimuladoQuestao respostaDB =
+        UUID respostaSimuladoId = respostaSimulado.isPresent() ? 
+            respostaSimulado.get().getId() : null;
+        
+        Optional<RespostaSimuladoQuestao> respostaDB =
             this.respostaQuestaoSimuladoRepository.findByRespostaSimuladoIdAndQuestaoId(
             respostaSimuladoId, resposta.getQuestaoId());
 
         Boolean acertou = itemQuestaoSimuladoService.estaCorreta(
             resposta.getItemQuestaoId(), resposta.getQuestaoId());
 
-        if (respostaDB == null) {
+        if (respostaDB.isEmpty()) {
             RespostaSimuladoQuestao respostaQuestao =
             new RespostaSimuladoQuestao(
                 respostaSimuladoId, resposta.getQuestaoId(), 
                 resposta.getItemQuestaoId(), acertou);
-            respostaDB = respostaQuestaoSimuladoRepository.save(respostaQuestao);
-        } else {
-            respostaDB.setCorreta(acertou);
-            respostaDB.setItemQuestaoId(resposta.getItemQuestaoId());
-            respostaQuestaoSimuladoRepository.save(respostaDB);
+            return respostaQuestaoSimuladoRepository.save(
+                respostaQuestao).getId();
         }
-        
-        return respostaDB.getId();
+
+        RespostaSimuladoQuestao respostaQuestao = respostaDB.get();
+        respostaQuestao.setCorreta(acertou);
+        respostaQuestao.setItemQuestaoId(resposta.getItemQuestaoId());
+        respostaQuestaoSimuladoRepository.save(respostaQuestao);
+                
+        return respostaQuestao.getId();
     }
 
     @Transactional
@@ -149,9 +157,12 @@ public class RespostaSimuladoService {
         UsuarioLogado user =
             usuarioService.loadUserByUsername(login);
         
-        RespostaSimulado respostaSimulado =
+        Optional<RespostaSimulado> respostaSimulado =
             this.respostaSimuladoRepository.findBySimuladoIdAndUsuarioId(
             simuladoId, user.getId());
+
+        if (respostaSimulado.isEmpty())
+            throw new IllegalArgumentException("Simulado não iniciado.");
         
         // for (RespostaSimuladoRequest resposta : respostas) {
 
@@ -174,16 +185,16 @@ public class RespostaSimuladoService {
         //     respostaQuestaoSimuladoRepository.save(respostaQuestao);
         // }
         
-        respostaSimulado.setAcertos(0);
-        respostaSimulado.setAcertosUltimas15(0);
-        respostaSimulado.setDataFim(horaFim);
-        respostaSimulado.setStatus(StatusSimulado.FINALIZADO);
+        respostaSimulado.get().setAcertos(0);
+        respostaSimulado.get().setAcertosUltimas15(0);
+        respostaSimulado.get().setDataFim(horaFim);
+        respostaSimulado.get().setStatus(StatusSimulado.FINALIZADO);
 
-        this.respostaSimuladoRepository.save(respostaSimulado);
+        this.respostaSimuladoRepository.save(respostaSimulado.get());
 
         contabilizar(simuladoId, user.getId());
 
-        return respostaSimulado.getId();
+        return respostaSimulado.get().getId();
     }
 
     
@@ -202,12 +213,12 @@ public class RespostaSimuladoService {
         UsuarioLogado usuarioLogado =
             this.usuarioService.loadUserByUsername(login);
         
-        RespostaSimulado respostaSimulado = this.respostaSimuladoRepository
+        Optional<RespostaSimulado> respostaSimulado = this.respostaSimuladoRepository
             .findBySimuladoIdAndUsuarioId(simulado.getId(), usuarioLogado.getId());
         
-        if (respostaSimulado != null) {
+        if (respostaSimulado.isPresent()) {
             for (DisciplinaQuestoesResponse disciplinas : simulado.getDisciplinas()) {
-                preencherQuestoesAluno(disciplinas.getQuestoes(), respostaSimulado.getId());
+                preencherQuestoesAluno(disciplinas.getQuestoes(), respostaSimulado.get().getId());
             }
         }
 
@@ -216,11 +227,11 @@ public class RespostaSimuladoService {
 
     private void preencherQuestoesAluno(List<QuestaoSimuladoResponse> questoes, UUID respostaId) {
         for (QuestaoSimuladoResponse questao : questoes) {
-            RespostaSimuladoQuestao resposta = 
+            Optional<RespostaSimuladoQuestao> resposta = 
                 respostaQuestaoSimuladoRepository.findByRespostaSimuladoIdAndQuestaoId(
                     respostaId, questao.getId());
-            if (resposta != null)
-                preencherItem(questao.getAlternativas(), resposta.getItemQuestaoId());
+            if (resposta.isPresent())
+                preencherItem(questao.getAlternativas(), resposta.get().getItemQuestaoId());
         }
     }
 

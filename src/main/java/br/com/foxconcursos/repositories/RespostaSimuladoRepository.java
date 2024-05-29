@@ -2,6 +2,7 @@ package br.com.foxconcursos.repositories;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jdbc.repository.query.Query;
@@ -12,7 +13,7 @@ import br.com.foxconcursos.repositories.custom.CustomCrudRepository;
 
 public interface RespostaSimuladoRepository extends CustomCrudRepository<RespostaSimulado, UUID> {
 
-    RespostaSimulado findBySimuladoIdAndUsuarioId(UUID simuladoId, UUID usuarioId);
+    Optional<RespostaSimulado> findBySimuladoIdAndUsuarioId(UUID simuladoId, UUID usuarioId);
     RespostaSimulado findBySimuladoIdAndUsuarioIdAndStatus(UUID simuladoId, UUID usuarioId, StatusSimulado status);
 
     @Query("SELECT s.id " +
