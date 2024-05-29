@@ -184,18 +184,32 @@ public class SimuladoService {
 
     public List<SimuladoResumoResponse> findAll() {
         
+        long start = System.currentTimeMillis();
         List<Simulado> simulados = simuladoRepository.findAll();
+        long endSimulados = System.currentTimeMillis();
+
+        showTime(start, endSimulados, "simuladoRepository.findAll()");
         
         List<SimuladoResumoResponse> result =
             new ArrayList<SimuladoResumoResponse>();
 
+        long startCurso = System.currentTimeMillis();
         for (Simulado s : simulados) {
             CursoDTO curso = cursoService.findById(s.getCursoId());
             result.add(new SimuladoResumoResponse(
                 s.getId(), s.getTitulo(), curso.getTitulo(), s.getDataInicio()));
         }
+        long endCurso = System.currentTimeMillis();
+        showTime(startCurso, endCurso, "for (Simulado s : simulados)");
+
+        long end = System.currentTimeMillis();
+        showTime(start, end, "findAll()");
 
         return result;
+    }
+
+    private void showTime(long start, long end, String bloco) {
+        System.out.println(bloco + ": " + (end - start) / 1000.0 );
     }
 
     public UUID getCursoAssociado(UUID id) {
