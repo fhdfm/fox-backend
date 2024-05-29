@@ -41,6 +41,7 @@ public class MatriculaController {
         consumes = MediaType.APPLICATION_JSON_VALUE, 
         produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> myeggs(@RequestBody TesteMP testeMP) {
+        System.out.println("TesteMP: " + testeMP.toString());
         return ResponseEntity.status(HttpStatus.OK).body(testeMP.toString());
     }
 
