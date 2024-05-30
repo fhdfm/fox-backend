@@ -34,7 +34,7 @@ public class ProdutoService {
 
         String queryCursosNaoMatriculados = """
             select c.*, b.nome from cursos c join bancas b on c.banca_id = b.id 
-            where c.status = ? and c.data_termino <= ? not exists (select 1 from matriculas m 
+            where c.status = ? and c.data_termino <= ? and not exists (select 1 from matriculas m 
             where m.produto_id = c.id and m.usuario_id = ? 
             and m.tipo_produto = ?)                
         """;
