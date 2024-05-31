@@ -68,8 +68,7 @@ public class ProdutoService {
             and m.usuario_id = ? and m.tipo_produto = ?) 
             and not exists (select 1 from matriculas m join cursos c on m.produto_id = c.id 
             where s.curso_id = c.id and c.status = ? and m.usuario_id = ? and m.tipo_produto = ?) 
-            and s.data_inicio interval '1 hour' * extract(hour from to_timestamp(s.duracao, 'HH24:MI:SS')) 
-            interval '1 minute' * extract(minute from to_timestamp(s.duracao, 'HH24:MI:SS')) <= ?
+            AND s.data_inicio + (to_timestamp(s.duracao, 'HH24:MI')::time) <= ?
         """;
 
         jdbcTemplate.query(simuladosNaoMatriculados, 
