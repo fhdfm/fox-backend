@@ -28,6 +28,10 @@ public class UsuarioLogado implements UserDetails {
         return this.usuario.getId();
     }
 
+    public String getCpf() {
+        return this.usuario.getCpf();
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (this.usuario.getPerfil() == PerfilUsuario.ADMIN)

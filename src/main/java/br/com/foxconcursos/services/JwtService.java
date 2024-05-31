@@ -60,6 +60,7 @@ public class JwtService {
             .claim("scope", scopes)
             .claim("nome", usuario.getNome())
             .claim("id", usuario.getId())
+            .claim("cpf", usuario.getCpf())
             .build();
 
         return this.encoder.encode
