@@ -139,4 +139,8 @@ public class QuestaoSimuladoService {
         
         return result;
     }
+
+    public void delete(UUID questaoId) {
+        this.questaoSimuladoRepository.deleteById(questaoId);
+    }
 }

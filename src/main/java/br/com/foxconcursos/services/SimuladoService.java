@@ -26,19 +26,16 @@ import br.com.foxconcursos.util.FoxUtils;
 public class SimuladoService {
     
     private final SimuladoRepository simuladoRepository;
-    private final CursoService cursoService;
     private final DisciplinaService disciplinaService;
     private final QuestaoSimuladoService questaoSimuladoService;
     private final JdbcTemplate jdbcTemplate;
 
     public SimuladoService(SimuladoRepository simuladoRepository, 
-        CursoService cursoService, 
         DisciplinaService disciplinaService,
         QuestaoSimuladoService questaoSimuladoService,
         JdbcTemplate jdbcTemplate) {
         
         this.simuladoRepository = simuladoRepository;
-        this.cursoService = cursoService;
         this.disciplinaService = disciplinaService;
         this.questaoSimuladoService = questaoSimuladoService;
         this.jdbcTemplate = jdbcTemplate;
@@ -269,6 +266,13 @@ public class SimuladoService {
 
     public int obterQuantidadeQuestoes(UUID id) {
         return simuladoRepository.obterQuantidadeQuestoes(id);
+    }
+
+    public void decrementarQuestoes(UUID simuladoId) {
+        Simulado simulado = simuladoRepository.findById(simuladoId).orElseThrow(
+            () -> new IllegalArgumentException("Simulado não encontrado: " + simuladoId));
+        simulado.setQuantidadeQuestoes(simulado.getQuantidadeQuestoes() - 1);
+        simuladoRepository.save(simulado);
     }
 
 }
