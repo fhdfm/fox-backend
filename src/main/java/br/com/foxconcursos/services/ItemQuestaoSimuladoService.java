@@ -44,4 +44,8 @@ public class ItemQuestaoSimuladoService {
         return itemQuestaoSimuladoRepository.obterResposta(id, questaoSimuladoId);
     }
 
+    public void deleteByQuestaoSimuladoId(UUID questaoId) {
+        itemQuestaoSimuladoRepository.deleteByQuestaoSimuladoId(questaoId);
+    }
+
 }

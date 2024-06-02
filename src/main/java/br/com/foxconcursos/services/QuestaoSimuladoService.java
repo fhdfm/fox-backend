@@ -140,7 +140,9 @@ public class QuestaoSimuladoService {
         return result;
     }
 
+    @Transactional
     public void delete(UUID questaoId) {
+        this.itemQuestaoSimuladoService.deleteByQuestaoSimuladoId(questaoId);
         this.questaoSimuladoRepository.deleteById(questaoId);
     }
 }

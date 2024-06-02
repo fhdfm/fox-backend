@@ -14,4 +14,6 @@ public interface ItemQuestaoSimuladoRepository extends ListCrudRepository<ItemQu
 
     @Query("SELECT correta FROM itens_questao_simulado WHERE id = :id AND questao_simulado_id = :questaoSimuladoId")
     Boolean obterResposta(UUID id, UUID questaoSimuladoId);
+
+    void deleteByQuestaoSimuladoId(UUID questaoId);
 }
