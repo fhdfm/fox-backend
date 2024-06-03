@@ -12,6 +12,7 @@ public class SimuladoResumoResponse {
     private String titulo;
     private String curso;
     private Date data;
+    private Date dataFim;
 
     public SimuladoResumoResponse() {
     }
@@ -21,6 +22,15 @@ public class SimuladoResumoResponse {
         this.titulo = titulo;
         this.curso = curso;
         this.data = FoxUtils.convertLocalDateTimeToDate(data);
+    }
+
+    public SimuladoResumoResponse(UUID id, String titulo, String curso, 
+        LocalDateTime data, LocalDateTime dataFim) {
+        this.id = id;
+        this.titulo = titulo;
+        this.curso = curso;
+        this.data = FoxUtils.convertLocalDateTimeToDate(data);
+        this.dataFim = FoxUtils.convertLocalDateTimeToDate(dataFim);
     }
 
     public UUID getId() {
@@ -37,5 +47,13 @@ public class SimuladoResumoResponse {
 
     public Date getData() {
         return this.data;
+    }
+
+    public Date getDataFim() {
+        return this.dataFim;
+    }
+
+    public void setDataFim(Date dataFim) {
+        this.dataFim = dataFim;
     }
 }

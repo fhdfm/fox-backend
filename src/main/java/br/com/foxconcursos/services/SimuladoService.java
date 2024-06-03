@@ -187,16 +187,21 @@ public class SimuladoService {
             new ArrayList<SimuladoResumoResponse>();
 
         String sql = """
-                    select s.id, s.titulo, s.data_inicio, c.titulo as curso 
+                    select s.id, s.titulo, s.data_inicio, c.titulo as curso, s.duracao  
                     from simulados s inner join cursos c on c.id = s.curso_id 
                     order by s.data_inicio desc
                 """;
         jdbcTemplate.query(sql, (rs, rowNum) -> {
+            LocalDateTime dataInicio = rs.getTimestamp(
+                "data_inicio").toLocalDateTime();
+            LocalDateTime dataFim = this.calcularHoraFim(dataInicio, 
+                rs.getString("duracao"));
             SimuladoResumoResponse obj = new SimuladoResumoResponse(
                 UUID.fromString(rs.getString("id")),
                 rs.getString("titulo"),
                 rs.getString("curso"),
-                rs.getTimestamp("data_inicio").toLocalDateTime());  
+                dataInicio,
+                dataFim);  
 
             result.add(obj);
             
@@ -228,7 +233,7 @@ public class SimuladoService {
         Simulado simulado = FoxUtils.criarObjetoDinamico(filter, Simulado.class);
 
         String sql = """
-                select s.id, s.titulo, s.data_inicio, c.titulo as curso 
+                select s.id, s.titulo, s.data_inicio, c.titulo as curso, s.duracao  
                 from simulados s inner join cursos c on c.id = s.curso_id where 1=1 
             """;
 
@@ -250,11 +255,19 @@ public class SimuladoService {
         sql += " order by s.data_inicio desc";
 
         jdbcTemplate.query(sql, (rs, rowNum) -> {
+            
+            LocalDateTime dataInicio = rs.getTimestamp(
+                "data_inicio").toLocalDateTime();
+            
+            LocalDateTime dataFim = this.calcularHoraFim(dataInicio, 
+                rs.getString("duracao"));
+
             SimuladoResumoResponse obj = new SimuladoResumoResponse(
                 UUID.fromString(rs.getString("id")),
                 rs.getString("titulo"),
                 rs.getString("curso"),
-                rs.getTimestamp("data_inicio").toLocalDateTime());  
+                dataInicio,
+                dataFim);
 
             result.add(obj);
             
