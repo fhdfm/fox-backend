@@ -168,6 +168,65 @@ public class RespostaSimuladoService {
 
             contabilizar(simuladoId, resposta.getUsuarioId());
         }
+
+        finalizarViaJobNaoIniciados(simuladoId);
+    }
+
+    private void finalizarViaJobNaoIniciados(UUID simuladoId) {
+
+        List<UUID> alunos = obterAlunosQueNaoIniciarmOSimulado(simuladoId);
+        if (!alunos.isEmpty()) {
+            for (UUID aluno : alunos) {
+                RespostaSimulado resposta = new RespostaSimulado();
+                resposta.setUsuarioId(aluno);
+                resposta.setSimuladoId(simuladoId);
+                resposta.setDataInicio(LocalDateTime.now());
+                resposta.setDataFim(LocalDateTime.now());
+                resposta.setStatus(StatusSimulado.FINALIZADO);
+                resposta.setAcertos(0);
+                resposta.setAcertosUltimas15(0);
+                this.respostaSimuladoRepository.save(resposta);
+            }
+        }
+    }
+
+    private List<UUID> obterAlunosQueNaoIniciarmOSimulado(UUID simuladoId) {
+        
+        String sql = """
+            SELECT 
+                m.usuario_id
+            FROM 
+                matriculas m
+            JOIN 
+                cursos c ON m.produto_id = c.id AND m.tipo_produto = 'CURSO'
+            JOIN 
+                simulados s ON s.curso_id = c.id
+            LEFT JOIN 
+                respostas_simulado rs ON rs.simulado_id = s.id AND rs.usuario_id = m.usuario_id
+            WHERE 
+                s.id = :simuladoId
+                AND rs.id IS NULL
+            
+            UNION
+            
+            SELECT 
+                m.usuario_id
+            FROM 
+                matriculas m
+            JOIN 
+                simulados s ON m.produto_id = s.id AND m.tipo_produto = 'SIMULADO'
+            LEFT JOIN 
+                respostas_simulado rs ON rs.simulado_id = s.id AND rs.usuario_id = m.usuario_id
+            WHERE 
+                s.id = :simuladoId
+                AND rs.id IS NULL;
+            """;
+
+         List<UUID> alunos = jdbcTemplate.query(sql, (rs, rowNum) -> {
+            return UUID.fromString(rs.getString("usuario_id"));
+        }, simuladoId);
+
+        return alunos;
     }
 
     @Transactional
