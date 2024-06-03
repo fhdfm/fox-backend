@@ -61,16 +61,15 @@ public class RespostaSimuladoService {
             this.respostaSimuladoRepository.findBySimuladoIdAndUsuarioId(
                 simuladoId, user.getId());
         
+        if (respostaDB.isPresent())
+            return respostaDB.get().getId();
+
         RespostaSimulado resposta = new RespostaSimulado();
-        if (respostaDB.isEmpty()) {
-            resposta.setUsuarioId(user.getId());
-            resposta.setSimuladoId(simuladoId);
-            resposta.setDataInicio(LocalDateTime.now());
-            resposta.setStatus(StatusSimulado.EM_ANDAMENTO);
-            resposta = this.respostaSimuladoRepository.save(resposta);
-        } else {
-            resposta = respostaDB.get();
-        }
+        resposta.setUsuarioId(user.getId());
+        resposta.setSimuladoId(simuladoId);
+        resposta.setDataInicio(LocalDateTime.now());
+        resposta.setStatus(StatusSimulado.EM_ANDAMENTO);
+        resposta = this.respostaSimuladoRepository.save(resposta);
 
         return resposta.getId();
     }
@@ -89,6 +88,7 @@ public class RespostaSimuladoService {
         return respostaSimulado.get().getStatus();
     }
 
+    @Transactional
     public UUID salvar(UUID simuladoId, String login, 
         RespostaSimuladoRequest resposta) {
         
@@ -101,29 +101,54 @@ public class RespostaSimuladoService {
         
         UUID respostaSimuladoId = respostaSimulado.isPresent() ? 
             respostaSimulado.get().getId() : null;
+
+        System.out.println("respostaSimuladoId: " + respostaSimuladoId);
+
+        if (respostaSimuladoId == null) {
+            respostaSimuladoId = iniciar(simuladoId, login);
+        }
+
+        System.out.println("respostaSimuladoId: " + respostaSimuladoId);
         
-        Optional<RespostaSimuladoQuestao> respostaDB =
+        List<RespostaSimuladoQuestao> respostaDB =
             this.respostaQuestaoSimuladoRepository.findByRespostaSimuladoIdAndQuestaoId(
             respostaSimuladoId, resposta.getQuestaoId());
 
         Boolean acertou = itemQuestaoSimuladoService.estaCorreta(
             resposta.getItemQuestaoId(), resposta.getQuestaoId());
 
-        if (respostaDB.isEmpty()) {
-            RespostaSimuladoQuestao respostaQuestao =
-            new RespostaSimuladoQuestao(
-                respostaSimuladoId, resposta.getQuestaoId(), 
-                resposta.getItemQuestaoId(), acertou);
-            return respostaQuestaoSimuladoRepository.save(
-                respostaQuestao).getId();
-        }
+        RespostaSimuladoQuestao respostaQuestao = null;
 
-        RespostaSimuladoQuestao respostaQuestao = respostaDB.get();
-        respostaQuestao.setCorreta(acertou);
-        respostaQuestao.setItemQuestaoId(resposta.getItemQuestaoId());
-        respostaQuestaoSimuladoRepository.save(respostaQuestao);
-                
-        return respostaQuestao.getId();
+        if (respostaDB.size() == 1) {
+            respostaQuestao = respostaDB.get(0);
+            respostaQuestao.setCorreta(acertou);
+            respostaQuestao.setItemQuestaoId(resposta.getItemQuestaoId());
+            return respostaQuestaoSimuladoRepository.save(respostaQuestao).getId();
+        } else if (respostaDB.size() > 1) {
+            System.out.println("O simulado possui mais de uma resposta para a mesma questão.");
+            System.out.println("Simulado: " + simuladoId);
+            System.out.println("Usuário: " + user.getId());
+            System.out.println("Questão: " + resposta.getQuestaoId());
+            System.out.println("Respostas: " + respostaDB.size());
+            System.out.println("respostaSimuladoId: " + respostaSimuladoId);
+
+            respostaQuestao = respostaDB.get(0);
+            respostaQuestao.setCorreta(acertou);
+            respostaQuestao.setItemQuestaoId(resposta.getItemQuestaoId());
+            respostaQuestao = respostaQuestaoSimuladoRepository.save(respostaQuestao);
+
+            for (int i = 1; i < respostaDB.size(); i++) {
+                respostaQuestaoSimuladoRepository.delete(respostaDB.get(i));
+            }
+
+            return respostaQuestao.getId();
+        } else {
+            respostaQuestao = 
+                new RespostaSimuladoQuestao(
+                    respostaSimuladoId, resposta.getQuestaoId(), 
+                    resposta.getItemQuestaoId(), acertou);
+            return respostaQuestaoSimuladoRepository.save(respostaQuestao).getId();
+        }
     }
 
     @Transactional
@@ -227,11 +252,12 @@ public class RespostaSimuladoService {
 
     private void preencherQuestoesAluno(List<QuestaoSimuladoResponse> questoes, UUID respostaId) {
         for (QuestaoSimuladoResponse questao : questoes) {
-            Optional<RespostaSimuladoQuestao> resposta = 
+            List<RespostaSimuladoQuestao> resposta = 
                 respostaQuestaoSimuladoRepository.findByRespostaSimuladoIdAndQuestaoId(
                     respostaId, questao.getId());
-            if (resposta.isPresent())
-                preencherItem(questao.getAlternativas(), resposta.get().getItemQuestaoId());
+            if (resposta.size() == 1)
+                preencherItem(questao.getAlternativas(), 
+                resposta.get(0).getItemQuestaoId());
         }
     }
 

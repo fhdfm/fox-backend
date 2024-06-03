@@ -1,7 +1,6 @@
 package br.com.foxconcursos.repositories;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import br.com.foxconcursos.domain.RespostaSimuladoQuestao;
@@ -9,7 +8,7 @@ import br.com.foxconcursos.repositories.custom.CustomCrudRepository;
 
 public interface RespostaQuestaoSimuladoRepository extends CustomCrudRepository<RespostaSimuladoQuestao, UUID> {
     
-    Optional<RespostaSimuladoQuestao> findByRespostaSimuladoIdAndQuestaoId(
+    List<RespostaSimuladoQuestao> findByRespostaSimuladoIdAndQuestaoId(
         UUID respotaSimuladoId, UUID questaoId);
 
     List<RespostaSimuladoQuestao> findByRespostaSimuladoId(UUID respostaSimuladoId);

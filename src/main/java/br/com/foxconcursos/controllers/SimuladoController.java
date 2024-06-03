@@ -108,6 +108,16 @@ public class SimuladoController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping(value = "/api/admin/simulados/{simuladoId}/questoes/{questaoId}")
+    public ResponseEntity<String> deleteQuestao(@PathVariable UUID simuladoId, 
+        @PathVariable UUID questaoId) {
+        this.questaoSimuladoService.delete(questaoId);
+        simuladoService.decrementarQuestoes(simuladoId);
+        return ResponseEntity.status(HttpStatus.OK)
+            .body("Questão deletada com sucesso.");
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/api/admin/simulados/{simuladoId}/questoes/{questaoId}")
     public ResponseEntity<QuestaoSimuladoResponse> findQuestaoById(
         @PathVariable UUID simuladoId, @PathVariable UUID questaoId) {
