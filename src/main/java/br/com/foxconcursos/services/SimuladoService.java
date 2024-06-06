@@ -288,4 +288,9 @@ public class SimuladoService {
         simuladoRepository.save(simulado);
     }
 
+    public boolean isExpirado(UUID simuladoId) {
+        LocalDateTime horaAtual = LocalDateTime.now();
+        return this.simuladoRepository.simuladosExpirados(simuladoId, horaAtual).size() > 0;
+    }
+
 }

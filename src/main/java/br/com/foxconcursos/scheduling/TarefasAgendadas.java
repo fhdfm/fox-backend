@@ -35,7 +35,7 @@ public class TarefasAgendadas {
                 passwordRepository.delete(password.getToken());
     }
 
-    //@Scheduled(cron = "0 */5 * * * *") // de 5 em 5 minutos
+    @Scheduled(cron = "0 */5 * * * *") // de 5 em 5 minutos
     public void finalizarSimulado() {
 
         List<UUID> simulados = respostaSimuladoService

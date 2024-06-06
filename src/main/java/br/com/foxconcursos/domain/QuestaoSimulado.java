@@ -16,6 +16,7 @@ public class QuestaoSimulado {
     private UUID simuladoId;
     private String enunciado;
     private UUID disciplinaId;
+    private boolean anulada;
 
     public QuestaoSimulado() {
 
@@ -65,5 +66,13 @@ public class QuestaoSimulado {
 
     public void setDisciplinaId(UUID disciplinaId) {
         this.disciplinaId = disciplinaId;
+    }
+
+    public boolean isAnulada() {
+        return anulada;
+    }
+
+    public void setAnulada(boolean anulada) {
+        this.anulada = anulada;
     }
 }

@@ -1,5 +1,6 @@
 package br.com.foxconcursos.repositories;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -11,9 +12,15 @@ import br.com.foxconcursos.repositories.custom.CustomCrudRepository;
 public interface SimuladoRepository extends CustomCrudRepository<Simulado, UUID> {
     
     List<Simulado> findByCursoId(UUID cursoId);
+    
     Boolean existsByCursoId(UUID cursoId);
 
-    @Query("select count(s.id) from simulados s inner join questoes_simulado qs on s.id = qs.simulado_id where s.id = :id")
+    @Query("select count(s.id) from simulados s inner join questoes_simulado qs on s.id = qs.simulado_id where s.id = :id and qs.anulada = false")
     int obterQuantidadeQuestoes(UUID id);
+
+    @Query("SELECT s.id FROM simulados s " 
+      + "WHERE s.data_inicio + (SUBSTRING(s.duracao FROM 1 FOR 2)::INTEGER || ' hours')::INTERVAL "
+      + "(SUBSTRING(s.duracao FROM 4 FOR 2)::INTEGER || ' minutes')::INTERVAL < :horaAtual and s.id = :simuladoId")
+    List<UUID> simuladosExpirados(UUID simuladoId, LocalDateTime horaAtual);
 
 }

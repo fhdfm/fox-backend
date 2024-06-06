@@ -60,6 +60,7 @@ CREATE TABLE questoes_simulado (
     simulado_id UUID NOT NULL,
     enunciado TEXT NOT NULL,
     disciplina_id UUID NOT NULL,
+    anulada BOOLEAN NOT NULL DEFAULT false,
     FOREIGN KEY (simulado_id) REFERENCES simulados(id),
     FOREIGN KEY (disciplina_id) REFERENCES disciplinas(id)
 );
@@ -167,4 +168,15 @@ CREATE TABLE recuperar_password (
     token TEXT NOT NULL PRIMARY KEY,
     usuario_id UUID NOT NULL,
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+);
+
+CREATE TABLE recursos (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+    usuario_id UUID NOT NULL,
+    questao_id UUID NOT NULL,
+    status VARCHAR(50) NOT NULL, -- Adapte o tamanho conforme necessário
+    fundamentacao TEXT NOT NULL,
+    data_abertura TIMESTAMP NOT NULL,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+    FOREIGN KEY (questao_id) REFERENCES questoes_simulado(id)
 );

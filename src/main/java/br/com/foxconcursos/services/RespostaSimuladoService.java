@@ -14,7 +14,6 @@ import br.com.foxconcursos.domain.RespostaSimulado;
 import br.com.foxconcursos.domain.RespostaSimuladoQuestao;
 import br.com.foxconcursos.domain.Simulado;
 import br.com.foxconcursos.domain.StatusSimulado;
-import br.com.foxconcursos.domain.UsuarioLogado;
 import br.com.foxconcursos.dto.DisciplinaQuestoesResponse;
 import br.com.foxconcursos.dto.ItemQuestaoResponse;
 import br.com.foxconcursos.dto.QuestaoSimuladoResponse;
@@ -24,7 +23,6 @@ import br.com.foxconcursos.dto.ResultadoSimuladoResponse;
 import br.com.foxconcursos.dto.SimuladoCompletoResponse;
 import br.com.foxconcursos.repositories.RespostaQuestaoSimuladoRepository;
 import br.com.foxconcursos.repositories.RespostaSimuladoRepository;
-import br.com.foxconcursos.services.impl.UsuarioServiceImpl;
 import br.com.foxconcursos.util.FoxUtils;
 
 @Service
@@ -33,17 +31,15 @@ public class RespostaSimuladoService {
     private SimuladoService simuladoService;
     private final RespostaSimuladoRepository respostaSimuladoRepository;
     private final RespostaQuestaoSimuladoRepository respostaQuestaoSimuladoRepository;
-    private final UsuarioServiceImpl usuarioService;
     private final ItemQuestaoSimuladoService itemQuestaoSimuladoService;
     private final JdbcTemplate jdbcTemplate;
 
     public RespostaSimuladoService(RespostaSimuladoRepository respostaSimuladoRepository, 
         RespostaQuestaoSimuladoRepository respostaQuestaoSimuladoRepository,
-        UsuarioServiceImpl usuarioService, SimuladoService simuladoService, 
+        SimuladoService simuladoService, 
         ItemQuestaoSimuladoService itemQuestaoSimuladoService, 
         JdbcTemplate jdbcTemplate) {
         
-        this.usuarioService = usuarioService;
         this.respostaSimuladoRepository = respostaSimuladoRepository;
         this.respostaQuestaoSimuladoRepository = respostaQuestaoSimuladoRepository;
         this.simuladoService = simuladoService;
@@ -52,20 +48,17 @@ public class RespostaSimuladoService {
 
     }
 
-    public UUID iniciar(UUID simuladoId, String login) {
+    public UUID iniciar(UUID simuladoId, UUID usuarioId) {
         
-        UsuarioLogado user =
-            usuarioService.loadUserByUsername(login);
-
         Optional<RespostaSimulado> respostaDB = 
             this.respostaSimuladoRepository.findBySimuladoIdAndUsuarioId(
-                simuladoId, user.getId());
+                simuladoId, usuarioId);
         
         if (respostaDB.isPresent())
             return respostaDB.get().getId();
 
         RespostaSimulado resposta = new RespostaSimulado();
-        resposta.setUsuarioId(user.getId());
+        resposta.setUsuarioId(usuarioId);
         resposta.setSimuladoId(simuladoId);
         resposta.setDataInicio(LocalDateTime.now());
         resposta.setStatus(StatusSimulado.EM_ANDAMENTO);
@@ -74,30 +67,28 @@ public class RespostaSimuladoService {
         return resposta.getId();
     }
 
-    public StatusSimulado obterStatus(UUID simuladoId, String login) {
-
-        UsuarioLogado user = usuarioService.loadUserByUsername(login);
+    public StatusSimulado obterStatus(UUID simuladoId, UUID usuarioId) {
 
         Optional<RespostaSimulado> respostaSimulado = 
             this.respostaSimuladoRepository.findBySimuladoIdAndUsuarioId(
-                simuladoId, user.getId());
+                simuladoId, usuarioId);
         
         if (respostaSimulado.isEmpty())
             return StatusSimulado.NAO_INICIADO;
+        
+        if (this.simuladoService.isExpirado(simuladoId))
+            return StatusSimulado.FINALIZADO;
         
         return respostaSimulado.get().getStatus();
     }
 
     @Transactional
-    public UUID salvar(UUID simuladoId, String login, 
+    public UUID salvar(UUID simuladoId, UUID usuarioId, 
         RespostaSimuladoRequest resposta) {
-        
-        UsuarioLogado user =
-            this.usuarioService.loadUserByUsername(login);
-        
+                
         Optional<RespostaSimulado> respostaSimulado = 
             this.respostaSimuladoRepository.findBySimuladoIdAndUsuarioId(
-                simuladoId, user.getId());
+                simuladoId, usuarioId);
         
         UUID respostaSimuladoId = respostaSimulado.isPresent() ? 
             respostaSimulado.get().getId() : null;
@@ -105,7 +96,7 @@ public class RespostaSimuladoService {
         System.out.println("respostaSimuladoId: " + respostaSimuladoId);
 
         if (respostaSimuladoId == null) {
-            respostaSimuladoId = iniciar(simuladoId, login);
+            respostaSimuladoId = iniciar(simuladoId, usuarioId);
         }
 
         System.out.println("respostaSimuladoId: " + respostaSimuladoId);
@@ -127,7 +118,7 @@ public class RespostaSimuladoService {
         } else if (respostaDB.size() > 1) {
             System.out.println("O simulado possui mais de uma resposta para a mesma questão.");
             System.out.println("Simulado: " + simuladoId);
-            System.out.println("Usuário: " + user.getId());
+            System.out.println("Usuário: " + usuarioId);
             System.out.println("Questão: " + resposta.getQuestaoId());
             System.out.println("Respostas: " + respostaDB.size());
             System.out.println("respostaSimuladoId: " + respostaSimuladoId);
@@ -204,7 +195,7 @@ public class RespostaSimuladoService {
             LEFT JOIN 
                 respostas_simulado rs ON rs.simulado_id = s.id AND rs.usuario_id = m.usuario_id
             WHERE 
-                s.id = :simuladoId
+                s.id = ?
                 AND rs.id IS NULL
             
             UNION
@@ -218,32 +209,29 @@ public class RespostaSimuladoService {
             LEFT JOIN 
                 respostas_simulado rs ON rs.simulado_id = s.id AND rs.usuario_id = m.usuario_id
             WHERE 
-                s.id = :simuladoId
+                s.id = ?
                 AND rs.id IS NULL;
             """;
 
          List<UUID> alunos = jdbcTemplate.query(sql, (rs, rowNum) -> {
             return UUID.fromString(rs.getString("usuario_id"));
-        }, simuladoId);
+        }, simuladoId, simuladoId);
 
         return alunos;
     }
 
     @Transactional
-    public UUID finalizar(UUID simuladoId, String login) {
+    public UUID finalizar(UUID simuladoId, UUID usuarioId) {
         
         LocalDateTime horaFim = LocalDateTime.now();
         
         Simulado simulado = simuladoService.obterPorId(simuladoId);
         estaFinalizandoAposHorario(simulado.getDataInicio(), 
             simulado.getDuracao(), horaFim);
-
-        UsuarioLogado user =
-            usuarioService.loadUserByUsername(login);
         
         Optional<RespostaSimulado> respostaSimulado =
             this.respostaSimuladoRepository.findBySimuladoIdAndUsuarioId(
-            simuladoId, user.getId());
+            simuladoId, usuarioId);
 
         if (respostaSimulado.isEmpty())
             throw new IllegalArgumentException("Simulado não iniciado.");
@@ -276,7 +264,7 @@ public class RespostaSimuladoService {
 
         this.respostaSimuladoRepository.save(respostaSimulado.get());
 
-        contabilizar(simuladoId, user.getId());
+        contabilizar(simuladoId, usuarioId);
 
         return respostaSimulado.get().getId();
     }
@@ -292,13 +280,10 @@ public class RespostaSimuladoService {
     }
 
     public SimuladoCompletoResponse obterRespostas(
-        SimuladoCompletoResponse simulado, String login) {
-
-        UsuarioLogado usuarioLogado =
-            this.usuarioService.loadUserByUsername(login);
+        SimuladoCompletoResponse simulado, UUID usuarioId) {
         
         Optional<RespostaSimulado> respostaSimulado = this.respostaSimuladoRepository
-            .findBySimuladoIdAndUsuarioId(simulado.getId(), usuarioLogado.getId());
+            .findBySimuladoIdAndUsuarioId(simulado.getId(), usuarioId);
         
         if (respostaSimulado.isPresent()) {
             for (DisciplinaQuestoesResponse disciplinas : simulado.getDisciplinas()) {
@@ -409,11 +394,8 @@ public class RespostaSimuladoService {
         return response;
     }
 
-    public ResultadoSimuladoResponse obterRanking(UUID simuladoId, String login) {
-        
-        UsuarioLogado usuarioLogado = 
-            this.usuarioService.loadUserByUsername(login);
-        
+    public ResultadoSimuladoResponse obterRanking(UUID simuladoId, UUID usuarioId) {
+                
         ResultadoSimuladoResponse response = new ResultadoSimuladoResponse();
 
         Simulado simulado = simuladoService.obterPorId(simuladoId);
@@ -440,7 +422,7 @@ public class RespostaSimuladoService {
             return rsr;
         }, 
         simuladoId,
-        usuarioLogado.getId());
+        usuarioId);
 
         response.setRanking(ranking);
 

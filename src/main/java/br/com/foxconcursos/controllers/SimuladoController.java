@@ -7,8 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,6 +27,7 @@ import br.com.foxconcursos.dto.SimuladoCompletoResponse;
 import br.com.foxconcursos.dto.SimuladoRequest;
 import br.com.foxconcursos.dto.SimuladoResponse;
 import br.com.foxconcursos.dto.SimuladoResumoResponse;
+import br.com.foxconcursos.services.AuthenticationService;
 import br.com.foxconcursos.services.QuestaoSimuladoService;
 import br.com.foxconcursos.services.RespostaSimuladoService;
 import br.com.foxconcursos.services.SimuladoService;
@@ -40,14 +39,18 @@ public class SimuladoController {
     private final SimuladoService simuladoService;
     private final QuestaoSimuladoService questaoSimuladoService;
     private final RespostaSimuladoService respostaSimuladoService;
+    private final AuthenticationService authenticationService;
 
     public SimuladoController(SimuladoService simuladoService, 
         QuestaoSimuladoService questaoSimuladoService, 
-        RespostaSimuladoService respostaSimuladoService) {
+        RespostaSimuladoService respostaSimuladoService,
+        AuthenticationService authenticationService) {
         
         this.simuladoService = simuladoService;
         this.questaoSimuladoService = questaoSimuladoService;
         this.respostaSimuladoService = respostaSimuladoService;
+        this.authenticationService = authenticationService;
+
     }
 
     // @PostMapping(value = "/simulados/{simuladoId}/data-inicio", 
@@ -153,10 +156,9 @@ public class SimuladoController {
     public ResponseEntity<SimuladoCompletoResponse> iniciarSimulado(
         @PathVariable UUID simuladoId) {
         
-        Authentication authentication =
-            SecurityContextHolder.getContext().getAuthentication();
+        UUID usuarioId = this.authenticationService.obterUsuarioLogado();
 
-        respostaSimuladoService.iniciar(simuladoId, authentication.getName());
+        respostaSimuladoService.iniciar(simuladoId, usuarioId);
 
         return ResponseEntity.ok(
             simuladoService.findById(
@@ -166,10 +168,12 @@ public class SimuladoController {
     @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO')")
     @GetMapping(value = "/api/alunos/simulados/{simuladoId}/status")
     public ResponseEntity<String> obterStatus(@PathVariable UUID simuladoId) {
-        Authentication authentication =
-            SecurityContextHolder.getContext().getAuthentication();
-        StatusSimulado status = this.respostaSimuladoService
-            .obterStatus(simuladoId, authentication.getName());
+
+        UUID usuarioId = this.authenticationService.obterUsuarioLogado();
+
+        StatusSimulado status = 
+            this.respostaSimuladoService.obterStatus(simuladoId, usuarioId);
+        
         return ResponseEntity.status(HttpStatus.OK).body(status.name());
     }
 
@@ -179,13 +183,11 @@ public class SimuladoController {
     public ResponseEntity<UUID> salvar(@PathVariable UUID simuladoId, 
         @RequestBody RespostaSimuladoRequest respostas) {
 
-        Authentication authentication =
-            SecurityContextHolder.getContext().getAuthentication();
-        String login = authentication.getName();
+        UUID usuarioId = this.authenticationService.obterUsuarioLogado();
         
         UUID respostaSimuladoId =
             this.respostaSimuladoService.salvar(
-                simuladoId, login, respostas);
+                simuladoId, usuarioId, respostas);
 
         return ResponseEntity.status(HttpStatus.OK).body(respostaSimuladoId);
     }
@@ -195,12 +197,10 @@ public class SimuladoController {
         consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UUID> finalizarSimulado(@PathVariable UUID simuladoId) {
         
-        Authentication authentication =
-            SecurityContextHolder.getContext().getAuthentication();
-        String login = authentication.getName();
+        UUID usuarioId = this.authenticationService.obterUsuarioLogado();
 
-        return ResponseEntity.ok(
-            this.respostaSimuladoService.finalizar(simuladoId, login));
+        return ResponseEntity.ok(this.respostaSimuladoService.finalizar(
+            simuladoId, usuarioId));
     }
 
     @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO')")
@@ -208,13 +208,11 @@ public class SimuladoController {
     public ResponseEntity<SimuladoCompletoResponse> obterSimuladoCorrente(
         @PathVariable UUID simuladoId) {
        
-        Authentication authentication =
-        SecurityContextHolder.getContext().getAuthentication();
-        String login = authentication.getName();
+        UUID usuarioId = this.authenticationService.obterUsuarioLogado();
 
         StatusSimulado status =
             this.respostaSimuladoService.obterStatus(
-                simuladoId, authentication.getName());     
+                simuladoId, usuarioId);     
 
        SimuladoCompletoResponse response = null;
          if (status == StatusSimulado.FINALIZADO)
@@ -223,7 +221,7 @@ public class SimuladoController {
            response = this.simuladoService.findById(simuladoId, false);     
        
        response = this.respostaSimuladoService.obterRespostas(
-            response, login);
+            response, usuarioId);
     
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -242,11 +240,9 @@ public class SimuladoController {
     public ResponseEntity<ResultadoSimuladoResponse> obterRankingIndividual(
         @PathVariable UUID simuladoId) {
         
-        Authentication authentication =
-            SecurityContextHolder.getContext().getAuthentication();
-        String login = authentication.getName();
+        UUID usuarioId = this.authenticationService.obterUsuarioLogado();
         
         return ResponseEntity.status(HttpStatus.OK).body(
-            this.respostaSimuladoService.obterRanking(simuladoId, login));
+            this.respostaSimuladoService.obterRanking(simuladoId, usuarioId));
     }
 }

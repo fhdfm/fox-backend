@@ -14,6 +14,7 @@ import br.com.foxconcursos.repositories.custom.CustomCrudRepository;
 public interface RespostaSimuladoRepository extends CustomCrudRepository<RespostaSimulado, UUID> {
 
     Optional<RespostaSimulado> findBySimuladoIdAndUsuarioId(UUID simuladoId, UUID usuarioId);
+    
     RespostaSimulado findBySimuladoIdAndUsuarioIdAndStatus(UUID simuladoId, UUID usuarioId, StatusSimulado status);
 
     @Query("SELECT s.id " +

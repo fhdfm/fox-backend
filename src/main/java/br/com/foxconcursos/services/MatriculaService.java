@@ -1,7 +1,6 @@
 package br.com.foxconcursos.services;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -10,13 +9,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.com.foxconcursos.domain.Curso;
 import br.com.foxconcursos.domain.Matricula;
-import br.com.foxconcursos.domain.Simulado;
 import br.com.foxconcursos.domain.Status;
 import br.com.foxconcursos.domain.StatusPagamento;
 import br.com.foxconcursos.domain.TipoProduto;
 import br.com.foxconcursos.domain.Transacao;
 import br.com.foxconcursos.dto.MatriculaRequest;
-import br.com.foxconcursos.dto.ProdutoResponse;
 import br.com.foxconcursos.dto.SimuladoCompletoResponse;
 import br.com.foxconcursos.dto.UsuarioResponse;
 import br.com.foxconcursos.repositories.MatriculaRepository;
@@ -137,41 +134,6 @@ public class MatriculaService {
 
     public List<Matricula> findByUsuarioId(UUID usuarioId) {
         return matriculaRepository.findByUsuarioIdAndStatus(usuarioId, Status.ATIVO);
-    }
-
-    public List<ProdutoResponse> getMatriculasAtivas(UUID alunoId) {
-        
-        List<Matricula> matriculas = this.findByUsuarioId(alunoId);
-        
-        List<ProdutoResponse> matriculasAtivas =
-            new ArrayList<ProdutoResponse>();
-
-        if (matriculas == null || matriculas.isEmpty())
-            return matriculasAtivas;
-
-        for (Matricula matricula : matriculas) {
-            if (matricula.getTipoProduto() 
-                == TipoProduto.CURSO) {
-                matriculasAtivas.add(
-                    this.cursoService.getMatriculaCursoResponse(
-                        matricula.getProdutoId()));
-                if (simuladoService.existsByCursoId(matricula.getProdutoId())) {
-                    List<Simulado> simulados = this.simuladoService.findByCursoId(matricula.getProdutoId());
-                    if (simulados != null) {
-                        for (Simulado simulado : simulados) {
-                            matriculasAtivas.add(
-                                this.simuladoService.getMatriculaSimulado(simulado.getId()));
-                        }
-                    }
-                }
-            } else {
-                matriculasAtivas.add(
-                    this.simuladoService.getMatriculaSimulado(
-                        matricula.getProdutoId()));
-            }
-        }
-
-        return matriculasAtivas;
     }
 
 }

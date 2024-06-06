@@ -9,6 +9,8 @@ import br.com.foxconcursos.domain.QuestaoSimulado;
 
 public interface QuestaoSimuladoRepository extends ListCrudRepository<QuestaoSimulado, UUID> {
 
-    List<QuestaoSimulado> findBySimuladoIdOrderByOrdem(UUID simuladoId);
-    List<QuestaoSimulado> findBySimuladoIdAndDisciplinaIdOrderByOrdem(UUID simuladoId, UUID disciplinaId);
+    List<QuestaoSimulado> findBySimuladoIdAndAnuladaOrderByOrdem(UUID simuladoId, Boolean anulada);
+    
+    List<QuestaoSimulado> findBySimuladoIdAndDisciplinaIdAndAnuladaOrderByOrdem(
+        UUID simuladoId, UUID disciplinaId, Boolean anulada);
 }
