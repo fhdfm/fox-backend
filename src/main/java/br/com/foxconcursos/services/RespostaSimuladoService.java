@@ -73,11 +73,11 @@ public class RespostaSimuladoService {
             this.respostaSimuladoRepository.findBySimuladoIdAndUsuarioId(
                 simuladoId, usuarioId);
         
-        if (respostaSimulado.isEmpty())
-            return StatusSimulado.NAO_INICIADO;
-        
         if (this.simuladoService.isExpirado(simuladoId))
             return StatusSimulado.FINALIZADO;
+
+        if (respostaSimulado.isEmpty())
+            return StatusSimulado.NAO_INICIADO;
         
         return respostaSimulado.get().getStatus();
     }
