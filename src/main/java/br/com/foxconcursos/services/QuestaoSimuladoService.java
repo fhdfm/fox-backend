@@ -121,8 +121,8 @@ public class QuestaoSimuladoService {
         List<QuestaoSimuladoResponse> result = new ArrayList<QuestaoSimuladoResponse>();
         
         List<QuestaoSimulado> questoesSimulado = 
-            this.questaoSimuladoRepository.findBySimuladoIdAndDisciplinaIdOrderByOrdem(
-                simuladoId, disciplinaId);
+            this.questaoSimuladoRepository.findBySimuladoIdAndDisciplinaIdAndAnuladaOrderByOrdem(
+                simuladoId, disciplinaId, false);
         
         for (QuestaoSimulado questaoSimulado : questoesSimulado) {
             List<ItemQuestaoSimulado> items = null;
@@ -144,5 +144,13 @@ public class QuestaoSimuladoService {
     public void delete(UUID questaoId) {
         this.itemQuestaoSimuladoService.deleteByQuestaoSimuladoId(questaoId);
         this.questaoSimuladoRepository.deleteById(questaoId);
+    }
+
+    public void anularQuestao(UUID questaoId) {
+        QuestaoSimulado questaoSimulado = 
+            this.questaoSimuladoRepository.findById(questaoId).orElseThrow(() -> 
+                new IllegalArgumentException("Questão não encontrada: " + questaoId));
+        questaoSimulado.setAnulada(true);
+        this.questaoSimuladoRepository.save(questaoSimulado);
     }
 }
