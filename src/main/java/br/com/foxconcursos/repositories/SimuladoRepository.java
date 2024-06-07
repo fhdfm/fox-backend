@@ -19,7 +19,7 @@ public interface SimuladoRepository extends CustomCrudRepository<Simulado, UUID>
     int obterQuantidadeQuestoes(UUID id);
 
     @Query("SELECT s.id FROM simulados s " 
-      + "WHERE s.data_inicio + (SUBSTRING(s.duracao FROM 1 FOR 2)::INTEGER || ' hours')::INTERVAL "
+      + "WHERE s.data_inicio + (SUBSTRING(s.duracao FROM 1 FOR 2)::INTEGER || ' hours')::INTERVAL + "
       + "(SUBSTRING(s.duracao FROM 4 FOR 2)::INTEGER || ' minutes')::INTERVAL < :horaAtual and s.id = :simuladoId")
     List<UUID> simuladosExpirados(UUID simuladoId, LocalDateTime horaAtual);
 
