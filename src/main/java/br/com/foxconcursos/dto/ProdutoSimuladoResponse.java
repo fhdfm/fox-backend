@@ -1,5 +1,6 @@
 package br.com.foxconcursos.dto;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 import br.com.foxconcursos.domain.Simulado;
@@ -12,6 +13,7 @@ public class ProdutoSimuladoResponse extends ProdutoResponse {
     private Date data;
     private Integer quantidadeQuestoes;
     private String duracao;
+    private BigDecimal valor;
 
     public ProdutoSimuladoResponse() {
     }
@@ -23,6 +25,7 @@ public class ProdutoSimuladoResponse extends ProdutoResponse {
         this.data = FoxUtils.convertLocalDateTimeToDate(simulado.getDataInicio());
         this.quantidadeQuestoes = simulado.getQuantidadeQuestoes();
         this.duracao = simulado.getDuracao();
+        this.valor = simulado.getValor();
     }
 
     public void setTitulo(String titulo) {
@@ -55,5 +58,13 @@ public class ProdutoSimuladoResponse extends ProdutoResponse {
 
     public String getDuracao() {
         return duracao;
+    }
+
+    public void setValor(BigDecimal valor) {
+        this.valor = valor;
+    }
+
+    public BigDecimal getValor() {
+        return valor;
     }
 }

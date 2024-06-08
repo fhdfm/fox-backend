@@ -54,6 +54,7 @@ public class ProdutoService {
                     (rs.getObject("data_inicio", java.time.LocalDate.class)));
                 produto.setDataTermino(FoxUtils.convertLocalDateToDate(
                     rs.getObject("data_termino", java.time.LocalDate.class)));
+                produto.setValor(rs.getBigDecimal("valor"));
                 Status status = Status.valueOf(rs.getString("status"));
                 produto.setStatus(status);
                 
@@ -82,6 +83,7 @@ public class ProdutoService {
                     (rs.getObject("data_inicio", java.time.LocalDateTime.class)));
                 produto.setQuantidadeQuestoes(rs.getInt("quantidade_questoes"));
                 produto.setDuracao(rs.getString("duracao"));
+                produto.setValor(rs.getBigDecimal("valor"));
 
                 produtos.add(produto);
 

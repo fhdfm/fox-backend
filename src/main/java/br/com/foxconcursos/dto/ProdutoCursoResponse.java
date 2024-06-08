@@ -1,5 +1,6 @@
 package br.com.foxconcursos.dto;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 import br.com.foxconcursos.domain.Curso;
@@ -16,6 +17,7 @@ public class ProdutoCursoResponse extends ProdutoResponse {
     private Date dataInicio;
     private Date dataTermino;
     private Status status;
+    private BigDecimal valor;
 
     public ProdutoCursoResponse() {
     }
@@ -31,6 +33,7 @@ public class ProdutoCursoResponse extends ProdutoResponse {
         if (curso.getDataTermino() != null)
             this.dataTermino = FoxUtils.convertLocalDateToDate(curso.getDataTermino());
         this.status = curso.getStatus();
+        this.valor = curso.getValor();
     }
 
     public String getTitulo() {
@@ -79,6 +82,14 @@ public class ProdutoCursoResponse extends ProdutoResponse {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public BigDecimal getValor() {
+        return valor;
+    }
+
+    public void setValor(BigDecimal valor) {
+        this.valor = valor;
     }
 
 }
