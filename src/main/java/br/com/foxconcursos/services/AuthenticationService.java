@@ -38,4 +38,17 @@ public class AuthenticationService {
         
         return usuario.getId();
     }
+
+    public UsuarioLogado obterUsuarioLogadoCompleto() {
+        
+        Authentication authentication = 
+            SecurityContextHolder.getContext().getAuthentication();
+        
+        UsuarioLogado usuario =
+            this.usuarioService.loadUserByUsername(
+                authentication.getName());
+        
+        return usuario;
+    }
+
 }

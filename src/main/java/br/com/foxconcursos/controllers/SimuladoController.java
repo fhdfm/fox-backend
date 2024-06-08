@@ -1,8 +1,13 @@
 package br.com.foxconcursos.controllers;
 
+import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +23,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.foxconcursos.domain.StatusSimulado;
+import br.com.foxconcursos.domain.UsuarioLogado;
+import br.com.foxconcursos.dto.DisciplinaQuestoesResponse;
 import br.com.foxconcursos.dto.QuestaoSimuladoRequest;
 import br.com.foxconcursos.dto.QuestaoSimuladoResponse;
 import br.com.foxconcursos.dto.QuestoesSimuladoDisciplinaResponse;
@@ -31,6 +38,10 @@ import br.com.foxconcursos.services.AuthenticationService;
 import br.com.foxconcursos.services.QuestaoSimuladoService;
 import br.com.foxconcursos.services.RespostaSimuladoService;
 import br.com.foxconcursos.services.SimuladoService;
+import net.sf.jasperreports.engine.JasperExportManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 
 @RestController
 @RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -163,6 +174,39 @@ public class SimuladoController {
         return ResponseEntity.ok(
             simuladoService.findById(
                 simuladoId, false));
+    }
+
+    @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO')")
+    @GetMapping(value = "/api/alunos/simulados/{simuladoId}/download", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> exportarSimuladoParaPDF(@PathVariable UUID simuladoId) throws Exception {
+        ClassPathResource jasperResource = new ClassPathResource("simuladoMaster.jasper");
+
+        SimuladoCompletoResponse simulado = simuladoService.findById(simuladoId);
+        List<DisciplinaQuestoesResponse> disciplinasDS = simulado.getDisciplinas();
+
+        UsuarioLogado usuario = this.authenticationService.obterUsuarioLogadoCompleto();
+        
+        InputStream logo = new ClassPathResource("logo-fox.png").getInputStream();
+
+        JRBeanCollectionDataSource disciplinas = new JRBeanCollectionDataSource(disciplinasDS);
+        Map<String, Object> parameters = new HashMap<String, Object>();
+        parameters.put("nome", usuario.getNome());
+        parameters.put("cpf", usuario.getCpf());
+        parameters.put("titulo", simulado.getTitulo());
+        parameters.put("logo", logo);
+
+        try (InputStream jasperStream = jasperResource.getInputStream()) {
+           JasperPrint jasperPrint = JasperFillManager.fillReport(jasperStream, parameters, disciplinas);
+           byte[] pdf = JasperExportManager.exportReportToPdf(jasperPrint);
+           HttpHeaders headers = new HttpHeaders();
+           headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=simulado_" 
+            + usuario.getCpf() + ".pdf");
+           return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
     @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO')")
