@@ -1,13 +1,19 @@
 FROM ubuntu:latest AS build
 
-RUN apt-get update
-RUN apt-get install openjdk-21-jdk -y
+RUN apt-get update && apt-get install -y \
+    openjdk-21-jdk \
+    maven \
+    libfreetype6
+
 COPY . .
 
-RUN apt-get install maven -y
 RUN mvn clean install -DskipTests
 
 FROM openjdk:21-jdk-slim
+
+RUN apt-get update && apt-get install -y \
+    libfreetype6 \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /usr/local/newrelic
 ADD ./newrelic/newrelic.jar /usr/local/newrelic/newrelic.jar
