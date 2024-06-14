@@ -373,7 +373,7 @@ public class RespostaSimuladoService {
         List<RankingSimuladoResponse> ranking = new ArrayList<RankingSimuladoResponse>();
 
         String sql = """
-                select u.nome, r.acertos from respostas_simulado r 
+                select u.nome, u.cpf, r.acertos from respostas_simulado r 
                 inner join usuarios u on u.id = r.usuario_id where simulado_id = ? 
                 order by acertos desc, acertos_ultimas_15 desc 
                 """;
@@ -381,6 +381,7 @@ public class RespostaSimuladoService {
         jdbcTemplate.query(sql, (rs, rowNum) -> {
             RankingSimuladoResponse rsr = new RankingSimuladoResponse();
             rsr.setNome(rs.getString("nome"));
+            rsr.setCpf(rs.getString("cpf"));
             rsr.setAcertos(rs.getInt("acertos"));
             rsr.setClassificacao(rowNum + 1);
             ranking.add(rsr);
@@ -408,7 +409,7 @@ public class RespostaSimuladoService {
         List<RankingSimuladoResponse> ranking = new ArrayList<RankingSimuladoResponse>();
 
         String sql = """
-                select u.nome, r.acertos from respostas_simulado r 
+                select u.nome, u.cpf, r.acertos from respostas_simulado r 
                 inner join usuarios u on u.id = r.usuario_id where simulado_id = ? 
                 and r.usuario_id = ? order by acertos desc, acertos_ultimas_15 desc 
                 """;
@@ -416,6 +417,7 @@ public class RespostaSimuladoService {
         jdbcTemplate.query(sql, (rs, rowNum) -> {
             RankingSimuladoResponse rsr = new RankingSimuladoResponse();
             rsr.setNome(rs.getString("nome"));
+            rsr.setCpf(rs.getString("cpf"));
             rsr.setAcertos(rs.getInt("acertos"));
             ranking.add(rsr);
 
