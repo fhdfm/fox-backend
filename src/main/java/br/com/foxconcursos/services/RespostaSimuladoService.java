@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +30,8 @@ import br.com.foxconcursos.util.FoxUtils;
 @Service
 public class RespostaSimuladoService {
     
+    private Logger logger = LoggerFactory.getLogger(RespostaSimuladoService.class);
+
     private SimuladoService simuladoService;
     private final RespostaSimuladoRepository respostaSimuladoRepository;
     private final RespostaQuestaoSimuladoRepository respostaQuestaoSimuladoRepository;
@@ -93,13 +97,9 @@ public class RespostaSimuladoService {
         UUID respostaSimuladoId = respostaSimulado.isPresent() ? 
             respostaSimulado.get().getId() : null;
 
-        System.out.println("respostaSimuladoId: " + respostaSimuladoId);
-
         if (respostaSimuladoId == null) {
             respostaSimuladoId = iniciar(simuladoId, usuarioId);
         }
-
-        System.out.println("respostaSimuladoId: " + respostaSimuladoId);
         
         List<RespostaSimuladoQuestao> respostaDB =
             this.respostaQuestaoSimuladoRepository.findByRespostaSimuladoIdAndQuestaoId(
@@ -108,38 +108,31 @@ public class RespostaSimuladoService {
         Boolean acertou = itemQuestaoSimuladoService.estaCorreta(
             resposta.getItemQuestaoId(), resposta.getQuestaoId());
 
-        RespostaSimuladoQuestao respostaQuestao = null;
+        if (respostaDB.isEmpty()) {
+            
+            logger.info("[insert] size: " + respostaDB.size() + " - [respostaSimuladoId:" + respostaSimuladoId 
+                + "][questaoId:" + resposta.getQuestaoId() + "][itemQuestaoId:" + resposta.getItemQuestaoId() + "][correta:" + acertou + "]");
 
-        if (respostaDB.size() == 1) {
-            respostaQuestao = respostaDB.get(0);
-            respostaQuestao.setCorreta(acertou);
-            respostaQuestao.setItemQuestaoId(resposta.getItemQuestaoId());
-            return respostaQuestaoSimuladoRepository.save(respostaQuestao).getId();
-        } else if (respostaDB.size() > 1) {
-            System.out.println("O simulado possui mais de uma resposta para a mesma questão.");
-            System.out.println("Simulado: " + simuladoId);
-            System.out.println("Usuário: " + usuarioId);
-            System.out.println("Questão: " + resposta.getQuestaoId());
-            System.out.println("Respostas: " + respostaDB.size());
-            System.out.println("respostaSimuladoId: " + respostaSimuladoId);
-
-            respostaQuestao = respostaDB.get(0);
-            respostaQuestao.setCorreta(acertou);
-            respostaQuestao.setItemQuestaoId(resposta.getItemQuestaoId());
-            respostaQuestao = respostaQuestaoSimuladoRepository.save(respostaQuestao);
-
-            for (int i = 1; i < respostaDB.size(); i++) {
-                respostaQuestaoSimuladoRepository.delete(respostaDB.get(i));
-            }
-
-            return respostaQuestao.getId();
+            jdbcTemplate.update("""
+                insert into respostas_simulado_questao 
+                (resposta_simulado_id, questao_id, item_questao_id, correta) 
+                values (?, ?, ?, ?)
+                """, respostaSimuladoId, resposta.getQuestaoId(), 
+                resposta.getItemQuestaoId(), acertou);
         } else {
-            respostaQuestao = 
-                new RespostaSimuladoQuestao(
-                    respostaSimuladoId, resposta.getQuestaoId(), 
-                    resposta.getItemQuestaoId(), acertou);
-            return respostaQuestaoSimuladoRepository.save(respostaQuestao).getId();
+            
+            logger.info("[update] size: " + respostaDB.size() + " - [respostaSimuladoId:" + respostaSimuladoId 
+                + "][questaoId:" + resposta.getQuestaoId() + "][itemQuestaoId:" + resposta.getItemQuestaoId() + "][correta:" + acertou + "]");
+
+            jdbcTemplate.update("""
+                update respostas_simulado_questao 
+                set item_questao_id = ?, correta = ? 
+                where id = ?
+                """, resposta.getItemQuestaoId(), acertou, 
+                    respostaDB.get(0).getId());
         }
+
+        return respostaSimuladoId;
     }
 
     @Transactional
@@ -236,27 +229,6 @@ public class RespostaSimuladoService {
         if (respostaSimulado.isEmpty())
             throw new IllegalArgumentException("Simulado não iniciado.");
         
-        // for (RespostaSimuladoRequest resposta : respostas) {
-
-        //     Boolean acertou = itemQuestaoSimuladoService.estaCorreta(
-        //         resposta.getItemQuestaoId(), resposta.getQuestaoId());         
-
-        //     RespostaSimuladoQuestao respostaQuestao = 
-        //         respostaQuestaoSimuladoRepository.findByRespostaSimuladoIdAndQuestaoId(
-        //             respostaSimulado.getId(), resposta.getQuestaoId());
-            
-        //     if (respostaQuestao == null) {
-        //         respostaQuestao = new RespostaSimuladoQuestao(
-        //             respostaSimulado.getId(), resposta.getQuestaoId(), 
-        //             resposta.getItemQuestaoId(), acertou); 
-        //     } else {
-        //         respostaQuestao.setCorreta(acertou);
-        //         respostaQuestao.setItemQuestaoId(resposta.getItemQuestaoId());
-        //     }
-
-        //     respostaQuestaoSimuladoRepository.save(respostaQuestao);
-        // }
-        
         respostaSimulado.get().setAcertos(0);
         respostaSimulado.get().setAcertosUltimas15(0);
         respostaSimulado.get().setDataFim(horaFim);
@@ -301,7 +273,7 @@ public class RespostaSimuladoService {
                     respostaId, questao.getId());
             if (resposta.size() == 1)
                 preencherItem(questao.getAlternativas(), 
-                resposta.get(0).getItemQuestaoId());
+                    resposta.get(0).getItemQuestaoId());
         }
     }
 
