@@ -2,6 +2,7 @@ package br.com.foxconcursos.dto;
 
 import java.util.UUID;
 
+import br.com.foxconcursos.domain.StatusUsuario;
 import br.com.foxconcursos.domain.Usuario;
 import br.com.foxconcursos.util.FoxUtils;
 
@@ -13,6 +14,7 @@ public class UsuarioResponse {
     private String cpf;
     private String perfil;
     private String telefone;
+    private StatusUsuario status;
 
     public UsuarioResponse() {
     }
@@ -24,6 +26,7 @@ public class UsuarioResponse {
         this.cpf = usuario.getCpf();
         this.perfil = usuario.getPerfil().name();
         this.telefone = usuario.getTelefone();
+        this.status = usuario.getStatus();
     }
 
     public UUID getId() {
@@ -48,5 +51,9 @@ public class UsuarioResponse {
 
     public String getTelefone() {
         return telefone;
+    }
+
+    public StatusUsuario getStatus() {
+        return status;
     }
 }
