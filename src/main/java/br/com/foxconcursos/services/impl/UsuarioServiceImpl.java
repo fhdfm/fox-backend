@@ -151,8 +151,11 @@ public class UsuarioServiceImpl implements UserDetailsService {
             }
         }
         
-        usuario.setPassword(this.encoder.encode(usuario.getPassword()));
-        usuario.setStatus(StatusUsuario.ATIVO);
+        if (usuario.getId() == null) {
+            usuario.setPassword(this.encoder.encode(usuario.getPassword()));
+        } else {
+            usuario.setPassword(null);
+        }
         Usuario savedUser = this.usuarioRepository.save(usuario);
         return this.loadUserByUsername(savedUser.getEmail());
     }
