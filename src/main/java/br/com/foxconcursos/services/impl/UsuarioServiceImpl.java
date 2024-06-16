@@ -104,18 +104,53 @@ public class UsuarioServiceImpl implements UserDetailsService {
     }
 
     public UsuarioLogado save(Usuario usuario) {
+        
+        
         if (usuario == null) {
             throw new IllegalArgumentException("Usuario não pode ser nulo.");
         }
 
+        if (usuario.getCpf() == null || usuario.getCpf().isBlank()) {
+            throw new IllegalArgumentException("CPF é obrigatório.");
+        } else {
+            usuario.setCpf(FoxUtils.validarCpf(usuario.getCpf()));
+            int retorno = this.usuarioRepository.countByCpf(usuario.getCpf());
+            
+            if (retorno == 1 && usuario.getId() == null) {
+                throw new IllegalArgumentException("CPF já cadastrado.");
+            }
+
+            if (retorno == 1 && usuario.getId() != null) {
+                Usuario usuarioBanco = this.usuarioRepository.findById(usuario.getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+                if (!usuarioBanco.getCpf().equals(usuario.getCpf())) {
+                    throw new IllegalArgumentException("CPF já cadastrado.");
+                }
+            }
+        }
+
+        if (usuario.getNome() == null || usuario.getNome().isBlank()) {
+            throw new IllegalArgumentException("Nome é obrigatório.");
+        }
+
         if (usuario.getEmail() == null || usuario.getEmail().isBlank()) {
             throw new IllegalArgumentException("Email é obrigatório.");
-        }
+        } else {
+            int retorno = this.usuarioRepository.countByEmail(usuario.getEmail());
+            
+            if (retorno == 1 && usuario.getId() == null) {
+                throw new IllegalArgumentException("Email já cadastrado.");
+            }
 
-        if (this.usuarioRepository.existsByEmail(usuario.getEmail())) {
-            throw new IllegalArgumentException("Email já cadastrado.");
+            if (retorno == 1 && usuario.getId() != null) {
+                Usuario usuarioBanco = this.usuarioRepository.findById(usuario.getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+                if (!usuarioBanco.getEmail().equals(usuario.getEmail())) {
+                    throw new IllegalArgumentException("Email já cadastrado.");
+                }
+            }
         }
-
+        
         usuario.setPassword(this.encoder.encode(usuario.getPassword()));
         usuario.setStatus(StatusUsuario.ATIVO);
         Usuario savedUser = this.usuarioRepository.save(usuario);

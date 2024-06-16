@@ -12,6 +12,7 @@ public class UsuarioResponse {
     private String nome;
     private String cpf;
     private String perfil;
+    private String telefone;
 
     public UsuarioResponse() {
     }
@@ -22,6 +23,7 @@ public class UsuarioResponse {
         this.nome = usuario.getNome();
         this.cpf = usuario.getCpf();
         this.perfil = usuario.getPerfil().name();
+        this.telefone = usuario.getTelefone();
     }
 
     public UUID getId() {
@@ -42,5 +44,9 @@ public class UsuarioResponse {
 
     public String getPerfil() {
         return perfil;
+    }
+
+    public String getTelefone() {
+        return telefone;
     }
 }

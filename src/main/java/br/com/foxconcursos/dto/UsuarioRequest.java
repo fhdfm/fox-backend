@@ -12,6 +12,7 @@ public class UsuarioRequest {
     private String password;
     private PerfilUsuario perfil;
     private String cpf;
+    private String telefone;
 
     public UsuarioRequest() {
     }
@@ -62,5 +63,13 @@ public class UsuarioRequest {
 
     public void setCpf(String cpf) {
         this.cpf = cpf;
+    }
+
+    public String getTelefone() {
+        return telefone;
+    }
+
+    public void setTelefone(String telefone) {
+        this.telefone = telefone;
     }
 }

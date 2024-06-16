@@ -10,7 +10,8 @@ CREATE TABLE usuarios (
     password VARCHAR(255) NOT NULL,
     perfil VARCHAR(50) NOT NULL,
     cpf VARCHAR(11) NOT NULL,
-    status VARCHAR(50) NOT NULL
+    status VARCHAR(50) NOT NULL,
+    telefone VARCHAR(20) NULL;
 );
 
 CREATE TABLE disciplinas (

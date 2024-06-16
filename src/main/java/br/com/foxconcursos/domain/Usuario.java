@@ -18,6 +18,7 @@ public class Usuario {
     private PerfilUsuario perfil;
     private String cpf;
     private StatusUsuario status;
+    private String telefone;
 
     public Usuario() {
     }
@@ -29,6 +30,7 @@ public class Usuario {
         this.password = request.getPassword();
         this.perfil = request.getPerfil();
         this.cpf = request.getCpf();
+        this.telefone = request.getTelefone();
         this.status = StatusUsuario.ATIVO;
     }
 
@@ -86,6 +88,14 @@ public class Usuario {
 
     public void setStatus(StatusUsuario status) {
         this.status = status;
+    }
+
+    public String getTelefone() {
+        return telefone;
+    }
+
+    public void setTelefone(String telefone) {
+        this.telefone = telefone;
     }
 
 }

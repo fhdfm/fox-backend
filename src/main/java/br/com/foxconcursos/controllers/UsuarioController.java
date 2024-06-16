@@ -11,12 +11,14 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.foxconcursos.domain.Usuario;
+import br.com.foxconcursos.domain.UsuarioLogado;
 import br.com.foxconcursos.dto.AlterarPasswordRequest;
 import br.com.foxconcursos.dto.ProdutoResponse;
 import br.com.foxconcursos.dto.UsuarioResponse;
@@ -39,12 +41,16 @@ public class UsuarioController {
     @PostMapping(value = "/api/signup", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UUID> create(@RequestBody Usuario user) {
         
-        UUID savedUser = user.getId();
+        UsuarioLogado savedUser = this.service.save(user);
         
-        if (savedUser == null)
-            savedUser = this.service.save(user).getId();
-        
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedUser.getId());
+    }
+
+    @DeleteMapping(value = "/api/admin/usuarios/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UUID> delete(@PathVariable UUID id) {
+        this.service.desativar(id);
+        return ResponseEntity.status(HttpStatus.OK).body(id);
     }
 
     @PostMapping(value = "/api/forgot-password", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -72,11 +78,13 @@ public class UsuarioController {
             .body(this.service.alterarPassowrd(request.getToken(), request.getNovaSenha()));
     }
 
-    @DeleteMapping(value = "/api/admin/usuarios/{id}")
+    @PutMapping(value = "/api/admin/usuarios/{id}", 
+        consumes = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> desativar(@PathVariable UUID id) {
-        this.service.desativar(id);
-        return ResponseEntity.ok("Usuário desativado com sucesso.");
+    public ResponseEntity<UUID> update(@PathVariable UUID id, @RequestBody Usuario user) {
+        user.setId(id);
+        this.service.save(user);
+        return ResponseEntity.status(HttpStatus.OK).body(id);
     }
 
     @GetMapping(value = "/api/admin/usuarios/{id}/produtos-nao-matriculados")

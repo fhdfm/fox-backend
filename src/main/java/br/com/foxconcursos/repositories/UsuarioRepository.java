@@ -14,5 +14,6 @@ public interface UsuarioRepository extends CustomCrudRepository<Usuario, UUID> {
     Optional<Usuario> findByEmail(String email);
     List<Usuario> findByPerfil(PerfilUsuario nome);
     List<Usuario> findAllByStatus(StatusUsuario status);
-    Boolean existsByEmail(String email);
+    int countByEmail(String email);
+    int countByCpf(String cpf);
 }
