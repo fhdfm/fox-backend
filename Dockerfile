@@ -2,10 +2,12 @@ FROM ubuntu:20.04 AS build
 
 # Atualiza os repositórios e instala pacotes necessários
 RUN apt-get update && apt-get install -y \
-    openjdk-21-jdk \
+    openjdk-11-jdk \
     maven \
     libfreetype6 \
-    libfontconfig1
+    libfontconfig1 \
+    ca-certificates \
+    && update-ca-certificates
 
 # Copia o código fonte para a imagem
 COPY . .
@@ -29,6 +31,8 @@ RUN apt-get update && apt-get install -y \
     xfonts-75dpi \
     xfonts-base \
     libssl1.1 \
+    ca-certificates \
+    && update-ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Baixa e instala o wkhtmltopdf
