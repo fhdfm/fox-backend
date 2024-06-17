@@ -1,4 +1,4 @@
-FROM ubuntu:latest AS build
+FROM ubuntu:20.04 AS build
 
 # Atualiza os repositórios e instala pacotes necessários
 RUN apt-get update && apt-get install -y \
@@ -13,25 +13,26 @@ COPY . .
 # Compila o projeto Maven
 RUN mvn clean install -DskipTests
 
-FROM openjdk:21-jdk-slim
+FROM ubuntu:20.04
 
-# Atualiza os repositórios e instala libfreetype6, libfontconfig1 e dependências do wkhtmltopdf
+# Atualiza os repositórios e instala dependências do wkhtmltopdf
 RUN apt-get update && apt-get install -y \
     libfreetype6 \
     libfontconfig1 \
     fontconfig \
     xz-utils \
     wget \
-    libjpeg62-turbo \
+    libjpeg-turbo8 \
     libx11-6 \
     libxext6 \
     libxrender1 \
     xfonts-75dpi \
     xfonts-base \
+    libssl1.1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Baixa e instala o wkhtmltopdf de um repositório confiável
-RUN wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.bionic_amd64.deb && \
+# Baixa e instala o wkhtmltopdf
+RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.bionic_amd64.deb && \
     dpkg -i wkhtmltox_0.12.6-1.bionic_amd64.deb && \
     apt-get install -f -y && \
     rm wkhtmltox_0.12.6-1.bionic_amd64.deb
