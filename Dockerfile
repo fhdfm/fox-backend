@@ -19,7 +19,15 @@ FROM openjdk:21-jdk-slim
 RUN apt-get update && apt-get install -y \
     libfreetype6 \
     libfontconfig1 \
+    xz-utils \
+    wget \
     && rm -rf /var/lib/apt/lists/*
+
+# Baixa e instala o wkhtmltopdf
+RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.bionic_amd64.deb && \
+    dpkg -i wkhtmltox_0.12.6-1.bionic_amd64.deb && \
+    apt-get install -f && \
+    rm wkhtmltox_0.12.6-1.bionic_amd64.deb
 
 # Cria diretório e adiciona arquivos New Relic
 RUN mkdir -p /usr/local/newrelic
