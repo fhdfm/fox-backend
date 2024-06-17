@@ -174,7 +174,7 @@ public class SimuladoController {
                 simuladoId, false));
     }
 
-    @GetMapping(value = "/api/pf", 
+    @GetMapping(value = "/api/pf/{simuladoId}", 
         consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SimuladoCompletoResponse> xyuayaio(
         @PathVariable UUID simuladoId) {
