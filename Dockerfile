@@ -2,7 +2,7 @@ FROM ubuntu:20.04 AS build
 
 # Atualiza os repositórios e instala pacotes necessários
 RUN apt-get update && apt-get install -y \
-    openjdk-11-jdk \
+    openjdk-21-jdk \
     maven \
     libfreetype6 \
     libfontconfig1 \
