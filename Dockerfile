@@ -28,13 +28,10 @@ RUN apt-get update && apt-get install -y \
     libxrender1 \
     xfonts-75dpi \
     xfonts-base \
+    software-properties-common \
+    && add-apt-repository -y ppa:savoirfairelinux/wkhtmltopdf \
+    && apt-get update && apt-get install -y wkhtmltopdf \
     && rm -rf /var/lib/apt/lists/*
-
-# Baixa e instala o wkhtmltopdf de um repositório confiável
-RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.5-1/wkhtmltox_0.12.5-1.bionic_amd64.deb && \
-    dpkg -i wkhtmltox_0.12.5-1.bionic_amd64.deb && \
-    apt-get install -f && \
-    rm wkhtmltox_0.12.5-1.bionic_amd64.deb
 
 # Cria diretório e adiciona arquivos New Relic
 RUN mkdir -p /usr/local/newrelic
