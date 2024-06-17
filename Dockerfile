@@ -21,6 +21,9 @@ RUN apt-get update && apt-get install -y \
     libfontconfig1 \
     xz-utils \
     wget \
+    libjpeg-turbo8 \
+    libssl1.1 \
+    libxext6 \
     libxrender1 \
     xfonts-75dpi \
     xfonts-base \
