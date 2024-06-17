@@ -15,12 +15,15 @@ RUN mvn clean install -DskipTests
 
 FROM openjdk:21-jdk-slim
 
-# Atualiza os repositórios e instala libfreetype6
+# Atualiza os repositórios e instala libfreetype6, libfontconfig1 e dependências do wkhtmltopdf
 RUN apt-get update && apt-get install -y \
     libfreetype6 \
     libfontconfig1 \
     xz-utils \
     wget \
+    libxrender1 \
+    xfonts-75dpi \
+    xfonts-base \
     && rm -rf /var/lib/apt/lists/*
 
 # Baixa e instala o wkhtmltopdf
