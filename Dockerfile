@@ -1,4 +1,4 @@
-FROM ubuntu:20.04 AS build
+FROM debian:bullseye-slim AS build
 
 # Atualiza os repositórios e instala pacotes necessários
 RUN apt-get update && apt-get install -y \
@@ -7,7 +7,12 @@ RUN apt-get update && apt-get install -y \
     libfreetype6 \
     libfontconfig1 \
     ca-certificates \
+    wget \
     && update-ca-certificates
+
+# Configurações de segurança para Maven
+RUN mkdir -p /usr/share/maven/conf
+COPY settings.xml /usr/share/maven/conf/settings.xml
 
 # Copia o código fonte para a imagem
 COPY . .
@@ -15,7 +20,7 @@ COPY . .
 # Compila o projeto Maven
 RUN mvn clean install -DskipTests
 
-FROM ubuntu:20.04
+FROM debian:bullseye-slim
 
 # Atualiza os repositórios e instala dependências do wkhtmltopdf
 RUN apt-get update && apt-get install -y \
@@ -24,7 +29,7 @@ RUN apt-get update && apt-get install -y \
     fontconfig \
     xz-utils \
     wget \
-    libjpeg-turbo8 \
+    libjpeg62-turbo \
     libx11-6 \
     libxext6 \
     libxrender1 \
@@ -35,7 +40,7 @@ RUN apt-get update && apt-get install -y \
     && update-ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Baixa e instala o wkhtmltopdf
+# Baixa e instala o wkhtmltopdf de um repositório confiável
 RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.bionic_amd64.deb && \
     dpkg -i wkhtmltox_0.12.6-1.bionic_amd64.deb && \
     apt-get install -f -y && \
