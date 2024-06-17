@@ -33,7 +33,7 @@ public class JwtService {
         var claims = JwtClaimsSet.builder()
             .issuer("portal-fox")
             .issuedAt(now)
-            .expiresAt(now.plusSeconds(3600))
+            .expiresAt(now.plusSeconds(21600))
             .subject(email)
             .claim("scope", "password_reset")
             .build();

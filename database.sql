@@ -84,6 +84,7 @@ CREATE TABLE respostas_simulado (
     acertos INTEGER,
     acertos_ultimas_15 INTEGER,
     status VARCHAR(20) NOT NULL,
+    version INT DEFAULT 0,
     FOREIGN KEY (simulado_id) REFERENCES simulados(id),
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );
@@ -94,11 +95,11 @@ CREATE TABLE respostas_simulado_questao (
     questaoId UUID NOT NULL,
     itemQuestaoId UUID NOT NULL,
     correta BOOLEAN NOT NULL,
+    version INT DEFAULT 0,
     FOREIGN KEY (simuladoId) REFERENCES respostas_simulado(id),
     FOREIGN KEY (questaoId) REFERENCES questoes_simulado(id),
     FOREIGN KEY (itemQuestaoId) REFERENCES itens_questao_simulado(id)
 );
-
 
 CREATE TABLE curso_simulado_key (
     id UUID NOT NULL UNIQUE

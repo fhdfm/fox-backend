@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -20,6 +21,8 @@ public class RespostaSimulado {
     @Column("acertos_ultimas_15")
     private Integer acertosUltimas15;
     private StatusSimulado status;
+    @Version
+    private int version;
     
     public RespostaSimulado() {
     }
@@ -86,6 +89,14 @@ public class RespostaSimulado {
 
     public void setStatus(StatusSimulado status) {
         this.status = status;
+    }
+
+    public int getVersion() {
+        return this.version;
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
     }
 
 }

@@ -5,8 +5,11 @@ import java.util.UUID;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import br.com.foxconcursos.dto.UsuarioRequest;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Table("usuarios")
 public class Usuario {
 

@@ -3,11 +3,14 @@ package br.com.foxconcursos.services;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import br.com.foxconcursos.domain.Disciplina;
 import br.com.foxconcursos.domain.Simulado;
@@ -125,6 +128,7 @@ public class SimuladoService {
         return this.findById(id, true);
     }
 
+    @Transactional
     public SimuladoCompletoResponse findById(UUID id, boolean exibirCorreta) {
         
         Simulado simulado = simuladoRepository.findById(id).orElseThrow(
@@ -143,10 +147,19 @@ public class SimuladoService {
                 questaoSimuladoService.findQuestoesBySimuladoIdAndDisciplinaId(
                     simulado.getId(), disciplina.getId(), exibirCorreta);
 
+            Collections.sort(questoes, Comparator.comparingInt(
+                QuestaoSimuladoResponse::getOrdem));            
+
             DisciplinaQuestoesResponse disciplinaResponse = 
                 new DisciplinaQuestoesResponse(disciplina, questoes);
             disciplinasResponse.add(disciplinaResponse);
         }
+
+        // ordenar disciplinasResponse pela ordem da primeira questão de cada disciplina
+        Collections.sort(disciplinasResponse, Comparator.comparingInt(disciplinaResponse -> 
+            disciplinaResponse.getQuestoes().isEmpty() ? 
+                Integer.MAX_VALUE : disciplinaResponse.getQuestoes().get(0).getOrdem()
+        ));        
 
         SimuladoCompletoResponse response = 
             new SimuladoCompletoResponse(simulado, disciplinasResponse);

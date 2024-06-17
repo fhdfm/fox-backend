@@ -1,5 +1,6 @@
 package br.com.foxconcursos.services;
 
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,23 +36,21 @@ public class RespostaSimuladoService {
     private SimuladoService simuladoService;
     private final RespostaSimuladoRepository respostaSimuladoRepository;
     private final RespostaQuestaoSimuladoRepository respostaQuestaoSimuladoRepository;
-    private final ItemQuestaoSimuladoService itemQuestaoSimuladoService;
     private final JdbcTemplate jdbcTemplate;
 
     public RespostaSimuladoService(RespostaSimuladoRepository respostaSimuladoRepository, 
         RespostaQuestaoSimuladoRepository respostaQuestaoSimuladoRepository,
         SimuladoService simuladoService, 
-        ItemQuestaoSimuladoService itemQuestaoSimuladoService, 
         JdbcTemplate jdbcTemplate) {
         
         this.respostaSimuladoRepository = respostaSimuladoRepository;
         this.respostaQuestaoSimuladoRepository = respostaQuestaoSimuladoRepository;
         this.simuladoService = simuladoService;
-        this.itemQuestaoSimuladoService = itemQuestaoSimuladoService;
         this.jdbcTemplate = jdbcTemplate;
 
     }
 
+    @Transactional
     public UUID iniciar(UUID simuladoId, UUID usuarioId) {
         
         Optional<RespostaSimulado> respostaDB = 
@@ -71,6 +70,7 @@ public class RespostaSimuladoService {
         return resposta.getId();
     }
 
+    @Transactional
     public StatusSimulado obterStatus(UUID simuladoId, UUID usuarioId) {
 
         Optional<RespostaSimulado> respostaSimulado = 
@@ -88,30 +88,61 @@ public class RespostaSimuladoService {
 
     @Transactional
     public UUID salvar(UUID simuladoId, UUID usuarioId, 
-        RespostaSimuladoRequest resposta) {
+        RespostaSimuladoRequest resposta) throws SQLException {
                 
-        Optional<RespostaSimulado> respostaSimulado = 
-            this.respostaSimuladoRepository.findBySimuladoIdAndUsuarioId(
-                simuladoId, usuarioId);
-        
-        UUID respostaSimuladoId = respostaSimulado.isPresent() ? 
-            respostaSimulado.get().getId() : null;
+        String findBySimuladoIdAndUsuarioId = """
+                select id, version from respostas_simulado where simulado_id = ?
+                and usuario_id = ? and status = 'EM_ANDAMENTO';                
+        """;
+                
+        RespostaSimulado respostaSimulado = jdbcTemplate.queryForObject(findBySimuladoIdAndUsuarioId, 
+            (rs, rowNum) ->  {
+                RespostaSimulado resp = new RespostaSimulado();
+                resp.setId(UUID.fromString(rs.getString("id")));
+                resp.setVersion(rs.getInt("version"));
+                return resp;
+            }, simuladoId, usuarioId);
+
+        UUID respostaSimuladoId = respostaSimulado != null 
+            ? respostaSimulado.getId() : null;
 
         if (respostaSimuladoId == null) {
-            respostaSimuladoId = iniciar(simuladoId, usuarioId);
+            throw new IllegalArgumentException("Não é possível salvar um simulado "
+            + "que ainda não foi iniciado.");
         }
-        
-        List<RespostaSimuladoQuestao> respostaDB =
-            this.respostaQuestaoSimuladoRepository.findByRespostaSimuladoIdAndQuestaoId(
-            respostaSimuladoId, resposta.getQuestaoId());
 
-        Boolean acertou = itemQuestaoSimuladoService.estaCorreta(
+        String findByRespostaSimuladoIdAndQuestaoId = """
+                select rsq.* from respostas_simulado_questao rsq inner join 
+                respostas_simulado rs on rsq.resposta_simulado_id = rs.id
+                where rsq.resposta_simulado_id = ? and rsq.questao_id = ? and rs.usuario_id = ?
+        """;
+
+        List<RespostaSimuladoQuestao> respostaDB = jdbcTemplate.query(
+            findByRespostaSimuladoIdAndQuestaoId, (rs, rowNum) -> {
+                RespostaSimuladoQuestao rsq = new RespostaSimuladoQuestao();
+                rsq.setId(UUID.fromString(rs.getString("id")));
+                rsq.setRespostaSimuladoId(UUID.fromString(
+                    rs.getString("resposta_simulado_id")));
+                rsq.setQuestaoId(UUID.fromString(rs.getString("questao_id")));
+                rsq.setItemQuestaoId(UUID.fromString(rs.getString("item_questao_id")));
+                rsq.setVersion(rs.getInt("version"));
+                return rsq;
+            }, respostaSimuladoId, resposta.getQuestaoId(), usuarioId);
+
+        String questaoEstahCorreta = """
+            SELECT correta FROM itens_questao_simulado 
+            WHERE id = ? AND questao_simulado_id = ?
+        """;
+
+        Boolean acertou = jdbcTemplate.queryForObject(questaoEstahCorreta, 
+            (rs, rowNum) -> rs.getBoolean("correta"), 
             resposta.getItemQuestaoId(), resposta.getQuestaoId());
 
         if (respostaDB.isEmpty()) {
             
             logger.info("[insert] size: " + respostaDB.size() + " - [respostaSimuladoId:" + respostaSimuladoId 
-                + "][questaoId:" + resposta.getQuestaoId() + "][itemQuestaoId:" + resposta.getItemQuestaoId() + "][correta:" + acertou + "]");
+                + "][questaoId:" + resposta.getQuestaoId() + "][itemQuestaoId:" 
+                + resposta.getItemQuestaoId() + "][correta:" + acertou + "]");
 
             jdbcTemplate.update("""
                 insert into respostas_simulado_questao 
@@ -122,7 +153,8 @@ public class RespostaSimuladoService {
         } else {
             
             logger.info("[update] size: " + respostaDB.size() + " - [respostaSimuladoId:" + respostaSimuladoId 
-                + "][questaoId:" + resposta.getQuestaoId() + "][itemQuestaoId:" + resposta.getItemQuestaoId() + "][correta:" + acertou + "]");
+                + "][questaoId:" + resposta.getQuestaoId() + "][itemQuestaoId:" 
+                + resposta.getItemQuestaoId() + "][correta:" + acertou + "]");
 
             jdbcTemplate.update("""
                 update respostas_simulado_questao 
@@ -241,8 +273,6 @@ public class RespostaSimuladoService {
         return respostaSimulado.get().getId();
     }
 
-    
-
     private void estaFinalizandoAposHorario(
         LocalDateTime dataInicio, String duracao, LocalDateTime horarioEnvio) {
         
@@ -251,6 +281,7 @@ public class RespostaSimuladoService {
             throw new IllegalArgumentException("Simulado finalizado após o horário limite.");
     }
 
+    @Transactional
     public SimuladoCompletoResponse obterRespostas(
         SimuladoCompletoResponse simulado, UUID usuarioId) {
         
