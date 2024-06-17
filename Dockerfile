@@ -19,6 +19,7 @@ FROM openjdk:21-jdk-slim
 RUN apt-get update && apt-get install -y \
     libfreetype6 \
     libfontconfig1 \
+    fontconfig \
     xz-utils \
     wget \
     libjpeg62-turbo-dev \
@@ -31,6 +32,12 @@ RUN apt-get update && apt-get install -y \
 
 # Baixa e instala o wkhtmltopdf
 RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.bionic_amd64.deb && \
+    apt-get update && apt-get install -y --no-install-recommends \
+    libjpeg62-turbo \
+    libx11-6 \
+    libxext6 \
+    libxrender1 \
+    libssl1.1 && \
     dpkg -i wkhtmltox_0.12.6-1.bionic_amd64.deb && \
     apt-get install -f && \
     rm wkhtmltox_0.12.6-1.bionic_amd64.deb
