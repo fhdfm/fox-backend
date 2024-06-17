@@ -22,25 +22,19 @@ RUN apt-get update && apt-get install -y \
     fontconfig \
     xz-utils \
     wget \
-    libjpeg62-turbo-dev \
-    libssl-dev \
+    libjpeg62-turbo \
+    libx11-6 \
     libxext6 \
     libxrender1 \
     xfonts-75dpi \
     xfonts-base \
     && rm -rf /var/lib/apt/lists/*
 
-# Baixa e instala o wkhtmltopdf
-RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.bionic_amd64.deb && \
-    apt-get update && apt-get install -y --no-install-recommends \
-    libjpeg62-turbo \
-    libx11-6 \
-    libxext6 \
-    libxrender1 \
-    libssl1.1 && \
-    dpkg -i wkhtmltox_0.12.6-1.bionic_amd64.deb && \
+# Baixa e instala o wkhtmltopdf de um repositório confiável
+RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.5-1/wkhtmltox_0.12.5-1.bionic_amd64.deb && \
+    dpkg -i wkhtmltox_0.12.5-1.bionic_amd64.deb && \
     apt-get install -f && \
-    rm wkhtmltox_0.12.6-1.bionic_amd64.deb
+    rm wkhtmltox_0.12.5-1.bionic_amd64.deb
 
 # Cria diretório e adiciona arquivos New Relic
 RUN mkdir -p /usr/local/newrelic
