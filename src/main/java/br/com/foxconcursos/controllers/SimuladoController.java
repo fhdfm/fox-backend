@@ -174,6 +174,20 @@ public class SimuladoController {
                 simuladoId, false));
     }
 
+    @GetMapping(value = "/api/pf", 
+        consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<SimuladoCompletoResponse> xyuayaio(
+        @PathVariable UUID simuladoId) {
+        
+        //UUID usuarioId = UUID.fromString("3d0f0f05-4506-40cd-98c5-4d7911f6d4ff");
+
+        //respostaSimuladoService.iniciar(simuladoId, usuarioId);
+
+        return ResponseEntity.ok(
+            simuladoService.findById(
+                simuladoId, false));
+    }
+
     @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO')")
     @GetMapping(value = "/api/alunos/simulados/{simuladoId}/download", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<String> exportarSimuladoParaPDF(@PathVariable UUID simuladoId) throws Exception {
