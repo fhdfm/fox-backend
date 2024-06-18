@@ -1,7 +1,14 @@
 FROM ubuntu:latest AS build
 
 RUN apt-get update
-RUN apt-get install openjdk-21-jdk -y
+RUN apt-get install openjdk-21-jdk -y \
+    wget
+
+# Baixe e instale o wkhtmltopdf
+RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.jammy_amd64.deb && \
+    apt install -y ./wkhtmltox_0.12.6.1-2.jammy_amd64.deb && \
+    rm wkhtmltox_0.12.6.1-2.jammy_amd64.de
+    
 COPY . .
 
 RUN apt-get install maven -y
