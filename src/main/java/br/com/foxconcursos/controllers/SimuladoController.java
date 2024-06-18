@@ -272,7 +272,7 @@ public class SimuladoController {
         Pdf pdf = new Pdf(new WrapperConfig(executable));
 
         String rodapeContent = Files.readString(
-            Path.of(ClassLoader.getSystemResource(
+            Path.of(getClass().getClassLoader().getResource(
                 "templates/simulado/rodape.html").toURI()), StandardCharsets.UTF_8);
 
         rodapeContent = rodapeContent
@@ -294,13 +294,13 @@ public class SimuladoController {
 
 
         String instrucoesContent = Files.readString(
-            Path.of(ClassLoader.getSystemResource(
+            Path.of(getClass().getClassLoader().getResource(
                 "templates/simulado/instrucoes.html").toURI()), StandardCharsets.UTF_8);
  
         instrucoesContent = instrucoesContent.replace("${titulo}", simulado.getTitulo());
 
         String rascunhoContent = Files.readString(
-            Path.of(ClassLoader.getSystemResource(
+            Path.of(getClass().getClassLoader().getResource(
                 "templates/simulado/rascunho.html").toURI()), StandardCharsets.UTF_8);
 
         pdf.addPageFromString(instrucoesContent);
