@@ -5,15 +5,7 @@ RUN apt-get update && apt-get install -y \
     openjdk-21-jdk \
     maven \
     libfreetype6 \
-    libfontconfig1 \
-    ca-certificates \
-    && update-ca-certificates
-
-# Set JAVA_HOME environment variable
-ENV JAVA_HOME /usr/lib/jvm/java-21-openjdk-amd64
-
-# Ensure Java uses the correct TLS settings
-RUN echo "jdk.tls.client.protocols=TLSv1.2,TLSv1.3" >> $JAVA_HOME/conf/security/java.security
+    libfontconfig1
 
 # Copia o código fonte para a imagem
 COPY . .
@@ -37,8 +29,6 @@ RUN apt-get update && apt-get install -y \
     xfonts-75dpi \
     xfonts-base \
     libssl3 \
-    ca-certificates \
-    && update-ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Baixa e instala o wkhtmltopdf
