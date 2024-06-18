@@ -26,6 +26,9 @@ RUN wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkh
     apt-get clean && \
     rm wkhtmltox_0.12.5-1.focal_amd64.deb
 
+# Defina o diretório de trabalho
+WORKDIR /app
+
 # Copie o código-fonte e o arquivo de configuração do Maven
 COPY . .
 
