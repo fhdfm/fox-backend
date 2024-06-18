@@ -11,6 +11,7 @@ RUN mkdir -p /opt/maven && \
     rm apache-maven-3.8.5-bin.tar.gz
 
 ENV MAVEN_HOME /opt/maven
+ENV PATH $MAVEN_HOME/bin:$PATH
 
 # Adicione configurações do Maven
 COPY settings.xml /root/.m2/settings.xml
@@ -25,7 +26,7 @@ RUN wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkh
 
 COPY . .
 
-RUN mvn clean install -DskipTests
+RUN mvn -v && mvn clean install -DskipTests
 
 FROM openjdk:21-jdk-slim
 
