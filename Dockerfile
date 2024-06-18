@@ -14,12 +14,14 @@ ENV MAVEN_HOME /opt/maven
 ENV PATH $MAVEN_HOME/bin:$PATH
 
 # Adicione configurações do Maven
+RUN mkdir -p /root/.m2
 COPY settings.xml /root/.m2/settings.xml
 
 # Baixe e instale o wkhtmltopdf
 RUN wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.focal_amd64.deb && \
     echo "deb http://security.ubuntu.com/ubuntu focal-security main" > /etc/apt/sources.list.d/focal-security.list && \
     apt-get update && \
+    apt-get install -y libxrender1 libfontconfig1 libjpeg-turbo8 libxext6 libx11-6 fontconfig xfonts-base xfonts-75dpi && \
     dpkg -i wkhtmltox_0.12.5-1.focal_amd64.deb || apt-get install -yf && \
     apt-get clean && \
     rm wkhtmltox_0.12.5-1.focal_amd64.deb
