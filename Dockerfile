@@ -9,10 +9,6 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     && update-ca-certificates
 
-# Configurações de segurança para Maven
-RUN mkdir -p /usr/share/maven/conf
-COPY settings.xml /usr/share/maven/conf/settings.xml
-
 # Copia o código fonte para a imagem
 COPY . .
 
