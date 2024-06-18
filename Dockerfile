@@ -13,6 +13,12 @@ RUN mkdir -p /opt/maven && \
 ENV MAVEN_HOME /opt/maven
 ENV PATH $MAVEN_HOME/bin:$PATH
 
+# Verificar se o Maven foi instalado corretamente
+RUN echo $MAVEN_HOME
+RUN echo $PATH
+RUN ls -l /opt/maven/bin
+RUN mvn -v
+
 # Adicione configurações do Maven
 RUN mkdir -p /root/.m2
 COPY settings.xml /root/.m2/settings.xml
@@ -28,7 +34,7 @@ RUN wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkh
 
 COPY . .
 
-RUN mvn -v && mvn clean install -DskipTests
+RUN mvn clean install -DskipTests
 
 FROM openjdk:21-jdk-slim
 
