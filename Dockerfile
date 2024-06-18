@@ -22,6 +22,7 @@ ADD ./newrelic/newrelic.yml /usr/local/newrelic/newrelic.yml
 
 EXPOSE 8080
 
+COPY --from=build /usr/local/bin/wkhtmltopdf /usr/local/bin/wkhtmltopdf
 COPY --from=build /target/*.jar app.jar
 
 ENTRYPOINT ["java", "-javaagent:/usr/local/newrelic/newrelic.jar", "-jar", "app.jar"]
