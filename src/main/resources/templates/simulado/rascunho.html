@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+        * {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        .rascunho {
+            width: 21cm; /* Largura de uma folha A4 */
+            height: 29.7cm; /* Altura de uma folha A4 */
+            margin: 0 auto;
+            position: relative; /* Para o posicionamento absoluto do texto */
+            box-sizing: border-box;
+        }
+        .rotated-text {
+            font-size: 150px;
+            color: rgb(211, 211, 211);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            -webkit-transform: translate(-50%, -50%) rotate(-45deg); /* Prefixo WebKit */
+            -moz-transform: translate(-50%, -50%) rotate(-45deg); /* Prefixo Mozilla */
+            -ms-transform: translate(-50%, -50%) rotate(-45deg); /* Prefixo Microsoft */
+            -o-transform: translate(-50%, -50%) rotate(-45deg); /* Prefixo Opera */
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+<div class="rascunho">
+    <span class="rotated-text">Rascunho</span>
+</div>
+</body>
+</html>

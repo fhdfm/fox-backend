@@ -87,4 +87,19 @@ public class FoxUtils {
         return cpfUtil.format(cpf);
     }
 
+    public static String removerTagsP(String texto) {
+        texto = texto.replaceAll("^<p[^>]*?>", "");
+        texto = texto.replaceAll("</p>$", "");
+        return texto;
+    }
+
+    public static char obterLetra(int numero) {
+        char[] letras = {'a', 'b', 'c', 'd', 'e'};
+        if (numero >= 1 && numero <= letras.length) {
+            return letras[numero - 1];
+        } else {
+            throw new IllegalArgumentException("Número fora do intervalo válido.");
+        }
+    }
+
 }

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Document</title>
+    <style>
+        * {
+            font-family: Arial, Helvetica, sans-serif;
+            text-align: justify;
+        }
+
+        ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 0.7rem;
+        }
+
+        .simulado {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .simulado_titulo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .header {
+            padding: 10px 15px;
+            border: 1px solid #D3D3D3;
+            border-radius: 4px;
+        }
+
+        h1 {
+            margin-bottom: 15px;
+        }
+
+        h1, span {
+            text-align: center;
+        }
+
+        .header span {
+            display: block;
+            margin: 10px auto; /* Centraliza o span */
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .testeeeeee img {
+            position: absolute;
+            width: 60px;
+            right: 25px;
+            top: 45px;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <div class="testeeeeee">
+        <h1>Simulado</h1>
+        <img src="data:image/png;base64,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">
+    </div>
+    <hr>
+    <span>${titulo}</span>
+</div>
+
+<h4 style="text-align: center">
+    <b>LEIA COM ATENÇÃO E SIGA RIGOROSAMENTE ESTAS INSTRUÇÕES:</b>
+</h4>
+
+<table>
+    <tr>
+        <td valign="top" width="49%">
+            <ol>
+                <li>
+                    Este caderno contém 60 (sessenta) questões de múltipla escolha,
+                    numeradas de 1 (um) a 60 (sessenta).
+                </li>
+                <li>
+                    Cada uma das questões apresenta um enunciado seguido de 5 (cinco)
+                    alternativas, das quais somente uma deve ser assinalada.
+                </li>
+                <li>
+                    Examine se a prova está completa com a sequência numérica das
+                    questões, se há falhas ou imperfeições gráficas que causem
+                    dúvidas. Qualquer reclamação deverá ser feita durante os 20
+                    minutos iniciais. Após esse tempo, qualquer reclamação será
+                    desconsiderada.
+                </li>
+                <li>
+                    Depois de decorridas 2 (duas) horas do início da prova, será
+                    distribuído a folha de respostas, o qual será o único documento
+                    válido para a correção. Ao recebê-lo, verifique se seu nome e seu
+                    número de inscrição estão corretos. Reclame imediatamente se
+                    houver discrepância.
+                </li>
+                <li>
+                    A folha de respostas não pode ser dobrada, amassada, rasurada ou
+                    manchada. Exceto sua assinatura e data de nascimento, nada deve
+                    ser escrito ou registrado fora dos locais destinados às respostas.
+                    Tenha muita atenção ao marcar sua folha de respostas, pois não
+                    haverá substituição por erro do candidato. Marque sua resposta
+                    pintando completamente o espaço correspondente à alternativa de
+                    sua opção.
+                </li>
+                <li>
+                    A leitora de marcas não registrará as respostas em que houver
+                    falta de nitidez, uso de corretivo, marcação a lápis ou marcação
+                    de mais de uma letra. Não serão computadas questões não
+                    assinaladas.
+                </li>
+                <li>
+                    Durante a prova, é proibido o intercâmbio e o empréstimo de
+                    material de qualquer natureza entre os candidatos. A tentativa de
+                    fraude, a indisciplina e o desrespeito àsautoridades encarregadas
+                    dos trabalhos são faltas que implicarão a desclassificação do
+                    candidato.
+                </li>
+                <li>
+                    Qualquer forma de comunicação entre candidatos implicará a
+                    eliminação de ambos do certame.
+                </li>
+                <li>
+                    Não será permitido ao candidato, durante a realização das provas,
+                    portar armas, aparelhos eletrônicos de qualquer natureza,
+                    relógios, bolsas, livros, jornais e impressos em geral; bonés,
+                    chapéus, lenço de cabelo, bandanas etc.
+                </li>
+            </ol>
+        </td>
+        <td width="2%" style="border-right: 1 solid #000000;">&nbsp;</td>
+        <td valign="top" width="49%">
+            <ol start="10">
+                <li>
+                    É vedado o uso de telefone celular ou de qualquer outro meio de
+                    comunicação. O candidato que for flagrado portando aparelho
+                    celular ou qualquer outro tipo de comunicação, durante o período
+                    de realização da prova e/ou o aparelho celular tocar, será
+                    sumariamente eliminado do certame.
+                </li>
+                <li>
+                    Em caso de dúvida, durante a prova, levante o braço para solicitar
+                    atendimento da fiscalização. Jamais pergunte em voz alta.
+                </li>
+                <li>
+                    Ao terminar a resolução da prova, entregue-a ao fiscal de sala
+                    juntamente com <strong>a folha de respostas</strong> e a
+                    <strong>Prova Discursiva/Produção Textual</strong>. Não se esqueça
+                    de
+                    <strong
+                    >assinar a folha de respostas e a folha de frequência</strong
+                    >.
+                </li>
+                <li>
+                    O candidato que permanecer na sala de provas, por mais de 3h30min,
+                    poderá levar consigo o caderno de provas fornecido pela
+                    <strong>ORGANIZADORA</strong>.
+                </li>
+                <li>
+                    As provas terão duração de 4 (quatro) horas com início às 08h e
+                    término às 12h. O candidato só poderá ausentar-se da sala depois
+                    de decorridas duas horas do início das provas.
+                </li>
+                <li>
+                    Para os candidatos que farão Prova Discursiva/Produção Textual, na
+                    última folha do caderno de questões, há a folha de rascunho para
+                    redação que poderá ser usada para a produção de seu texto. Quando
+                    concluí-la, passe-a para a folha definitiva. Nessa folha, não
+                    escreva nada além de seu número de inscrição (no campo próprio) e
+                    sua produção, pois qualquer registro como oração, nomes, nome do
+                    candidato etc. anula a redação.
+                    <ul>
+                        <li>
+                            A folha de texto definitivo será o único documento válido para
+                            avaliação da Prova Discursiva/Produção Textual. A folha para
+                            rascunho no caderno de provas é de preenchimento facultativo e
+                            não valerá para tal finalidade.
+                        </li>
+                        <li>
+                            A folha de texto definitivo não será substituída por erro de
+                            preenchimento do candidato.
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    Os <strong>Gabaritos Preliminares das Provas Objetivas</strong> serão divulgados 72
+                    (setenta e duas) horas após a realização das mesmas.
+                </li>
+            </ol>
+        </td>
+    </tr>
+</table>
+</body>
+</html>
