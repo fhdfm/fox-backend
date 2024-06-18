@@ -1,12 +1,14 @@
 FROM ubuntu:latest AS build
 
-RUN apt-get update && apt-get install -y openjdk-21-jdk wget
+RUN apt-get update && apt-get install -y openjdk-21-jdk wget curl
 
 # Instale o Maven
-RUN wget https://www-us.apache.org/dist/maven/maven-3/3.8.5/binaries/apache-maven-3.8.5-bin.tar.gz && \
+RUN mkdir -p /opt/maven && \
+    curl -O https://www-us.apache.org/dist/maven/maven-3/3.8.5/binaries/apache-maven-3.8.5-bin.tar.gz && \
     tar xzvf apache-maven-3.8.5-bin.tar.gz -C /opt && \
     ln -s /opt/apache-maven-3.8.5 /opt/maven && \
-    ln -s /opt/maven/bin/mvn /usr/bin/mvn
+    ln -s /opt/maven/bin/mvn /usr/bin/mvn && \
+    rm apache-maven-3.8.5-bin.tar.gz
 
 ENV MAVEN_HOME /opt/maven
 
