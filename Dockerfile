@@ -1,28 +1,15 @@
 FROM ubuntu:22.04 AS build
 
-ENV  CFLAGS=-w CXXFLAGS=-w
-
-RUN apt-get update && apt-get install -y -q --no-install-recommends \
-    build-essential \
-    libfontconfig1-dev \
-    libfreetype6-dev \
-    libjpeg-dev \
-    libpng-dev \
-    libssl-dev \
-    libx11-dev \
-    libxext-dev \
-    libxrender-dev \
-    python \
-    zlib1g-dev \
+RUN apt-get update
+RUN apt-get install openjdk-21-jdk -y \
     wget \
-    openjdk-21-jdk \
-    maven \
-    && rm -rf /var/lib/apt/lists/*
+    maven
 
+# Baixe e instale o wkhtmltopdf
 RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.jammy_amd64.deb && \
-apt install -y ./wkhtmltox_0.12.6.1-2.jammy_amd64.deb && \
-rm wkhtmltox_0.12.6.1-2.jammy_amd64.deb    
-
+    apt install -y ./wkhtmltox_0.12.6.1-2.jammy_amd64.deb && \
+    rm wkhtmltox_0.12.6.1-2.jammy_amd64.deb
+    
 COPY . .
 
 RUN mvn clean install -DskipTests
