@@ -1,6 +1,8 @@
 FROM ubuntu:22.04 AS build
 
-RUN echo "deb http://security.ubuntu.com/ubuntu bionic-security main" > /etc/apt/sources.list.d/bionic-security.list
+RUN apt-get update && apt-get install -y gnupg \
+    && echo "deb http://security.ubuntu.com/ubuntu bionic-security main" > /etc/apt/sources.list.d/bionic-security.list \
+    && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3B4FE6ACC0B21F32
 
 RUN apt-get update
 RUN apt-get install openjdk-21-jdk -y \
