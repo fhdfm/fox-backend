@@ -11,7 +11,7 @@ RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/w
     
 COPY . .
 
-RUN apt-get install maven -y libjpeg62:i386
+RUN apt-get install maven -y libjpeg62
 RUN mvn clean install -DskipTests
 
 FROM openjdk:21-jdk-slim
