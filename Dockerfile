@@ -3,7 +3,8 @@ FROM ubuntu:22.04 AS build
 RUN apt-get update
 RUN apt-get install openjdk-21-jdk -y \
     wget \
-    maven
+    maven \
+    libjpeg9-dev
 
 # Baixe e instale o wkhtmltopdf
 RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.jammy_amd64.deb && \
