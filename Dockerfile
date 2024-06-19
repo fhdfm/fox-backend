@@ -2,7 +2,8 @@ FROM ubuntu:latest AS build
 
 RUN apt-get update
 RUN apt-get install openjdk-21-jdk -y \
-    wget
+    wget \
+    libxrender1
 
 # Baixe e instale o wkhtmltopdf
 RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.jammy_amd64.deb && \
@@ -11,7 +12,7 @@ RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/w
     
 COPY . .
 
-RUN apt-get install maven -y libjpeg62
+RUN apt-get install maven -y
 RUN mvn clean install -DskipTests
 
 FROM openjdk:21-jdk-slim
