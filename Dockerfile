@@ -1,7 +1,21 @@
 FROM ubuntu:22.04 AS build
 
-# Instalar wkhtmltopdf
-RUN apt-get install -y wkhtmltopdf
+RUN apt-get install -y \
+    wget \
+    xorg-x11-fonts-75dpi \
+    xorg-x11-fonts-Type1 \
+    openssl \
+    git-core \
+    fontconfig
+
+# Baixar e instalar wkhtmltopdf manualmente
+RUN wget https://downloads.wkhtmltopdf.org/0.12/0.12.4/wkhtmltox-0.12.4_linux-generic-amd64.tar.xz \
+    && tar xvf wkhtmltox-0.12.4_linux-generic-amd64.tar.xz \
+    && mv wkhtmltox/bin/wkhtmlto* /usr/bin \
+    && rm -rf wkhtmltox-0.12.4_linux-generic-amd64.tar.xz wkhtmltox
+
+# Limpar cache do apt
+RUN rm -rf /var/lib/apt/lists/*
     
 COPY . .
 
