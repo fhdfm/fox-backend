@@ -6,9 +6,9 @@ RUN apt-get install openjdk-21-jdk -y \
     maven
 
 # Baixe e instale o wkhtmltopdf
-RUN wget https://github.com/fhdfm/wkhtmltopdf/blob/main/wkhtmltox_0.12.6-1.jammy_amd64.deb && \
-    apt install -y ./wkhtmltox_0.12.6-1.jammy_amd64.deb && \
-    rm wkhtmltox_0.12.6-1.jammy_amd64.deb
+RUN wget https://github.com/fhdfm/wkhtmltopdf/blob/main/wkhtmltox_0.12.5-1.jammy_amd64.deb && \
+    apt install -y ./wkhtmltox_0.12.5-1.jammy_amd64.deb && \
+    rm wkhtmltox_0.12.5-1.jammy_amd64.deb
     
 COPY . .
 
