@@ -1,14 +1,24 @@
 FROM ubuntu:22.04 AS build
 
-RUN apt-get update
-RUN apt-get install openjdk-21-jdk -y \
+RUN apt-get update &&  apt-get install -y \
     wget \
-    maven
+    openjdk-21-jdk \
+    maven \
+    && rm -rf /var/lib/apt/lists/*
 
-# Baixe e instale o wkhtmltopdf
-RUN wget https://github.com/fhdfm/wkhtmltopdf/blob/main/wkhtmltox_0.12.5-1.jammy_amd64.deb && \
-    apt install -y ./wkhtmltox_0.12.5-1.jammy_amd64.deb && \
-    rm wkhtmltox_0.12.5-1.jammy_amd64.deb
+# Baixe e instale libjpeg-turbo8
+RUN wget http://mirrors.kernel.org/ubuntu/pool/main/libj/libjpeg-turbo/libjpeg-turbo8_2.1.2-0ubuntu1_amd64.deb && \
+    apt-get update && \
+    apt-get install -y ./libjpeg-turbo8_2.1.2-0ubuntu1_amd64.deb && \
+    rm libjpeg-turbo8_2.1.2-0ubuntu1_amd64.deb && \
+    rm -rf /var/lib/apt/lists/*
+
+# Baixe e instale wkhtmltox
+RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.jammy_amd64.deb && \
+    apt-get update && \
+    dpkg -i wkhtmltox_0.12.6.1-2.jammy_amd64.deb || apt-get -f install -y && \
+    rm wkhtmltox_0.12.6.1-2.jammy_amd64.deb && \
+    rm -rf /var/lib/apt/lists/*
     
 COPY . .
 
