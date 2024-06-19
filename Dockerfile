@@ -4,12 +4,12 @@ RUN apt-get install -y \
     wget
 
 # Baixar e instalar wkhtmltopdf manualmente
-apt-get update 
-apt-get install -y --force-yes xvfb 
-wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.4/wkhtmltox-0.12.4_linux-generic-amd64.tar.xz 
-tar xvf wkhtmltox-0.12.4_linux-generic-amd64.tar.xz 
-mv wkhtmltox/bin/wkhtmltopdf /usr/bin 
-rm wkhtmltox-0.12.4_linux-generic-amd64.tar.xz  && rm -rf wkhtmltox 
+RUN apt-get update 
+RUN apt-get install -y --force-yes xvfb 
+RUN wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.4/wkhtmltox-0.12.4_linux-generic-amd64.tar.xz 
+RUN tar xvf wkhtmltox-0.12.4_linux-generic-amd64.tar.xz 
+RUN mv wkhtmltox/bin/wkhtmltopdf /usr/bin 
+RUN rm wkhtmltox-0.12.4_linux-generic-amd64.tar.xz  && rm -rf wkhtmltox 
 
 # Limpar cache do apt
 RUN rm -rf /var/lib/apt/lists/*
