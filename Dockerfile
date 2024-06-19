@@ -1,20 +1,30 @@
 FROM ubuntu:22.04 AS build
 
-RUN apt-get update
-RUN apt-get install -y --force-yes wget xvfb
+ENV  CFLAGS=-w CXXFLAGS=-w
 
-# Baixar e instalar wkhtmltopdf manualmente 
-RUN wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.4/wkhtmltox-0.12.4_linux-generic-amd64.tar.xz 
-RUN tar xvf wkhtmltox-0.12.4_linux-generic-amd64.tar.xz 
-RUN mv wkhtmltox/bin/wkhtmltopdf /usr/bin 
-RUN rm wkhtmltox-0.12.4_linux-generic-amd64.tar.xz  && rm -rf wkhtmltox 
+RUN apt-get update && apt-get install -y -q --no-install-recommends \
+    build-essential \
+    libfontconfig1-dev \
+    libfreetype6-dev \
+    libjpeg-dev \
+    libpng-dev \
+    libssl-dev \
+    libx11-dev \
+    libxext-dev \
+    libxrender-dev \
+    python \
+    zlib1g-dev \
+    wget \
+    openjdk-21-jdk \
+    maven \
+    && rm -rf /var/lib/apt/lists/*
 
-# Limpar cache do apt
-RUN rm -rf /var/lib/apt/lists/*
-    
+RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.jammy_amd64.deb && \
+apt install -y ./wkhtmltox_0.12.6.1-2.jammy_amd64.deb && \
+rm wkhtmltox_0.12.6.1-2.jammy_amd64.deb    
+
 COPY . .
 
-RUN apt-get install maven -y
 RUN mvn clean install -DskipTests
 
 FROM openjdk:21-jdk-slim
