@@ -1,5 +1,9 @@
 FROM ubuntu:22.04 AS build
 
+# Definir variáveis de ambiente para evitar interação durante a instalação
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Etc/UTC
+
 RUN apt-get update && apt-get install -y gnupg \
     && echo "deb http://security.ubuntu.com/ubuntu bionic-security main" > /etc/apt/sources.list.d/bionic-security.list \
     && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3B4FE6ACC0B21F32
