@@ -1,23 +1,27 @@
 FROM ubuntu:22.04 AS build
 
 # Definir variáveis de ambiente para evitar interação durante a instalação
+# Definir variáveis de ambiente para evitar interação durante a instalação
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
 
+# Adicionar repositório para bionic-security e a chave pública GPG
 RUN apt-get update && apt-get install -y gnupg \
     && echo "deb http://security.ubuntu.com/ubuntu bionic-security main" > /etc/apt/sources.list.d/bionic-security.list \
     && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3B4FE6ACC0B21F32
 
-RUN apt-get update
-RUN apt-get install openjdk-21-jdk -y \
-    wget 
-
-RUN apt-get update
-RUN apt-get install -y xvfb
-RUN apt-get install -y openssl build-essential xorg libssl1.0-dev
-RUN wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.4/wkhtmltox-0.12.4_linux-generic-amd64.tar.xz
-RUN tar xvJf wkhtmltox-0.12.4_linux-generic-amd64.tar.xz
-RUN cp wkhtmltox/bin/wkhtmlto* /usr/bin/
+# Atualizar lista de pacotes e instalar dependências, incluindo wkhtmltopdf
+RUN apt-get update && apt-get install -y \
+    wget \
+    libxrender1 \
+    libfontconfig1 \
+    libjpeg62-turbo \
+    libxext6 \
+    xfonts-base \
+    xfonts-75dpi \
+    libssl1.0-dev \
+    wkhtmltopdf \
+    && rm -rf /var/lib/apt/lists/*
     
 COPY . .
 
