@@ -2,13 +2,7 @@ FROM ubuntu:latest AS build
 
 RUN apt-get update
 RUN apt-get install openjdk-21-jdk -y \
-    wget \
-    libxrender1 \
-    libfontconfig1 \
-    libjpeg62-turbo \
-    libxext6 \
-    xfonts-base \
-    xfonts-75dpi
+    wget
 
 # Baixe e instale o wkhtmltopdf
 RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.jammy_amd64.deb && \
@@ -17,7 +11,7 @@ RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/w
     
 COPY . .
 
-RUN apt-get install maven -y
+RUN apt-get install maven -y libjpeg62:i386
 RUN mvn clean install -DskipTests
 
 FROM openjdk:21-jdk-slim
