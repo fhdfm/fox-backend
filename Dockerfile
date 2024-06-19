@@ -4,15 +4,11 @@ RUN apt-get update
 RUN apt-get install openjdk-21-jdk -y \
     wget \
     maven
-    
-RUN wget http://archive.ubuntu.com/ubuntu/pool/main/libj/libjpeg-turbo/libjpeg-turbo8-dev_2.1.2-0ubuntu1_amd64.deb && \
-    apt install -y ./libjpeg-turbo8-dev_2.1.2-0ubuntu1_amd64.deb && \
-    rm libjpeg-turbo8-dev_2.1.2-0ubuntu1_amd64.deb
 
 # Baixe e instale o wkhtmltopdf
-RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.jammy_amd64.deb && \
-    apt install -y ./wkhtmltox_0.12.6.1-2.jammy_amd64.deb && \
-    rm wkhtmltox_0.12.6.1-2.jammy_amd64.deb
+RUN wget https://github.com/fhdfm/wkhtmltopdf/blob/main/wkhtmltox_0.12.6-1.jammy_amd64.deb && \
+    apt install -y ./wkhtmltox_0.12.6-1.jammy_amd64.deb && \
+    rm wkhtmltox_0.12.6-1.jammy_amd64.deb
     
 COPY . .
 
