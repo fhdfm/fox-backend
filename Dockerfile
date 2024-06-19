@@ -5,7 +5,7 @@ RUN apt-get install openjdk-21-jdk -y \
     wget \
     maven
     
-RUN wget http://mirror.mcs.anl.gov/pub/ubuntu/pool/main/libj/libjpeg-turbo/libjpeg-turbo8-dev_2.1.2-0ubuntu1_amd64.deb && \
+RUN wget http://archive.ubuntu.com/ubuntu/pool/main/libj/libjpeg-turbo/libjpeg-turbo8-dev_2.1.2-0ubuntu1_amd64.deb && \
     apt install -y ./libjpeg-turbo8-dev_2.1.2-0ubuntu1_amd64.deb && \
     rm libjpeg-turbo8-dev_2.1.2-0ubuntu1_amd64.deb
 
