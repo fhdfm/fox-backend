@@ -4,7 +4,6 @@ RUN apt-get update &&  apt-get install -y \
     wget \
     openjdk-21-jdk \
     maven \
-    wkhtmltopdf \
     && rm -rf /var/lib/apt/lists/*
     
 COPY . .
