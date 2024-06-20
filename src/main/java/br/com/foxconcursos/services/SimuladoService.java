@@ -1,6 +1,10 @@
 package br.com.foxconcursos.services;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,14 +12,21 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.parser.Parser;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
+
 import br.com.foxconcursos.domain.Disciplina;
 import br.com.foxconcursos.domain.Simulado;
+import br.com.foxconcursos.domain.UsuarioLogado;
 import br.com.foxconcursos.dto.DataResponse;
 import br.com.foxconcursos.dto.DisciplinaQuestoesResponse;
+import br.com.foxconcursos.dto.ItemQuestaoResponse;
 import br.com.foxconcursos.dto.ProdutoSimuladoResponse;
 import br.com.foxconcursos.dto.QuestaoSimuladoResponse;
 import br.com.foxconcursos.dto.SimuladoCompletoResponse;
@@ -304,6 +315,124 @@ public class SimuladoService {
     public boolean isExpirado(UUID simuladoId) {
         LocalDateTime horaAtual = LocalDateTime.now();
         return this.simuladoRepository.simuladosExpirados(simuladoId, horaAtual).size() > 0;
+    }
+
+    public byte[] exportarSimuladoParaPDF(String titulo, UsuarioLogado usuario,
+            List<DisciplinaQuestoesResponse> disciplinas) throws Exception {
+
+        String instrucoesHtml = new String(Files.readAllBytes(
+            Path.of(getClass().getClassLoader().getResource(
+                "templates/simulado/instrucoes.html").toURI())));
+        
+        instrucoesHtml = instrucoesHtml.replace("${titulo}", titulo);
+
+        String rascunhoHtml = new String(Files.readAllBytes(
+            Path.of(getClass().getClassLoader().getResource(
+                "templates/simulado/rascunho.html").toURI())));
+                
+        String rodapeHtml = new String(Files.readAllBytes(
+            Path.of(getClass().getClassLoader().getResource(
+                "templates/simulado/rodape.html").toURI())));
+        
+        rodapeHtml = rodapeHtml.replace(
+            "${nome}", usuario.getNome()).replace(
+                "${cpf}", usuario.getCpf());
+        
+        String contentHtml = this.getContentHtml(disciplinas);
+
+        Document document = Jsoup.parse(contentHtml, 
+            "UTF-8", Parser.xmlParser());
+        Document instrucoes = Jsoup.parse(instrucoesHtml, 
+            "UTF-8", Parser.xmlParser());
+        Document rascunho = Jsoup.parse(rascunhoHtml, 
+            "UTF-8", Parser.xmlParser());
+
+        addFooter(document, rodapeHtml);
+
+        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+           
+            PdfRendererBuilder builder = new PdfRendererBuilder();
+            String combinedHtml = getStart() + instrucoes.html() + rascunho.html() + document.html() + "</body></html>";
+
+            System.out.println(combinedHtml);
+
+            builder.withHtmlContent(combinedHtml, new File(".").toURI().toString());
+            builder.toStream(os);
+            builder.run();
+
+            return os.toByteArray();
+        }
+    }
+
+    private void addFooter(Document document, String rodapeHtml) {
+        // Element body = document.body();
+        // Element rodape = Jsoup.parseBodyFragment(rodapeHtml).body().child(0);
+        // body.appendChild(rodape);
+    }
+
+    private String getStart() {
+        return """
+            <html>
+            <head>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        font-size: 12px;
+                        margin: 0;
+                        padding: 0;
+                    }
+                    h3.disciplina {
+                        margin-top: 20px;
+                        margin-bottom: 10px;
+                    }
+                    h5.enunciado {
+                        margin-top: 10px;
+                        margin-bottom: 10px;
+                    }
+                    div.teste {
+                        margin-top: 10px;
+                        margin-bottom: 10px;
+                    }
+                    span.alternativa {
+                        margin-top: 5px;
+                        margin-bottom: 5px;
+                    }
+                </style>
+            </head>
+            <body>
+        """;
+    }    
+
+    private String getContentHtml(List<DisciplinaQuestoesResponse> disciplinas) {
+        
+        StringBuilder htmlContent = new StringBuilder();
+
+        for (DisciplinaQuestoesResponse disciplina : disciplinas) {
+            if (disciplina.getQuestoes().isEmpty()) continue;
+
+            htmlContent.append("<h3 class='disciplina'>")
+                       .append(disciplina.getNome())
+                       .append("</h3>");
+
+            for (QuestaoSimuladoResponse questao : disciplina.getQuestoes()) {
+                htmlContent.append("<div class='teste'>")
+                           .append("<h5 class='enunciado'>")
+                           .append(questao.getOrdem()).append(") ")
+                           .append(FoxUtils.removerTagsP(questao.getEnunciado()))
+                           .append("</h5>");
+
+                for (ItemQuestaoResponse alternativa : questao.getAlternativas()) {
+                    htmlContent.append("<span class='alternativa'>")
+                               .append(FoxUtils.obterLetra(alternativa.getOrdem())).append(") ")
+                               .append(FoxUtils.removerTagsP(alternativa.getDescricao()))
+                               .append("</span>");
+                }
+
+                htmlContent.append("</div>");
+            }
+        }
+
+        return htmlContent.toString();
     }
 
 }

@@ -1,8 +1,5 @@
 package br.com.foxconcursos.controllers;
 
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,14 +17,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.github.jhonnymertz.wkhtmltopdf.wrapper.Pdf;
-import com.github.jhonnymertz.wkhtmltopdf.wrapper.configurations.WrapperConfig;
-import com.github.jhonnymertz.wkhtmltopdf.wrapper.params.Param;
-
 import br.com.foxconcursos.domain.StatusSimulado;
 import br.com.foxconcursos.domain.UsuarioLogado;
 import br.com.foxconcursos.dto.DisciplinaQuestoesResponse;
-import br.com.foxconcursos.dto.ItemQuestaoResponse;
 import br.com.foxconcursos.dto.QuestaoSimuladoRequest;
 import br.com.foxconcursos.dto.QuestaoSimuladoResponse;
 import br.com.foxconcursos.dto.QuestoesSimuladoDisciplinaResponse;
@@ -41,7 +33,6 @@ import br.com.foxconcursos.services.AuthenticationService;
 import br.com.foxconcursos.services.QuestaoSimuladoService;
 import br.com.foxconcursos.services.RespostaSimuladoService;
 import br.com.foxconcursos.services.SimuladoService;
-import br.com.foxconcursos.util.FoxUtils;
 
 @RestController
 @RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -184,132 +175,27 @@ public class SimuladoController {
         List<DisciplinaQuestoesResponse> disciplinas = simulado.getDisciplinas();
 
         UsuarioLogado usuario = this.authenticationService.obterUsuarioLogadoCompleto();
-        
-        StringBuilder htmlContent = new StringBuilder();
-        htmlContent.append("""
-                <html>
-                <head>
-                <style>
-                * {
-                    font-family: Arial, Helvetica, sans-serif;
-                }
-                .disciplina{
-                    background-color: #C4692E;
-                    color: #fff;
-                    margin-top: 20px;
-                    border-radius: 8px;                        
-                    padding: 10px;    
-                }
-                .enunciado{
-                      text-align: justify;
-                }
-                .titulo{
-                    font-size: 18px;
-                    font-weight: 600;
-                }
-                .teste {
-                    margin-bottom: 20px;        
-                    border: 1px solid #dfe7ef;
-                    padding: 5px 10px;
-                    border-radius: 8px;                        
-                }
-                .cabecalho, .titulo {
-                    position: relative;
-                    padding: 0 0 20px 0;
-                }
-                .left{
-                  position: absolute;
-                  left: 0;
-                }
-                .right{
-                    position: absolute;
-                    right: 0;
-                }
-                .alternativa{
-                    margin: 0;
-                    padding: 0;
-                }
-                </style>
-                </head>
-                <meta charset='utf-8'>
-                <body>
 
-                """);
+        byte[] pdf = this.simuladoService.exportarSimuladoParaPDF(
+            simulado.getTitulo(), usuario, disciplinas);
 
-        for (DisciplinaQuestoesResponse disciplina : disciplinas) {
-            if (disciplina.getQuestoes().isEmpty()) continue;
-
-            htmlContent
-                    .append("<h3 class='disciplina'>")
-                    .append(disciplina.getNome())
-                    .append("</h3>");
-
-            for (QuestaoSimuladoResponse questao : disciplina.getQuestoes()) {
-                htmlContent.append("<div class='teste'>");
-
-                htmlContent
-                        .append("<h5 class='enunciado'>")
-                        .append(questao.getOrdem() + ") ")
-                        .append(FoxUtils.removerTagsP(questao.getEnunciado()))
-                        .append("</h5>");
-                for (ItemQuestaoResponse alternativa : questao.getAlternativas()) {
-                    htmlContent
-                            .append("<span class='alternativa'>")
-                            .append(FoxUtils.obterLetra(alternativa.getOrdem()) + ") ")
-                            .append(FoxUtils.removerTagsP(alternativa.getDescricao()))
-                            .append("</span>")
-                    ;
-                }
-                htmlContent.append("</div>");
-            }
-
-        }
-        htmlContent.append("</body></html>");
-
-        String finalHtmlContent = htmlContent.toString();
-
-        String executable = WrapperConfig.findExecutable();
-        Pdf pdf = new Pdf(new WrapperConfig(executable));
-
-        String rodapeContent = Files.readString(
-            Path.of(getClass().getClassLoader().getResource(
-                "templates/simulado/rodape.html").toURI()), StandardCharsets.UTF_8);
-
-        rodapeContent = rodapeContent
-                .replace("${nome}", usuario.getNome())
-                .replace("${cpf}", FoxUtils.formatarCpf(usuario.getCpf()));
-
-        Path tempFile = Files.createTempFile("rodape", ".html");
-        Files.write(tempFile, rodapeContent.getBytes());
-
-        pdf.addParam(new Param("--footer-html", tempFile.toUri().toString()));
-        pdf.addParam(new Param("--footer-spacing", "5"));
-        pdf.addParam(new Param("--disable-forms"));
-        pdf.addParam(new Param("--margin-top", "10mm"));
-        pdf.addParam(new Param("--margin-bottom", "20mm"));
-        pdf.addParam(new Param("--margin-left", "10mm"));
-        pdf.addParam(new Param("--margin-right", "10mm"));
-
-        pdf.addParam(new Param("--encoding", "utf-8"));
-
-
-        String instrucoesContent = Files.readString(
-            Path.of(getClass().getClassLoader().getResource(
-                "templates/simulado/instrucoes.html").toURI()), StandardCharsets.UTF_8);
- 
-        instrucoesContent = instrucoesContent.replace("${titulo}", simulado.getTitulo());
-
-        String rascunhoContent = Files.readString(
-            Path.of(getClass().getClassLoader().getResource(
-                "templates/simulado/rascunho.html").toURI()), StandardCharsets.UTF_8);
-
-        pdf.addPageFromString(instrucoesContent);
-        pdf.addPageFromString(rascunhoContent);
-        pdf.addPageFromString(finalHtmlContent);
-
-        return ResponseEntity.status(HttpStatus.OK).body(pdf.getPDF());
+        return ResponseEntity.status(HttpStatus.OK)
+            .header("Content-Disposition", 
+                "attachment; filename=simulado-" + usuario.getCpf() +  ".pdf").body(pdf);
     }
 
+   
+    @GetMapping(value = "/api/pf", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<SimuladoCompletoResponse> agajgaj(@PathVariable UUID simuladoId) throws Exception {
+
+        SimuladoCompletoResponse simulado = simuladoService.findById(simuladoId);
+        //List<DisciplinaQuestoesResponse> disciplinas = simulado.getDisciplinas();
+
+       // UsuarioLogado usuario = this.authenticationService.obterUsuarioLogadoCompleto();
+
+        return ResponseEntity.status(HttpStatus.OK).body(simulado);
+    }
+        
     @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO')")
     @GetMapping(value = "/api/alunos/simulados/{simuladoId}/status")
     public ResponseEntity<String> obterStatus(@PathVariable UUID simuladoId) {
