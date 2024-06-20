@@ -4,13 +4,13 @@ RUN apt-get update &&  apt-get install -y \
     wget \
     openjdk-21-jdk \
     maven \
+    xfonts-75dpi \
     && rm -rf /var/lib/apt/lists/*
 
 # Baixe e instale libjpeg-turbo8
 RUN wget http://mirrors.kernel.org/ubuntu/pool/main/libj/libjpeg-turbo/libjpeg-turbo8_2.1.2-0ubuntu1_amd64.deb && \
     apt-get update && \
     apt-get install -y ./libjpeg-turbo8_2.1.2-0ubuntu1_amd64.deb && \
-    cp /usr/lib/x86_64-linux-gnu/libjpeg.so.8 /usr/local/lib/ && \
     rm libjpeg-turbo8_2.1.2-0ubuntu1_amd64.deb && \
     rm -rf /var/lib/apt/lists/*
 
@@ -20,6 +20,9 @@ RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/w
     dpkg -i wkhtmltox_0.12.6.1-2.jammy_amd64.deb || apt-get -f install -y && \
     rm wkhtmltox_0.12.6.1-2.jammy_amd64.deb && \
     rm -rf /var/lib/apt/lists/*
+
+# Adicione a biblioteca libjpeg.so.8 ao path de bibliotecas compartilhadas
+RUN ldconfig
     
 COPY . .
 
