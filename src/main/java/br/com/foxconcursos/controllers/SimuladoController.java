@@ -185,7 +185,7 @@ public class SimuladoController {
     }
 
    
-    @GetMapping(value = "/api/pf/{simuladoId}", produces = MediaType.APPLICATION_PDF_VALUE)
+    @GetMapping(value = "/api/pf/{simuladoId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SimuladoCompletoResponse> agajgaj(@PathVariable UUID simuladoId) throws Exception {
 
         SimuladoCompletoResponse simulado = simuladoService.findById(simuladoId);
