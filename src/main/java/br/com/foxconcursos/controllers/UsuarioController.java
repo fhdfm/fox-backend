@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.foxconcursos.domain.Usuario;
-import br.com.foxconcursos.domain.UsuarioLogado;
 import br.com.foxconcursos.dto.AlterarPasswordRequest;
 import br.com.foxconcursos.dto.ProdutoResponse;
 import br.com.foxconcursos.dto.UsuarioResponse;
@@ -41,7 +40,7 @@ public class UsuarioController {
     @PostMapping(value = "/api/signup", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UUID> create(@RequestBody Usuario user) {
         
-        UsuarioLogado savedUser = this.service.save(user);
+        Usuario savedUser = this.service.save(user);
         
         return ResponseEntity.status(HttpStatus.CREATED).body(savedUser.getId());
     }

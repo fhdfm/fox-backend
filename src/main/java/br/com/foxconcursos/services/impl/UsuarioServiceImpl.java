@@ -182,7 +182,7 @@ public class UsuarioServiceImpl implements UserDetailsService {
             usuario.setCpf(FoxUtils.validarCpf(usuario.getCpf()));
     }
 
-    public UsuarioLogado save(Usuario usuario) {
+    public Usuario save(Usuario usuario) {
         
         Usuario savedUsuario = null;        
         if (usuario.getId() == null)
@@ -190,7 +190,7 @@ public class UsuarioServiceImpl implements UserDetailsService {
         else
             savedUsuario = this.update(usuario);
 
-        return this.loadUserByUsername(savedUsuario.getEmail());
+        return savedUsuario;
     }
 
     public UsuarioResponse findById(UUID usuarioId) {
