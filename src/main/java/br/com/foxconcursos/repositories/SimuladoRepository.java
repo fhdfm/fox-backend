@@ -15,7 +15,7 @@ public interface SimuladoRepository extends CustomCrudRepository<Simulado, UUID>
     
     Boolean existsByCursoId(UUID cursoId);
 
-    @Query("select s.quantidadeQuestoes from simulados s where s.id = :id")
+    @Query("select s.quantidade_questoes from simulados s where s.id = :id")
     int obterQuantidadeQuestoes(UUID id);
 
     @Query("SELECT s.id FROM simulados s " 
