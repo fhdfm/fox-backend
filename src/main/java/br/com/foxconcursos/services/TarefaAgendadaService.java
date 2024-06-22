@@ -17,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.TaskScheduler;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 
 import br.com.foxconcursos.domain.Simulado;
@@ -36,34 +35,32 @@ public class TarefaAgendadaService {
     private Logger logger = LoggerFactory.getLogger(TarefaAgendadaService.class);
 
     private final TarefaAgendadaRepository tarefaAgendadaRepository;
+    private final TaskScheduler taskScheduler;
+    private final EsquentarCacheExecutor esquentarCacheExecutor;
+    private final FinalizarTarefaExecutor finalizarSimuladoExecutor;
 
-    private TaskScheduler agendador;
     private final ConcurrentHashMap<UUID, ScheduledFuture<?>> tarefasAgendadas = new ConcurrentHashMap<>();
-    
     private Map<TipoTarefaAgendada, TarefaExecutor> executors;
-    private EsquentarCacheExecutor esquentarCacheExecutor;
-    private FinalizarTarefaExecutor finalizarSimuladoExecutor;
 
     public TarefaAgendadaService(
         TarefaAgendadaRepository tarefaAgendadaRepository, 
-        EsquentarCacheExecutor esquentarCacheExecutor) {
+        EsquentarCacheExecutor esquentarCacheExecutor,
+        FinalizarTarefaExecutor finalizarSimuladoExecutor,
+        TaskScheduler taskScheduler) {
         
         this.tarefaAgendadaRepository = tarefaAgendadaRepository;
         this.esquentarCacheExecutor = esquentarCacheExecutor;
-
+        this.finalizarSimuladoExecutor = finalizarSimuladoExecutor;
+        this.taskScheduler = taskScheduler;
     }
 
     @PostConstruct
     public void init() {
-
         logger.info("Iniciando serviço de tarefas agendadas...");
-
-        this.agendador = new ThreadPoolTaskScheduler();
+        
         this.executors = new EnumMap<>(TipoTarefaAgendada.class);
-        this.executors.put(TipoTarefaAgendada.SIMULADO_ESQUENTAR_CACHE, 
-            esquentarCacheExecutor);
-        this.executors.put(TipoTarefaAgendada.SIMULADO_FINALIZAR_APOS_LIMITE, 
-            finalizarSimuladoExecutor);
+        this.executors.put(TipoTarefaAgendada.SIMULADO_ESQUENTAR_CACHE, esquentarCacheExecutor);
+        this.executors.put(TipoTarefaAgendada.SIMULADO_FINALIZAR_APOS_LIMITE, finalizarSimuladoExecutor);
 
         logger.info("Iniciado com sucesso...");
 
@@ -75,16 +72,13 @@ public class TarefaAgendadaService {
     }
 
     public void reagendarTarefas() {
-
         logger.info("Reagendando tarefas...");
 
         List<TarefaAgendada> tarefas = tarefaAgendadaRepository.carregarTarefasParaAgendamento();
         for (TarefaAgendada tarefa : tarefas) {
             if (tarefa.getDataExecucao().isAfter(LocalDateTime.now())) {
                 agendarTarefa(tarefa);
-                
-                logger.info("[targetId: " + tarefa.targetId + "] | Tarefa reagendada: " 
-                    + tarefa.getTipo().name() + " - " + tarefa.getDataExecucao());
+                logger.info("[targetId: " + tarefa.getTargetId() + "] | Tarefa reagendada: " + tarefa.getTipo().name() + " - " + tarefa.getDataExecucao());
             }
         }
 
@@ -100,17 +94,15 @@ public class TarefaAgendadaService {
 
         Instant dataInicio = dataExecucao.atZone(ZoneId.systemDefault()).toInstant();
 
-        ScheduledFuture<?> future = agendador.schedule(task, dataInicio);
+        ScheduledFuture<?> future = taskScheduler.schedule(task, dataInicio);
         tarefasAgendadas.put(tarefa.getId(), future);
     }
 
     public void executarTarefa(TarefaAgendada tarefa) {
-
         TarefaExecutor executor = getExecutor(tarefa.getTipo());
-        
+
         logger.info("Executando tarefa agendada...");
-        logger.info("[targetId: " + tarefa.targetId + "] | Tarefa a executar: " 
-                    + tarefa.getTipo().name() + " - " + tarefa.getDataExecucao());
+        logger.info("[targetId: " + tarefa.getTargetId() + "] | Tarefa a executar: " + tarefa.getTipo().name() + " - " + tarefa.getDataExecucao());
 
         if (executor != null) {
             executor.executar(tarefa.getTargetId());
@@ -119,15 +111,13 @@ public class TarefaAgendadaService {
             logger.error("Executor não encontrado para a tarefa: " + tarefa);
             throw new IllegalArgumentException("Executor não encontrado para a tarefa: " + tarefa);
         }
-
     }
 
     public void removerTarefa(UUID tarefaId) {
-        
         logger.info("Removendo tarefa agendada: " + tarefaId);
 
         ScheduledFuture<?> future = tarefasAgendadas.remove(tarefaId);
-        
+
         if (future != null) {
             future.cancel(false);
             tarefasAgendadas.remove(tarefaId);
@@ -139,35 +129,25 @@ public class TarefaAgendadaService {
     }
 
     public void save(List<TarefaAgendada> tarefas) {
-        
         logger.info("[save] salvar tarefas agendadas...");
 
         boolean reagendar = false;
 
         for (TarefaAgendada tarefa : tarefas) {
-            
-            TarefaAgendada tarefaExistente =
-                tarefaAgendadaRepository.findByTargetIdAndTipo(
-                    tarefa.getTargetId(), tarefa.getTipo()).orElse(null);
-            
+            TarefaAgendada tarefaExistente = tarefaAgendadaRepository.findByTargetIdAndTipo(tarefa.getTargetId(), tarefa.getTipo()).orElse(null);
+
             if (tarefaExistente == null) {
-                
                 logger.info("[save|insert] - begin");
-                logger.info("[targetId: " + tarefa.targetId + "] | Tarefa a agendar: " 
-                    + tarefa.getTipo().name() + " - " + tarefa.getDataExecucao());
+                logger.info("[targetId: " + tarefa.getTargetId() + "] | Tarefa a agendar: " + tarefa.getTipo().name() + " - " + tarefa.getDataExecucao());
 
                 tarefaAgendadaRepository.save(tarefa);
                 agendarTarefa(tarefa);
-                
+
                 logger.info("[save|insert] - end");
             } else {
-                
                 logger.info("[save|update] - begin");
 
-                boolean checagem = 
-                    tarefaExistente.getDataExecucao().isEqual(
-                        tarefa.getDataExecucao());
-                
+                boolean checagem = tarefaExistente.getDataExecucao().isEqual(tarefa.getDataExecucao());
                 logger.info("tarefaExistente.getDataExecucao().isEqual(tarefa.getDataExecucao() == " + checagem);
 
                 if (checagem) {
@@ -176,9 +156,9 @@ public class TarefaAgendadaService {
                     reagendar = true;
                     logger.info("[save|update] - end");
                 }
-            }                    
+            }
         }
-        
+
         if (reagendar) {
             reagendarTarefas();
         }
@@ -188,28 +168,20 @@ public class TarefaAgendadaService {
 
     @EventListener
     public void handleSimuladoEvent(SimuladoEvent event) {
-        
         logger.info("Evento de simulado recebido...");
 
         Simulado simulado = event.getSimulado();
-
         logger.info("Simulado: " + simulado.getId());
 
-        List<TarefaAgendada> tarefas = new ArrayList<TarefaAgendada>();
-        
-        LocalDateTime dataInicio = LocalDateTime.from(
-            simulado.getDataInicio().atZone(ZoneId.systemDefault()));
+        List<TarefaAgendada> tarefas = new ArrayList<>();
 
-        tarefas.add(new TarefaAgendada(simulado.getId(), 
-            TipoTarefaAgendada.SIMULADO_ESQUENTAR_CACHE, 
-           dataInicio.minusMinutes(5)));
-        
-        LocalDateTime dataFim = FoxUtils.calcularHoraFimSimulado(
-            simulado.getDataInicio(), simulado.getDuracao());
+        LocalDateTime dataInicio = LocalDateTime.from(simulado.getDataInicio().atZone(ZoneId.systemDefault()));
 
-        tarefas.add(new TarefaAgendada(simulado.getId(), 
-            TipoTarefaAgendada.SIMULADO_FINALIZAR_APOS_LIMITE, 
-            dataFim.plusMinutes(5)));
+        tarefas.add(new TarefaAgendada(simulado.getId(), TipoTarefaAgendada.SIMULADO_ESQUENTAR_CACHE, dataInicio.minusMinutes(5)));
+
+        LocalDateTime dataFim = FoxUtils.calcularHoraFimSimulado(simulado.getDataInicio(), simulado.getDuracao());
+
+        tarefas.add(new TarefaAgendada(simulado.getId(), TipoTarefaAgendada.SIMULADO_FINALIZAR_APOS_LIMITE, dataFim.plusMinutes(5)));
 
         save(tarefas);
 
