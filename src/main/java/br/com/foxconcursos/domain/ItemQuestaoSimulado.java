@@ -3,6 +3,7 @@ package br.com.foxconcursos.domain;
 import java.util.UUID;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Table;
 
 import br.com.foxconcursos.dto.ItemQuestaoSimuladoRequest;
@@ -16,6 +17,8 @@ public class ItemQuestaoSimulado {
     private Integer ordem;
     private String descricao;
     private Boolean correta;
+    @Version
+    private int version;
 
     public ItemQuestaoSimulado() {
 

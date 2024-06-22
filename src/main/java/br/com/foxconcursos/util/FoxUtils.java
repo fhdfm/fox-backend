@@ -102,4 +102,14 @@ public class FoxUtils {
         }
     }
 
+    public static LocalDateTime calcularHoraFimSimulado(LocalDateTime dataInicio, String duracao) {
+        String[] duracaoSplit = duracao.split(":");
+        int horas = Integer.parseInt(duracaoSplit[0]);
+        int minutos = Integer.parseInt(duracaoSplit[1]);
+        dataInicio = dataInicio.plusHours(horas);
+        dataInicio = dataInicio.plusMinutes(minutos);
+        dataInicio = dataInicio.plusSeconds(59);
+        return dataInicio;
+    }
+
 }

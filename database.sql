@@ -43,6 +43,7 @@ CREATE TABLE simulados (
     duracao VARCHAR(50) NOT NULL,
     valor NUMERIC(10,2) NOT NULL,
     quantidade_questoes INTEGER NULL,
+    version INT NOT NULL DEFAULT 0
     FOREIGN KEY (curso_id) REFERENCES cursos (id)
 );
 
@@ -62,6 +63,7 @@ CREATE TABLE questoes_simulado (
     enunciado TEXT NOT NULL,
     disciplina_id UUID NOT NULL,
     anulada BOOLEAN NOT NULL DEFAULT false,
+    version INT NOT NULL DEFAULT 0
     FOREIGN KEY (simulado_id) REFERENCES simulados(id),
     FOREIGN KEY (disciplina_id) REFERENCES disciplinas(id)
 );
@@ -72,6 +74,7 @@ CREATE TABLE itens_questao_simulado (
     ordem INTEGER NOT NULL,
     descricao TEXT NOT NULL,
     correta BOOLEAN NOT NULL,
+    version INT NOT NULL DEFAULT 0,
     FOREIGN KEY (questao_simulado_id) REFERENCES questoes_simulado(id)
 );
 
@@ -181,4 +184,13 @@ CREATE TABLE recursos (
     data_abertura TIMESTAMP NOT NULL,
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
     FOREIGN KEY (questao_id) REFERENCES questoes_simulado(id)
+);
+
+CREATE TABLE tarefas_agendadas (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+    data_execucao TIMESTAMP NOT NULL,
+    target_id UUID NOT NULL,
+    tipo VARCHAR(50) NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    version INT NOT NULL DEFAULT 0
 );

@@ -3,6 +3,7 @@ package br.com.foxconcursos.domain;
 import java.util.UUID;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Table;
 
 import br.com.foxconcursos.dto.QuestaoSimuladoRequest;
@@ -17,6 +18,8 @@ public class QuestaoSimulado {
     private String enunciado;
     private UUID disciplinaId;
     private boolean anulada;
+    @Version
+    private int version;
 
     public QuestaoSimulado() {
 

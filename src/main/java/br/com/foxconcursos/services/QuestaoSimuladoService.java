@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,14 +23,16 @@ public class QuestaoSimuladoService {
     private final QuestaoSimuladoRepository questaoSimuladoRepository;
     private final ItemQuestaoSimuladoService itemQuestaoSimuladoService;
     private final DisciplinaService disciplinaService;
+    private final JdbcTemplate jdbcTemplate;
 
     public QuestaoSimuladoService(
         QuestaoSimuladoRepository questaoSimuladoRepository, 
         ItemQuestaoSimuladoService itemQuestaoSimuladoService,
-        DisciplinaService disciplinaService) {
+        DisciplinaService disciplinaService, JdbcTemplate jdbcTemplate) {
         this.questaoSimuladoRepository = questaoSimuladoRepository;
         this.itemQuestaoSimuladoService = itemQuestaoSimuladoService;
         this.disciplinaService = disciplinaService;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     public QuestaoSimuladoResponse findById(UUID id) {
@@ -77,6 +80,14 @@ public class QuestaoSimuladoService {
             itemQuestaoSimulado.setQuestaoSimuladoId(newQuestaoId);
             this.itemQuestaoSimuladoService.save(itemQuestaoSimulado);
         });
+
+        String sql = """
+            UPDATE simulados
+            SET quantidade_questoes = quantidade_questoes + 1
+            WHERE id = ?;
+        """;
+
+        jdbcTemplate.update(sql, simuladoId);
 
         return newQuestaoId;
     }
@@ -144,6 +155,18 @@ public class QuestaoSimuladoService {
     public void delete(UUID questaoId) {
         this.itemQuestaoSimuladoService.deleteByQuestaoSimuladoId(questaoId);
         this.questaoSimuladoRepository.deleteById(questaoId);
+
+        String sql = """
+            UPDATE simulados
+            SET quantidade_questoes = quantidade_questoes - 1
+            WHERE id = (
+                SELECT simulado_id
+                FROM questoes_simulado
+                WHERE id = ?
+            );                
+        """;
+
+        jdbcTemplate.update(sql, questaoId);
     }
 
     public void anularQuestao(UUID questaoId) {

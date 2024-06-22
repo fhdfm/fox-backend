@@ -30,6 +30,7 @@ import br.com.foxconcursos.dto.SimuladoRequest;
 import br.com.foxconcursos.dto.SimuladoResponse;
 import br.com.foxconcursos.dto.SimuladoResumoResponse;
 import br.com.foxconcursos.services.AuthenticationService;
+import br.com.foxconcursos.services.PdfService;
 import br.com.foxconcursos.services.QuestaoSimuladoService;
 import br.com.foxconcursos.services.RespostaSimuladoService;
 import br.com.foxconcursos.services.SimuladoService;
@@ -42,16 +43,19 @@ public class SimuladoController {
     private final QuestaoSimuladoService questaoSimuladoService;
     private final RespostaSimuladoService respostaSimuladoService;
     private final AuthenticationService authenticationService;
+    private final PdfService pdfService;
 
     public SimuladoController(SimuladoService simuladoService, 
         QuestaoSimuladoService questaoSimuladoService, 
         RespostaSimuladoService respostaSimuladoService,
-        AuthenticationService authenticationService) {
+        AuthenticationService authenticationService,
+        PdfService pdfService) {
         
         this.simuladoService = simuladoService;
         this.questaoSimuladoService = questaoSimuladoService;
         this.respostaSimuladoService = respostaSimuladoService;
         this.authenticationService = authenticationService;
+        this.pdfService = pdfService;
 
     }
 
@@ -117,7 +121,6 @@ public class SimuladoController {
     public ResponseEntity<String> deleteQuestao(@PathVariable UUID simuladoId, 
         @PathVariable UUID questaoId) {
         this.questaoSimuladoService.delete(questaoId);
-        simuladoService.decrementarQuestoes(simuladoId);
         return ResponseEntity.status(HttpStatus.OK)
             .body("Questão deletada com sucesso.");
     }
@@ -135,7 +138,6 @@ public class SimuladoController {
     public ResponseEntity<UUID> salvarQuestao(@PathVariable UUID simuladoId, 
         @RequestBody QuestaoSimuladoRequest request) {
         UUID id = questaoSimuladoService.save(simuladoId, request);
-        simuladoService.incrementarQuestoes(simuladoId);
         return ResponseEntity.status(HttpStatus.CREATED).body(id);
     }
 
@@ -176,7 +178,7 @@ public class SimuladoController {
 
         UsuarioLogado usuario = this.authenticationService.obterUsuarioLogadoCompleto();
 
-        byte[] pdf = this.simuladoService.exportarSimuladoParaPDF(
+        byte[] pdf = this.pdfService.exportarSimuladoParaPDF(
             simulado.getTitulo(), usuario, disciplinas);
 
         return ResponseEntity.status(HttpStatus.OK)
@@ -277,4 +279,10 @@ public class SimuladoController {
             this.respostaSimuladoService.obterRanking(simuladoId, usuarioId));
     }
 
+
+    @GetMapping(path = "/api/simulados/{simuladoId}/prepare")
+    public ResponseEntity<String> prepareCache(@PathVariable UUID simuladoId) {
+        simuladoService.prepararSimulado(simuladoId);
+        return ResponseEntity.status(HttpStatus.OK).body("Cache preparado com sucesso.");
+    }
 }

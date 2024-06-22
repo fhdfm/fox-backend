@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Table;
 
 import br.com.foxconcursos.dto.SimuladoRequest;
@@ -22,6 +23,8 @@ public class Simulado {
     private LocalDateTime dataInicio;
     private String duracao;
     private BigDecimal valor;
+    @Version
+    private int version;
 
     public Simulado() {
     }

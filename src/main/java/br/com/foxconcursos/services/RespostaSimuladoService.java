@@ -4,8 +4,10 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +19,6 @@ import br.com.foxconcursos.domain.RespostaSimulado;
 import br.com.foxconcursos.domain.RespostaSimuladoQuestao;
 import br.com.foxconcursos.domain.Simulado;
 import br.com.foxconcursos.domain.StatusSimulado;
-import br.com.foxconcursos.dto.DisciplinaQuestoesResponse;
 import br.com.foxconcursos.dto.ItemQuestaoResponse;
 import br.com.foxconcursos.dto.QuestaoSimuladoResponse;
 import br.com.foxconcursos.dto.RankingSimuladoResponse;
@@ -168,7 +169,7 @@ public class RespostaSimuladoService {
     }
 
     @Transactional
-    public void finalizarViaJob(UUID simuladoId) {
+    public void finalizarSimulado(UUID simuladoId) {
         
         List<RespostaSimulado> respostas = 
             this.respostaSimuladoRepository.findBySimuladoIdAndStatus(
@@ -190,7 +191,7 @@ public class RespostaSimuladoService {
 
     private void finalizarViaJobNaoIniciados(UUID simuladoId) {
 
-        List<UUID> alunos = obterAlunosQueNaoIniciarmOSimulado(simuladoId);
+        List<UUID> alunos = obterAlunosQueNaoIniciaramOSimulado(simuladoId);
         if (!alunos.isEmpty()) {
             for (UUID aluno : alunos) {
                 RespostaSimulado resposta = new RespostaSimulado();
@@ -206,7 +207,7 @@ public class RespostaSimuladoService {
         }
     }
 
-    private List<UUID> obterAlunosQueNaoIniciarmOSimulado(UUID simuladoId) {
+    private List<UUID> obterAlunosQueNaoIniciaramOSimulado(UUID simuladoId) {
         
         String sql = """
             SELECT 
@@ -276,45 +277,54 @@ public class RespostaSimuladoService {
     private void estaFinalizandoAposHorario(
         LocalDateTime dataInicio, String duracao, LocalDateTime horarioEnvio) {
         
-        LocalDateTime horarioFim = simuladoService.calcularHoraFim(dataInicio, duracao);
+        LocalDateTime horarioFim = FoxUtils.calcularHoraFimSimulado(dataInicio, duracao);
         if (horarioEnvio.isAfter(horarioFim))
             throw new IllegalArgumentException("Simulado finalizado após o horário limite.");
     }
 
     @Transactional
-    public SimuladoCompletoResponse obterRespostas(
-        SimuladoCompletoResponse simulado, UUID usuarioId) {
+    public SimuladoCompletoResponse obterRespostas(SimuladoCompletoResponse simulado, UUID usuarioId) {
         
         Optional<RespostaSimulado> respostaSimulado = this.respostaSimuladoRepository
             .findBySimuladoIdAndUsuarioId(simulado.getId(), usuarioId);
-        
+
         if (respostaSimulado.isPresent()) {
-            for (DisciplinaQuestoesResponse disciplinas : simulado.getDisciplinas()) {
-                preencherQuestoesAluno(disciplinas.getQuestoes(), respostaSimulado.get().getId());
-            }
+            UUID respostaSimuladoId = respostaSimulado.get().getId();
+
+            // Buscar todas as respostas de uma vez
+            List<RespostaSimuladoQuestao> respostasSimuladoQuestao = respostaQuestaoSimuladoRepository
+                .findByRespostaSimuladoId(respostaSimuladoId);
+
+            Map<UUID, UUID> questaoParaItemMap = respostasSimuladoQuestao.stream()
+                .collect(Collectors.toMap(RespostaSimuladoQuestao::getQuestaoId, 
+                    RespostaSimuladoQuestao::getItemQuestaoId));
+
+            simulado.getDisciplinas().parallelStream().forEach(disciplina -> 
+                preencherQuestoesAluno(disciplina.getQuestoes(), questaoParaItemMap)
+            );
         }
 
         return simulado;
     }
 
-    private void preencherQuestoesAluno(List<QuestaoSimuladoResponse> questoes, UUID respostaId) {
-        for (QuestaoSimuladoResponse questao : questoes) {
-            List<RespostaSimuladoQuestao> resposta = 
-                respostaQuestaoSimuladoRepository.findByRespostaSimuladoIdAndQuestaoId(
-                    respostaId, questao.getId());
-            if (resposta.size() == 1)
-                preencherItem(questao.getAlternativas(), 
-                    resposta.get(0).getItemQuestaoId());
-        }
+    private void preencherQuestoesAluno(List<QuestaoSimuladoResponse> questoes, 
+        Map<UUID, UUID> questaoParaItemMap) {
+
+        questoes.parallelStream().forEach(questao -> {
+            UUID itemQuestaoId = questaoParaItemMap.get(questao.getId());
+            if (itemQuestaoId != null) {
+                preencherItem(questao.getAlternativas(), itemQuestaoId);
+            }
+        });
+
     }
 
     private void preencherItem(List<ItemQuestaoResponse> alternativas, UUID id) {
-        for (ItemQuestaoResponse alternativa : alternativas) {
+        alternativas.parallelStream().forEach(alternativa -> {
             if (id.equals(alternativa.getId())) {
                 alternativa.setItemMarcado(true);
-                break;
             }
-        }
+        });
     }
 
     public void finalizar() {
@@ -339,15 +349,15 @@ public class RespostaSimuladoService {
         int totalQuestoes = simuladoService.obterQuantidadeQuestoes(simuladoId);
         int corte15Ultimas = totalQuestoes - 15;
 
+        List<RespostaSimuladoQuestao> respostasQuestoes = respostaQuestaoSimuladoRepository
+            .findByRespostaSimuladoId(resposta.getId());
+
         int acertos = 0;
         int acertosUltimas15 = 0;
 
         int contador = 1;
         
-        for (RespostaSimuladoQuestao respostaQuestao : 
-            respostaQuestaoSimuladoRepository.findByRespostaSimuladoId(
-                resposta.getId())) {
-
+        for (RespostaSimuladoQuestao respostaQuestao : respostasQuestoes) {
             if (respostaQuestao.isCorreta()) {
                 acertos++;
                 if (contador > corte15Ultimas)
@@ -432,10 +442,5 @@ public class RespostaSimuladoService {
         response.setRanking(ranking);
 
         return response;
-    }
-
-    public List<UUID> recuperarSimuladosNaoFinalizados(LocalDateTime horaAtual) {
-        return this.respostaSimuladoRepository
-            .recuperarSimuladosNaoFinalizados(horaAtual);
     }
 }

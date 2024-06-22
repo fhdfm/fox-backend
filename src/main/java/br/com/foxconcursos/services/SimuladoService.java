@@ -1,60 +1,62 @@
 package br.com.foxconcursos.services;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.parser.Parser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
-
 import br.com.foxconcursos.domain.Disciplina;
 import br.com.foxconcursos.domain.Simulado;
-import br.com.foxconcursos.domain.UsuarioLogado;
 import br.com.foxconcursos.dto.DataResponse;
 import br.com.foxconcursos.dto.DisciplinaQuestoesResponse;
-import br.com.foxconcursos.dto.ItemQuestaoResponse;
 import br.com.foxconcursos.dto.ProdutoSimuladoResponse;
 import br.com.foxconcursos.dto.QuestaoSimuladoResponse;
 import br.com.foxconcursos.dto.SimuladoCompletoResponse;
 import br.com.foxconcursos.dto.SimuladoRequest;
 import br.com.foxconcursos.dto.SimuladoResponse;
 import br.com.foxconcursos.dto.SimuladoResumoResponse;
+import br.com.foxconcursos.events.SimuladoEvent;
 import br.com.foxconcursos.repositories.SimuladoRepository;
 import br.com.foxconcursos.util.FoxUtils;
 
 @Service
 public class SimuladoService {
-    
+
+    private Logger logger = LoggerFactory.getLogger(SimuladoService.class);
+
     private final SimuladoRepository simuladoRepository;
     private final DisciplinaService disciplinaService;
     private final QuestaoSimuladoService questaoSimuladoService;
     private final JdbcTemplate jdbcTemplate;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     public SimuladoService(SimuladoRepository simuladoRepository, 
         DisciplinaService disciplinaService,
         QuestaoSimuladoService questaoSimuladoService,
-        JdbcTemplate jdbcTemplate) {
+        JdbcTemplate jdbcTemplate, 
+        ApplicationEventPublisher applicationEventPublisher) {
         
         this.simuladoRepository = simuladoRepository;
         this.disciplinaService = disciplinaService;
         this.questaoSimuladoService = questaoSimuladoService;
         this.jdbcTemplate = jdbcTemplate;
+        this.applicationEventPublisher = applicationEventPublisher;
+
     }
 
+    @Transactional
     public UUID save(SimuladoRequest request) {
         
         validarSimulado(request);
@@ -63,14 +65,10 @@ public class SimuladoService {
         simulado.setQuantidadeQuestoes(0);
         simulado = simuladoRepository.save(simulado);
 
-        return simulado.getId();
-    }
+        applicationEventPublisher.publishEvent(
+            new SimuladoEvent(this, simulado));
 
-    public void incrementarQuestoes(UUID id) {
-        Simulado simulado = simuladoRepository.findById(id).orElseThrow(
-            () -> new IllegalArgumentException("Simulado não encontrado: " + id));
-        simulado.setQuantidadeQuestoes(simulado.getQuantidadeQuestoes() + 1);
-        simuladoRepository.save(simulado);
+        return simulado.getId();
     }
 
     public ProdutoSimuladoResponse getMatriculaSimulado(UUID id) {
@@ -85,6 +83,7 @@ public class SimuladoService {
         return simulado;
     }
 
+    @Transactional
     public SimuladoResponse save(UUID id, SimuladoRequest request) {
         
         validarSimulado(request);
@@ -99,6 +98,9 @@ public class SimuladoService {
         simulado.setDuracao(request.getDuracao());
         simulado.setValor(request.getValor());
         simulado = simuladoRepository.save(simulado);
+
+        applicationEventPublisher.publishEvent(
+            new SimuladoEvent(this, simulado));
         
         return new SimuladoResponse(simulado);
     }
@@ -135,69 +137,151 @@ public class SimuladoService {
             throw new IllegalArgumentException("Valor do simulado é obrigatório e deve ser maior que 0.");
     }
 
-    public SimuladoCompletoResponse findById(UUID id) {
-        return this.findById(id, true);
+    @Cacheable(value = "simuladoCache", key = "#id", condition = "#useCache")
+    private Simulado carregarSimulado(UUID id, boolean useCache) {
+        return simuladoRepository.findById(id).orElseThrow(
+            () -> new IllegalArgumentException("Simulado não encontrado: " + id));
     }
 
-    @Transactional
-    public SimuladoCompletoResponse findById(UUID id, boolean exibirCorreta) {
-        
-        Simulado simulado = simuladoRepository.findById(id).orElseThrow(
-            () -> new IllegalArgumentException("Simulado não encontrado: " + id));
-        
-        List<Disciplina> disciplinas =
-            disciplinaService.findByCursoId(simulado.getCursoId());
+    @Cacheable(value = "simuladoCache", key = "'disciplinas_curso_' + #cursoId", condition = "#useCache")
+    private List<Disciplina> carregarDisciplinas(UUID cursoId, boolean useCache) {
+        return disciplinaService.findByCursoId(cursoId);
+    }
 
-        List<DisciplinaQuestoesResponse> disciplinasResponse
-            = new ArrayList<DisciplinaQuestoesResponse>();
+    @Cacheable(value = "simuladoCache", 
+        key = "'questoes_' + #simuladoId + '_' + #disciplinaId + '_' + #exibirCorreta", 
+        condition = "#useCache")
+    private List<QuestaoSimuladoResponse> carregarQuestoes(UUID simuladoId, 
+        UUID disciplinaId, boolean exibirCorreta, boolean useCache) {
         
+        return questaoSimuladoService.findQuestoesBySimuladoIdAndDisciplinaId(
+            simuladoId, disciplinaId, exibirCorreta);
+    }
+
+    public void prepararSimulado(UUID simuladoId) {
+        Simulado simulado = this.carregarSimulado(simuladoId, true);
+        
+        List<Disciplina> disciplinas = this.carregarDisciplinas(
+            simulado.getCursoId(), true);
+
         for (Disciplina disciplina : disciplinas) {
+            this.carregarQuestoes(simulado.getId(), disciplina.getId(), 
+                true, true);
+            this.carregarQuestoes(simulado.getId(), disciplina.getId(), 
+                false, true);
+        }
+    }
+
+    private SimuladoCompletoResponse carregarSimuladoCompleto(UUID id, boolean exibirCorreta, 
+        boolean useCache) {
+        
+        Simulado simulado = this.carregarSimulado(id, useCache);
+
+        CompletableFuture<List<Disciplina>> disciplinasFuture = CompletableFuture.supplyAsync(
+             () -> this.carregarDisciplinas(simulado.getCursoId(), useCache)
+        );
+        
+        List<DisciplinaQuestoesResponse> disciplinasResponse;
+        try {
+            List<Disciplina> disciplinas = disciplinasFuture.get();
             
-            // buscar questões da disciplina
-            List<QuestaoSimuladoResponse> questoes =
-                questaoSimuladoService.findQuestoesBySimuladoIdAndDisciplinaId(
-                    simulado.getId(), disciplina.getId(), exibirCorreta);
+            List<CompletableFuture<DisciplinaQuestoesResponse>> futureResponses = disciplinas.stream()
+                .map(disciplina -> CompletableFuture.supplyAsync(() -> {
+                    List<QuestaoSimuladoResponse> questoes = carregarQuestoes(simulado.getId(), 
+                        disciplina.getId(), exibirCorreta, useCache);
 
-            Collections.sort(questoes, Comparator.comparingInt(
-                QuestaoSimuladoResponse::getOrdem));            
-
-            DisciplinaQuestoesResponse disciplinaResponse = 
-                new DisciplinaQuestoesResponse(disciplina, questoes);
-            disciplinasResponse.add(disciplinaResponse);
+                    questoes.sort(Comparator.comparingInt(QuestaoSimuladoResponse::getOrdem));
+                    return new DisciplinaQuestoesResponse(disciplina, questoes);
+                }))
+                .collect(Collectors.toList());
+            
+            disciplinasResponse = futureResponses.stream()
+                .map(CompletableFuture::join)
+                .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.error("Erro ao carregar disciplinas e questões do simulado: " + id, e);
+            throw new RuntimeException("Erro ao carregar disciplinas e questões do simulado: " + id);
         }
 
-        // ordenar disciplinasResponse pela ordem da primeira questão de cada disciplina
-        Collections.sort(disciplinasResponse, Comparator.comparingInt(disciplinaResponse -> 
-            disciplinaResponse.getQuestoes().isEmpty() ? 
-                Integer.MAX_VALUE : disciplinaResponse.getQuestoes().get(0).getOrdem()
-        ));        
+        disciplinasResponse.sort(Comparator.comparingInt(disciplinaResponse ->
+        disciplinaResponse.getQuestoes().isEmpty() ? 
+            Integer.MAX_VALUE : disciplinaResponse.getQuestoes().get(0).getOrdem()));
 
-        SimuladoCompletoResponse response = 
-            new SimuladoCompletoResponse(simulado, disciplinasResponse);
+        SimuladoCompletoResponse response = new SimuladoCompletoResponse(simulado, disciplinasResponse);
 
         LocalDateTime dataInicio = simulado.getDataInicio();
         response.setDatas(new DataResponse(
-            dataInicio, this.calcularHoraFim(
-                dataInicio, simulado.getDuracao())));
+            dataInicio, FoxUtils.calcularHoraFimSimulado(dataInicio, 
+                simulado.getDuracao())
+        ));
 
-        return response;
+        return response;            
     }
+
+    public SimuladoCompletoResponse findById(UUID id, boolean exibirCorreta) {
+        return this.carregarSimuladoCompleto(id, exibirCorreta, true);
+    }
+
+    public SimuladoCompletoResponse findById(UUID id) {
+        return this.carregarSimuladoCompleto(id, true, true);
+    }
+
+    public SimuladoCompletoResponse findByIdSemCache(UUID id, boolean exibirCorreta) {
+        return this.carregarSimuladoCompleto(id, exibirCorreta, false);
+    }
+
+    public SimuladoCompletoResponse findByIdSemCache(UUID id) {
+        return this.carregarSimuladoCompleto(id, true, false);
+    }
+    
+    // public SimuladoCompletoResponse findById2(UUID id, boolean exibirCorreta) {
+        
+    //     Simulado simulado = simuladoRepository.findById(id).orElseThrow(
+    //         () -> new IllegalArgumentException("Simulado não encontrado: " + id));
+        
+    //     List<Disciplina> disciplinas =
+    //         disciplinaService.findByCursoId(simulado.getCursoId());
+
+    //     List<DisciplinaQuestoesResponse> disciplinasResponse
+    //         = new ArrayList<DisciplinaQuestoesResponse>();
+        
+    //     for (Disciplina disciplina : disciplinas) {
+            
+    //         // buscar questões da disciplina
+    //         List<QuestaoSimuladoResponse> questoes =
+    //             questaoSimuladoService.findQuestoesBySimuladoIdAndDisciplinaId(
+    //                 simulado.getId(), disciplina.getId(), exibirCorreta);
+
+    //         Collections.sort(questoes, Comparator.comparingInt(
+    //             QuestaoSimuladoResponse::getOrdem));            
+
+    //         DisciplinaQuestoesResponse disciplinaResponse = 
+    //             new DisciplinaQuestoesResponse(disciplina, questoes);
+    //         disciplinasResponse.add(disciplinaResponse);
+    //     }
+
+    //     // ordenar disciplinasResponse pela ordem da primeira questão de cada disciplina
+    //     Collections.sort(disciplinasResponse, Comparator.comparingInt(disciplinaResponse -> 
+    //         disciplinaResponse.getQuestoes().isEmpty() ? 
+    //             Integer.MAX_VALUE : disciplinaResponse.getQuestoes().get(0).getOrdem()
+    //     ));        
+
+    //     SimuladoCompletoResponse response = 
+    //         new SimuladoCompletoResponse(simulado, disciplinasResponse);
+
+    //     LocalDateTime dataInicio = simulado.getDataInicio();
+    //     response.setDatas(new DataResponse(
+    //         dataInicio, this.calcularHoraFim(
+    //             dataInicio, simulado.getDuracao())));
+
+    //     return response;
+    // }
 
     public LocalDateTime calcularHoraFim(UUID simuladoId) {
         Simulado simulado = simuladoRepository.findById(simuladoId).orElseThrow(
             () -> new IllegalArgumentException("Simulado não encontrado: " + simuladoId));
-        return this.calcularHoraFim(
+        return FoxUtils.calcularHoraFimSimulado(
             simulado.getDataInicio(), simulado.getDuracao());
-    }
-
-    public LocalDateTime calcularHoraFim(LocalDateTime dataInicio, String duracao) {
-        String[] duracaoSplit = duracao.split(":");
-        int horas = Integer.parseInt(duracaoSplit[0]);
-        int minutos = Integer.parseInt(duracaoSplit[1]);
-        dataInicio = dataInicio.plusHours(horas);
-        dataInicio = dataInicio.plusMinutes(minutos);
-        dataInicio = dataInicio.plusSeconds(59);
-        return dataInicio;
     }
 
     public void delete(UUID id) {
@@ -218,7 +302,7 @@ public class SimuladoService {
         jdbcTemplate.query(sql, (rs, rowNum) -> {
             LocalDateTime dataInicio = rs.getTimestamp(
                 "data_inicio").toLocalDateTime();
-            LocalDateTime dataFim = this.calcularHoraFim(dataInicio, 
+            LocalDateTime dataFim = FoxUtils.calcularHoraFimSimulado(dataInicio, 
                 rs.getString("duracao"));
             SimuladoResumoResponse obj = new SimuladoResumoResponse(
                 UUID.fromString(rs.getString("id")),
@@ -283,7 +367,7 @@ public class SimuladoService {
             LocalDateTime dataInicio = rs.getTimestamp(
                 "data_inicio").toLocalDateTime();
             
-            LocalDateTime dataFim = this.calcularHoraFim(dataInicio, 
+            LocalDateTime dataFim = FoxUtils.calcularHoraFimSimulado(dataInicio, 
                 rs.getString("duracao"));
 
             SimuladoResumoResponse obj = new SimuladoResumoResponse(
@@ -305,134 +389,9 @@ public class SimuladoService {
         return simuladoRepository.obterQuantidadeQuestoes(id);
     }
 
-    public void decrementarQuestoes(UUID simuladoId) {
-        Simulado simulado = simuladoRepository.findById(simuladoId).orElseThrow(
-            () -> new IllegalArgumentException("Simulado não encontrado: " + simuladoId));
-        simulado.setQuantidadeQuestoes(simulado.getQuantidadeQuestoes() - 1);
-        simuladoRepository.save(simulado);
-    }
-
     public boolean isExpirado(UUID simuladoId) {
         LocalDateTime horaAtual = LocalDateTime.now();
         return this.simuladoRepository.simuladosExpirados(simuladoId, horaAtual).size() > 0;
-    }
-
-    public byte[] exportarSimuladoParaPDF(String titulo, UsuarioLogado usuario,
-            List<DisciplinaQuestoesResponse> disciplinas) throws Exception {
-
-        String instrucoesHtml = new String(Files.readAllBytes(
-            Path.of(getClass().getClassLoader().getResource(
-                "templates/simulado/instrucoes.html").toURI())));
-        
-        instrucoesHtml = instrucoesHtml.replace("${titulo}", titulo);
-
-        String rascunhoHtml = new String(Files.readAllBytes(
-            Path.of(getClass().getClassLoader().getResource(
-                "templates/simulado/rascunho.html").toURI())));
-                
-        String rodapeHtml = new String(Files.readAllBytes(
-            Path.of(getClass().getClassLoader().getResource(
-                "templates/simulado/rodape.html").toURI())));
-        
-        rodapeHtml = rodapeHtml.replace(
-            "${nome}", usuario.getNome()).replace(
-                "${cpf}", usuario.getCpf());
-        
-        String contentHtml = this.getContentHtml(disciplinas);
-
-        Document document = Jsoup.parse(contentHtml, 
-            "UTF-8", Parser.xmlParser());
-        Document instrucoes = Jsoup.parse(instrucoesHtml, 
-            "UTF-8", Parser.xmlParser());
-        Document rascunho = Jsoup.parse(rascunhoHtml, 
-            "UTF-8", Parser.xmlParser());
-
-        addFooter(document, rodapeHtml);
-
-        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-           
-            PdfRendererBuilder builder = new PdfRendererBuilder();
-            String combinedHtml = getStart() + instrucoes.html() + rascunho.html() + document.html() + "</body></html>";
-
-            System.out.println(combinedHtml);
-
-            builder.withHtmlContent(combinedHtml, new File(".").toURI().toString());
-            builder.toStream(os);
-            builder.run();
-
-            return os.toByteArray();
-        }
-    }
-
-    private void addFooter(Document document, String rodapeHtml) {
-        // Element body = document.body();
-        // Element rodape = Jsoup.parseBodyFragment(rodapeHtml).body().child(0);
-        // body.appendChild(rodape);
-    }
-
-    private String getStart() {
-        return """
-            <html>
-            <head>
-                <style>
-                    body {
-                        font-family: Arial, sans-serif;
-                        font-size: 12px;
-                        margin: 0;
-                        padding: 0;
-                    }
-                    h3.disciplina {
-                        margin-top: 20px;
-                        margin-bottom: 10px;
-                    }
-                    h5.enunciado {
-                        margin-top: 10px;
-                        margin-bottom: 10px;
-                    }
-                    div.teste {
-                        margin-top: 10px;
-                        margin-bottom: 10px;
-                    }
-                    span.alternativa {
-                        margin-top: 5px;
-                        margin-bottom: 5px;
-                    }
-                </style>
-            </head>
-            <body>
-        """;
-    }    
-
-    private String getContentHtml(List<DisciplinaQuestoesResponse> disciplinas) {
-        
-        StringBuilder htmlContent = new StringBuilder();
-
-        for (DisciplinaQuestoesResponse disciplina : disciplinas) {
-            if (disciplina.getQuestoes().isEmpty()) continue;
-
-            htmlContent.append("<h3 class='disciplina'>")
-                       .append(disciplina.getNome())
-                       .append("</h3>");
-
-            for (QuestaoSimuladoResponse questao : disciplina.getQuestoes()) {
-                htmlContent.append("<div class='teste'>")
-                           .append("<h5 class='enunciado'>")
-                           .append(questao.getOrdem()).append(") ")
-                           .append(FoxUtils.removerTagsP(questao.getEnunciado()))
-                           .append("</h5>");
-
-                for (ItemQuestaoResponse alternativa : questao.getAlternativas()) {
-                    htmlContent.append("<span class='alternativa'>")
-                               .append(FoxUtils.obterLetra(alternativa.getOrdem())).append(") ")
-                               .append(FoxUtils.removerTagsP(alternativa.getDescricao()))
-                               .append("</span>");
-                }
-
-                htmlContent.append("</div>");
-            }
-        }
-
-        return htmlContent.toString();
     }
 
 }
