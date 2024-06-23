@@ -150,7 +150,7 @@ public class TarefaAgendadaService {
                 boolean checagem = tarefaExistente.getDataExecucao().isEqual(tarefa.getDataExecucao());
                 logger.info("tarefaExistente.getDataExecucao().isEqual(tarefa.getDataExecucao() == " + checagem);
 
-                if (checagem) {
+                if (!checagem) {
                     tarefaExistente.setDataExecucao(tarefa.getDataExecucao());
                     tarefaAgendadaRepository.save(tarefaExistente);
                     reagendar = true;
