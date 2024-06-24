@@ -22,6 +22,7 @@ import br.com.foxconcursos.dto.AlterarPasswordRequest;
 import br.com.foxconcursos.dto.ProdutoResponse;
 import br.com.foxconcursos.dto.UsuarioResponse;
 import br.com.foxconcursos.services.ProdutoService;
+import br.com.foxconcursos.services.RecuperarPasswordService;
 import br.com.foxconcursos.services.impl.UsuarioServiceImpl;
 
 @RestController
@@ -30,11 +31,15 @@ public class UsuarioController {
 
     private final UsuarioServiceImpl service;
     private final ProdutoService produtoService;
+    private final RecuperarPasswordService recuperarPasswordService;
 
     public UsuarioController(UsuarioServiceImpl service, 
-        ProdutoService produtoService) {
+        ProdutoService produtoService, RecuperarPasswordService recuperarPasswordService) {
+        
         this.service = service;
         this.produtoService = produtoService;
+        this.recuperarPasswordService = recuperarPasswordService;
+
     }
     
     @PostMapping(value = "/api/signup", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -54,12 +59,15 @@ public class UsuarioController {
 
     @PostMapping(value = "/api/forgot-password", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> forgotPassword(@RequestBody String email) {
+        
         if (email == null || email.isBlank())
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body("Email não pode ser vazio.");
 
+        Usuario user = this.service.findByEmail(email);
+
         return ResponseEntity.status(HttpStatus.OK)
-            .body(this.service.recuperarPassword(email));
+            .body(this.recuperarPasswordService.recuperarPassword(user));
     }
 
     @PostMapping(value = "/api/reset-password", consumes = MediaType.APPLICATION_JSON_VALUE)

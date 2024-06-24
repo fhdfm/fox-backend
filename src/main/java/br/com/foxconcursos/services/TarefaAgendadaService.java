@@ -23,8 +23,10 @@ import br.com.foxconcursos.domain.Simulado;
 import br.com.foxconcursos.domain.TarefaAgendada;
 import br.com.foxconcursos.domain.TipoTarefaAgendada;
 import br.com.foxconcursos.events.SimuladoEvent;
+import br.com.foxconcursos.events.TokenEvent;
 import br.com.foxconcursos.executors.TarefaExecutor;
 import br.com.foxconcursos.executors.impl.EsquentarCacheExecutor;
+import br.com.foxconcursos.executors.impl.ExcluirSolicitacaoPasswordExecutor;
 import br.com.foxconcursos.executors.impl.FinalizarTarefaExecutor;
 import br.com.foxconcursos.repositories.TarefaAgendadaRepository;
 import br.com.foxconcursos.util.FoxUtils;
@@ -38,6 +40,7 @@ public class TarefaAgendadaService {
     private final TaskScheduler taskScheduler;
     private final EsquentarCacheExecutor esquentarCacheExecutor;
     private final FinalizarTarefaExecutor finalizarSimuladoExecutor;
+    private final ExcluirSolicitacaoPasswordExecutor excluirSolicitacaoPasswordExecutor;
 
     private final ConcurrentHashMap<UUID, ScheduledFuture<?>> tarefasAgendadas = new ConcurrentHashMap<>();
     private Map<TipoTarefaAgendada, TarefaExecutor> executors;
@@ -46,12 +49,15 @@ public class TarefaAgendadaService {
         TarefaAgendadaRepository tarefaAgendadaRepository, 
         EsquentarCacheExecutor esquentarCacheExecutor,
         FinalizarTarefaExecutor finalizarSimuladoExecutor,
+        ExcluirSolicitacaoPasswordExecutor excluirSolicitacaoPasswordExecutor,
         TaskScheduler taskScheduler) {
         
         this.tarefaAgendadaRepository = tarefaAgendadaRepository;
         this.esquentarCacheExecutor = esquentarCacheExecutor;
         this.finalizarSimuladoExecutor = finalizarSimuladoExecutor;
         this.taskScheduler = taskScheduler;
+        this.excluirSolicitacaoPasswordExecutor = excluirSolicitacaoPasswordExecutor;
+
     }
 
     @PostConstruct
@@ -61,6 +67,7 @@ public class TarefaAgendadaService {
         this.executors = new EnumMap<>(TipoTarefaAgendada.class);
         this.executors.put(TipoTarefaAgendada.SIMULADO_ESQUENTAR_CACHE, esquentarCacheExecutor);
         this.executors.put(TipoTarefaAgendada.SIMULADO_FINALIZAR_APOS_LIMITE, finalizarSimuladoExecutor);
+        this.executors.put(TipoTarefaAgendada.EXCLUIR_SOLICITACAO_PASSWORD, excluirSolicitacaoPasswordExecutor);
 
         logger.info("Iniciado com sucesso...");
 
@@ -134,11 +141,13 @@ public class TarefaAgendadaService {
         boolean reagendar = false;
 
         for (TarefaAgendada tarefa : tarefas) {
-            TarefaAgendada tarefaExistente = tarefaAgendadaRepository.findByTargetIdAndTipo(tarefa.getTargetId(), tarefa.getTipo()).orElse(null);
+            TarefaAgendada tarefaExistente = tarefaAgendadaRepository.findByTargetIdAndTipo(
+                tarefa.getTargetId(), tarefa.getTipo()).orElse(null);
 
             if (tarefaExistente == null) {
                 logger.info("[save|insert] - begin");
-                logger.info("[targetId: " + tarefa.getTargetId() + "] | Tarefa a agendar: " + tarefa.getTipo().name() + " - " + tarefa.getDataExecucao());
+                logger.info("[targetId: " + tarefa.getTargetId() + "] | Tarefa a agendar: " 
+                    + tarefa.getTipo().name() + " - " + tarefa.getDataExecucao());
 
                 tarefaAgendadaRepository.save(tarefa);
                 agendarTarefa(tarefa);
@@ -147,10 +156,10 @@ public class TarefaAgendadaService {
             } else {
                 logger.info("[save|update] - begin");
 
-                boolean checagem = tarefaExistente.getDataExecucao().isEqual(tarefa.getDataExecucao());
-                logger.info("tarefaExistente.getDataExecucao().isEqual(tarefa.getDataExecucao() == " + checagem);
+                boolean ehDiferente = !(tarefaExistente.getDataExecucao().isEqual(tarefa.getDataExecucao()));
+                logger.info("!(tarefaExistente.getDataExecucao().isEqual(tarefa.getDataExecucao())) is: " + ehDiferente);
 
-                if (!checagem) {
+                if (ehDiferente) {
                     tarefaExistente.setDataExecucao(tarefa.getDataExecucao());
                     tarefaAgendadaRepository.save(tarefaExistente);
                     reagendar = true;
@@ -184,6 +193,41 @@ public class TarefaAgendadaService {
         tarefas.add(new TarefaAgendada(simulado.getId(), TipoTarefaAgendada.SIMULADO_FINALIZAR_APOS_LIMITE, dataFim.plusMinutes(5)));
 
         save(tarefas);
+
+        logger.info("Evento processado com sucesso...");
+    }
+
+    @EventListener
+    public void handleTokenEvent(TokenEvent event) {
+        
+        logger.info("Evento de token recebido...");
+
+        if (event.isAdd()) {
+
+            logger.info("ADD token para usuario: " + event.getUsuarioId());
+
+            List<TarefaAgendada> tarefas = new ArrayList<>();
+
+            tarefas.add(new TarefaAgendada(event.getUsuarioId(), 
+                TipoTarefaAgendada.EXCLUIR_SOLICITACAO_PASSWORD, 
+                event.getDataExpiracao().atZone(ZoneId.systemDefault()).toLocalDateTime()));
+    
+            save(tarefas);
+
+            logger.info("Tarefa adicionada com sucesso...");
+        } else if (event.isRemove()) {
+            
+            logger.info("REMOVE token para usuario: " + event.getUsuarioId());
+
+            TarefaAgendada tarefa = tarefaAgendadaRepository.findByTargetIdAndTipo(
+                event.getUsuarioId(), TipoTarefaAgendada.EXCLUIR_SOLICITACAO_PASSWORD).orElse(null);
+
+            if (tarefa != null) {
+                removerTarefa(tarefa.getId());
+            }
+
+            logger.info("Tarefa removida com sucesso...");
+        }
 
         logger.info("Evento processado com sucesso...");
     }

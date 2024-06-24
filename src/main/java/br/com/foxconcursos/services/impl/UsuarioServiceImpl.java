@@ -7,6 +7,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -21,10 +22,9 @@ import br.com.foxconcursos.domain.StatusUsuario;
 import br.com.foxconcursos.domain.Usuario;
 import br.com.foxconcursos.domain.UsuarioLogado;
 import br.com.foxconcursos.dto.UsuarioResponse;
-import br.com.foxconcursos.repositories.PasswordRepository;
+import br.com.foxconcursos.events.TokenEvent;
 import br.com.foxconcursos.repositories.UsuarioRepository;
-import br.com.foxconcursos.services.EmailService;
-import br.com.foxconcursos.services.JwtService;
+import br.com.foxconcursos.services.RecuperarPasswordService;
 import br.com.foxconcursos.util.FoxUtils;
 
 @Service
@@ -32,65 +32,17 @@ public class UsuarioServiceImpl implements UserDetailsService {
 
     private final PasswordEncoder encoder;
     private final UsuarioRepository usuarioRepository;
-    private final PasswordRepository passwordRepository;
-    private final JwtService jwtService;
-    private final EmailService emailService;
+    private final RecuperarPasswordService recuperarPasswordService;
+    private final ApplicationEventPublisher publisher;
 
     public UsuarioServiceImpl(UsuarioRepository usuarioRepository, 
-        PasswordEncoder encoder, JwtService jwtService, 
-        PasswordRepository passwordRepository, 
-        EmailService emailService) {
+        PasswordEncoder encoder, RecuperarPasswordService recuperarPasswordService, 
+        ApplicationEventPublisher publisher) {
         
         this.usuarioRepository = usuarioRepository;
         this.encoder = encoder;
-        this.jwtService = jwtService;
-        this.passwordRepository = passwordRepository;
-        this.emailService = emailService;
-    }
-
-    @Transactional
-    public String recuperarPassword(String email) {
-        
-      Usuario usuario = this.usuarioRepository.findByEmailAndStatus(email, StatusUsuario.ATIVO)
-          .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));  
-        
-      String token = this.jwtService.generatePasswordToken(email);
-      
-      this.passwordRepository.save(token, usuario.getId());
-      
-      try {
-        this.emailService.sendEmail(
-            email, 
-            "Recuperação de senha", 
-            gerarEmail(usuario.getNome(), token));      
-      } catch (Exception e) { 
-            e.printStackTrace();
-            throw new IllegalArgumentException("Erro ao enviar e-mail.");
-      }
-
-      return "Link enviado para: " + email;
-    }
-
-    @Transactional
-    public String alterarPassowrd(String token, String password) {
-        
-        if (!jwtService.validarToken(token)) {
-            throw new IllegalArgumentException("Token inválido ou expirado.");
-        }
-
-        Password passwordEntity = this.passwordRepository.findByToken(token);
-        if (passwordEntity == null) {
-            throw new IllegalArgumentException("Token inválido ou expirado.");
-        }
-
-        Usuario usuario = this.usuarioRepository.findById(passwordEntity.getUsuarioId())
-            .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
-
-        usuario.setPassword(this.encoder.encode(password));
-        this.usuarioRepository.save(usuario);
-        this.passwordRepository.delete(token);
-
-        return "Senha alterada com sucesso.";
+        this.recuperarPasswordService = recuperarPasswordService;
+        this.publisher = publisher;
     }
 
     @Override
@@ -193,6 +145,32 @@ public class UsuarioServiceImpl implements UserDetailsService {
         return savedUsuario;
     }
 
+    @Transactional
+    public String alterarPassowrd(String token, String password) {
+
+        Password passwordEntity = this.recuperarPasswordService.findByToken(token);
+        if (passwordEntity == null) {
+            throw new IllegalArgumentException("Token inválido ou expirado.");
+        }
+
+        Usuario usuario =
+            this.usuarioRepository.findById(passwordEntity.getUsuarioId()).orElseThrow(
+                () -> new IllegalArgumentException("Usuário não encontrado."));
+
+        usuario.setPassword(this.encoder.encode(password));
+        this.usuarioRepository.save(usuario);
+        
+        this.recuperarPasswordService.deleteByUserId(usuario.getId());
+
+        TokenEvent event = new TokenEvent(this);
+        event.setUsuarioId(usuario.getId());
+        event.setTipo(TokenEvent.REMOVE);
+        
+        this.publisher.publishEvent(event);
+
+        return "Senha alterada com sucesso.";
+    }    
+
     public UsuarioResponse findById(UUID usuarioId) {
         return this.usuarioRepository.findById(usuarioId)
                     .map(UsuarioResponse::new)
@@ -239,99 +217,8 @@ public class UsuarioServiceImpl implements UserDetailsService {
         this.usuarioRepository.save(usuario);
     }
 
-    private String gerarEmail(String nome, String token) {
-        return 
-            """
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8"/>
-            <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-            <style>
-                body,
-                html {
-                    height: 100%;
-                    margin: 0;
-                    padding: 0;
-                    font-family: Arial, sans-serif;
-                }
-        
-                .wrapper {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    height: 100%;
-                    background-color: #06050e;
-                }
-        
-                .card {
-                    width: 40%;
-                    text-align: center;
-                    margin: 100px 0;
-                    padding: 20px;
-                    background-color: white;
-                    border-radius: 10px;
-                }
-        
-                .titulo {
-                    font-size: 24px;
-                    font-weight: 700;
-                }
-        
-                .content {
-                    font-size: 18px;
-                }
-        
-                .card_senha {
-                    background-color: rgb(255, 68, 0);
-                    padding: 1rem 3rem;
-                    border-radius: 12px;
-                    border: none;
-                    margin: 30px 0 0 0 ;
-                    cursor: pointer;
-                    color: white;
-                    font-weight: 600;
-                    font-size: 1.3rem;
-                }
-        
-                .card_senha:hover {
-                    background-color: rgb(206, 58, 5);
-                    transition: 0.5s;
-                }
-            </style>
-        </head>
-        <body>
-        <div class="wrapper">
-            <table
-                    role="presentation"
-                    cellspacing="0"
-                    cellpadding="0"
-                    border="0"
-                    width="100%"
-            >
-                <tr>
-                    <td align="center">
-                        <div class="card">
-                            <!-- Conteúdo do card -->
-                            <span class="titulo">
-                                Olá {NOME_ALUNO}!
-                            </span>
-                            <br/>
-                            <p class="subtitulo">
-                                Clique no link abaixo para que você possa alterar sua nova senha. Você será redirecionado para
-                                uma página do <strong style="color: rgb(255, 68, 0);">Fox Concursos</strong>!
-                            </p>
-        
-                            <a class="card_senha" href="https://www.foxconcursos.com.br/security/recuperar-senha?token={TOKEN}">Clique aqui!</a>
-        
-                        </div>
-                    </td>
-                </tr>
-        
-            </table>
-        </div>
-        </body>
-        </html>
-        """.replace("{NOME_ALUNO}", nome).replace("{TOKEN}", token);
+    public Usuario findByEmail(String email) {
+        return this.usuarioRepository.findByEmailAndStatus(email, StatusUsuario.ATIVO)
+            .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
     }
 }

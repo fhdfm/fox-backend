@@ -18,8 +18,12 @@ public class PasswordRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public void save(String token, UUID usuarioId) {
+    public void create(String token, UUID usuarioId) {
         jdbcTemplate.update("INSERT INTO recuperar_password (token, usuario_id) VALUES (?, ?)", token, usuarioId);
+    }
+
+    public void update(String token, UUID usuarioId) {
+        jdbcTemplate.update("UPDATE recuperar_password SET token = ? where usuario_id = ?", token, usuarioId);
     }
 
     public void delete(String token) {
@@ -40,6 +44,20 @@ public class PasswordRepository {
         }
     }
 
+    public Password findByUsuario(UUID usuarioId) {
+        try {
+            return jdbcTemplate.queryForObject(
+                "SELECT token, usuario_id FROM recuperar_password WHERE usuario_id = ?",
+                (rs, rowNum) -> new Password(
+                    rs.getString("token"), 
+                    UUID.fromString(rs.getString("usuario_id"))), 
+                    usuarioId            
+                );
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
+    }    
+
     public List<Password> findAll() {
         return jdbcTemplate.query(
             "SELECT token, usuario_id FROM recuperar_password",
@@ -47,6 +65,10 @@ public class PasswordRepository {
                 rs.getString("token"), 
                 UUID.fromString(rs.getString("usuario_id")))
         );
+    }
+
+    public void deleteByUsuarioId(UUID usuarioId) {
+        jdbcTemplate.update("DELETE FROM recuperar_password WHERE usuario_id = ?", usuarioId);
     }
 
 }

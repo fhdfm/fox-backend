@@ -5,9 +5,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
@@ -18,22 +16,17 @@ import br.com.foxconcursos.domain.UsuarioLogado;
 public class JwtService {
 
     private final JwtEncoder encoder;
-    private final JwtDecoder decoder;
 
-    public JwtService(JwtEncoder jwtEncoder, JwtDecoder jwtDecoder) {
-        
-        this.decoder = jwtDecoder;
+    public JwtService(JwtEncoder jwtEncoder) {
         this.encoder = jwtEncoder;
-
     }
 
-    public String generatePasswordToken(String email) {
-        Instant now = Instant.now();
-        
+    public String generatePasswordToken(String email, Instant now, long expiresAt) {
+                
         var claims = JwtClaimsSet.builder()
             .issuer("portal-fox")
             .issuedAt(now)
-            .expiresAt(now.plusSeconds(21600))
+            .expiresAt(now.plusSeconds(expiresAt))
             .subject(email)
             .claim("scope", "password_reset")
             .build();
@@ -68,14 +61,4 @@ public class JwtService {
                     .getTokenValue();
     }
 
-    @SuppressWarnings("all")
-    public boolean validarToken(String token) {
-        try {
-            Jwt jwt = this.decoder.decode(token);
-            Instant expiration = jwt.getExpiresAt();
-            return expiration.isAfter(Instant.now());
-        } catch (Exception e) {
-            return false;
-        }
-    }
 }
