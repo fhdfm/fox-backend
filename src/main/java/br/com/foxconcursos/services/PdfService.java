@@ -35,30 +35,26 @@ public class PdfService {
             Path.of(getClass().getClassLoader().getResource(
                 "templates/simulado/rascunho.html").toURI())));
                 
-        String rodapeHtml = new String(Files.readAllBytes(
-            Path.of(getClass().getClassLoader().getResource(
-                "templates/simulado/rodape.html").toURI())));
         
-        rodapeHtml = rodapeHtml.replace(
+        String startHtml = this.getStart();        
+        startHtml = startHtml.replace(
             "${nome}", usuario.getNome()).replace(
                 "${cpf}", FoxUtils.formatarCpf(usuario.getCpf()));
-        
-        String contentHtml = this.getContentHtml(disciplinas);
 
-        Document document = Jsoup.parse(contentHtml, 
-            "UTF-8", Parser.xmlParser());
         Document instrucoes = Jsoup.parse(instrucoesHtml, 
             "UTF-8", Parser.xmlParser());
         Document rascunho = Jsoup.parse(rascunhoHtml, 
             "UTF-8", Parser.xmlParser());
-
-        addFooter(document, rodapeHtml);
+        Document content = Jsoup.parse(this.getContentHtml(disciplinas), 
+            "UTF-8", Parser.xmlParser());
 
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
            
             PdfRendererBuilder builder = new PdfRendererBuilder();
             
-            String combinedHtml = getStart() + instrucoes.html() + rascunho.html() + document.html() + "</body></html>";
+            String combinedHtml = startHtml + instrucoes.html() 
+                + rascunho.html() + content.html()
+                + "</body></html>";
             
             builder.withHtmlContent(combinedHtml, new File(".").toURI().toString());
             builder.toStream(os);
@@ -66,12 +62,6 @@ public class PdfService {
             
             return os.toByteArray();
         }
-    }
-
-    private void addFooter(Document document, String rodapeHtml) {
-        // Element body = document.body();
-        // Element rodape = Jsoup.parseBodyFragment(rodapeHtml).body().child(0);
-        // body.appendChild(rodape);
     }
 
   // Método para gerar o cabeçalho HTML
@@ -113,9 +103,29 @@ public class PdfService {
                         flex-basis: 100%;
                         height: 0;
                     }
+                    
+                    @page {
+                        size: A4;
+
+                        @bottom-center {
+                            content: element(footer);
+                            vertical-align: middle;
+                            margin-bottom: 120px;
+                        }
+                    }
+
+                    #footer {
+                        text-align: center;
+                        display: block;
+                        position: running(footer);
+                    }                        
                 </style>
             </head>
             <body>
+            <div id="footer">
+                <hr style="border: 1px solid #000;"/>
+                ${nome} - CPF: ${cpf}
+            </div>              
         """;
     }    
 
