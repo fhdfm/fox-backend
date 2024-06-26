@@ -118,7 +118,18 @@ public class PdfService {
                         text-align: center;
                         display: block;
                         position: running(footer);
-                    }                        
+                    }
+                        
+                #titulo-centralizado {
+                    width: 100%;
+                    display: flex;
+                    justify-content: center;
+                    background-color: #dadada;
+                    padding: 10px 5px;
+                    text-align: center;
+                    font-size: 14px;
+                    font-weight: 600;
+                }                    
                 </style>
             </head>
             <body>
