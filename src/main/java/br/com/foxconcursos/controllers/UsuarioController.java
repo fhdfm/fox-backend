@@ -33,9 +33,11 @@ public class UsuarioController {
     private final ProdutoService produtoService;
     private final RecuperarPasswordService recuperarPasswordService;
 
+
     public UsuarioController(UsuarioServiceImpl service, 
         ProdutoService produtoService, RecuperarPasswordService recuperarPasswordService) {
-        
+
+
         this.service = service;
         this.produtoService = produtoService;
         this.recuperarPasswordService = recuperarPasswordService;
