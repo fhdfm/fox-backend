@@ -33,6 +33,7 @@ public class UsuarioController {
     private final ProdutoService produtoService;
     private final RecuperarPasswordService recuperarPasswordService;
 
+
     public UsuarioController(UsuarioServiceImpl service, 
         ProdutoService produtoService, RecuperarPasswordService recuperarPasswordService) {
         
