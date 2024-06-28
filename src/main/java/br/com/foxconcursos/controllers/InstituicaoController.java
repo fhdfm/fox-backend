@@ -37,6 +37,7 @@ public class InstituicaoController {
         return ResponseEntity.ok(instituicaoService.salvar(instituicao));
     }
 
+
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/{id}")
     public ResponseEntity<Instituicao> buscar(@PathVariable UUID id) {
