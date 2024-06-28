@@ -15,6 +15,8 @@ import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 
 import br.com.foxconcursos.domain.UsuarioLogado;
 import br.com.foxconcursos.dto.DisciplinaQuestoesResponse;
+import br.com.foxconcursos.dto.GabaritoQuestoesResponse;
+import br.com.foxconcursos.dto.GabaritoResponse;
 import br.com.foxconcursos.dto.ItemQuestaoResponse;
 import br.com.foxconcursos.dto.QuestaoSimuladoResponse;
 import br.com.foxconcursos.util.FoxUtils;
@@ -22,6 +24,136 @@ import br.com.foxconcursos.util.FoxUtils;
 @Service
 public class PdfService {
     
+    public byte[] exportarGabaritoParaPDF(GabaritoResponse gabarito) throws Exception {
+        
+        String start = """
+            <html>
+            <head>
+                <style>
+                    *{
+                        text-align: justify;
+                    }
+                    body {
+                        font-family: Arial, sans-serif;
+                        font-size: 12px;
+                        margin: 0;
+                        padding: 0;
+                    }
+                    div.teste {
+                        margin-top: 10px;
+                        margin-bottom: 10px;
+                    }
+                        .gabarito-container {
+                        display: flex;
+                        flex-wrap: wrap;
+                    }
+                    .questao {
+                        width: 10%;
+                        text-align: center;
+                        border: 1px solid #000;
+                        margin-bottom: 5px;
+                    }
+                    .questao-numero {
+                        font-weight: bold;
+                    }
+                    .questao-letra {
+                        font-size: 14px;
+                    }
+                    .clear {
+                        flex-basis: 100%;
+                        height: 0;
+                    }
+                    
+                    #titulo-centralizado {
+                        width: 100%;
+                        display: flex;
+                        justify-content: center;
+                        background-color: #dadada;
+                        padding: 10px 5px;
+                        text-align: center;
+                        font-size: 14px;
+                        font-weight: 600;
+                    }
+                        
+                    .table-bordered {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-top: 20px;
+                    }
+                    .table-bordered th, .table-bordered td {
+                        border: 1px solid #000;
+                        padding: 8px;
+                        text-align: center;
+        }                    
+                </style>
+            </head>
+            <body>                
+        """;
+
+        String cabecalhoHtml = new String(Files.readAllBytes(
+            Path.of(getClass().getClassLoader().getResource(
+                "templates/simulado/cabecalho.html").toURI())));
+        
+        cabecalhoHtml = cabecalhoHtml.replace("${titulo}", gabarito.getTitulo());
+        
+        StringBuilder container = new StringBuilder("""
+            <br/>
+            <table border="0" width="50%">
+              <tr>        
+        """);
+        
+        List<GabaritoQuestoesResponse> questoes = gabarito.getQuestoes();
+        int controle = 0;
+        
+        for (GabaritoQuestoesResponse questao : questoes) {
+        
+            if (controle % 25 == 0) {
+                if (controle > 0) {
+                    container.append("</table></td>"); // Feche a tabela anterior, se houver
+                }
+                container.append("<td width='20%' valign='top'>")
+                         .append("<table width='100%' class='table-bordered'>");
+                
+                container.append("<tr><td width='50%'><b>Questão</b></td><td width='50%'><b>Resposta</b></td></tr>");
+            }
+        
+
+            container.append("<tr><td width='50%'>")
+                     .append(questao.getOrdem())
+                     .append("</td><td width='50%'>")
+                     .append(Character.toUpperCase(questao.getResposta()))
+                     .append("</td></tr>");
+        
+            controle++;
+        }
+        
+        // Verifique se há uma tabela aberta que não foi fechada
+        if (controle % 25 != 0) {
+            container.append("</table></td>");
+        }
+        
+        // // Feche a tag <tr> e a tag <table> principais
+        container.append("</tr></table></body></html>");
+        
+        String htmlContent = container.toString();
+
+        Document header = Jsoup.parse(cabecalhoHtml, "UTF-8", Parser.xmlParser());
+        Document content = Jsoup.parse(htmlContent, "UTF-8", Parser.xmlParser());
+            
+        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+        
+            PdfRendererBuilder builder = new PdfRendererBuilder();
+            
+            String combinedHtml = start + header.html() + content.html() + "</body></html>";
+            
+            builder.withHtmlContent(combinedHtml, new File(".").toURI().toString());
+            builder.toStream(os);
+            builder.run();
+            
+            return os.toByteArray();
+        }
+    }
+
     public byte[] exportarSimuladoParaPDF(String titulo, UsuarioLogado usuario,
             List<DisciplinaQuestoesResponse> disciplinas) throws Exception {
 

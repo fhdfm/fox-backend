@@ -1,6 +1,8 @@
 package br.com.foxconcursos.services;
 
 import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -14,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +24,8 @@ import br.com.foxconcursos.domain.Disciplina;
 import br.com.foxconcursos.domain.Simulado;
 import br.com.foxconcursos.dto.DataResponse;
 import br.com.foxconcursos.dto.DisciplinaQuestoesResponse;
+import br.com.foxconcursos.dto.GabaritoQuestoesResponse;
+import br.com.foxconcursos.dto.GabaritoResponse;
 import br.com.foxconcursos.dto.ProdutoSimuladoResponse;
 import br.com.foxconcursos.dto.QuestaoSimuladoResponse;
 import br.com.foxconcursos.dto.SimuladoCompletoResponse;
@@ -276,6 +281,52 @@ public class SimuladoService {
 
     //     return response;
     // }
+
+    public GabaritoResponse obterGabarito(UUID simuladoId) {
+
+        String sql = """
+            SELECT 
+                s.titulo AS SimuladoTitulo,
+                qs.ordem AS QuestaoOrdem,
+                iqs.ordem AS ItemOrdem
+            FROM 
+                simulados s
+            JOIN 
+                questoes_simulado qs ON s.id = qs.simulado_id 
+            JOIN 
+                itens_questao_simulado iqs ON qs.id = iqs.questao_simulado_id
+            WHERE 
+                s.id = ?
+                AND iqs.correta = TRUE
+            ORDER BY 
+                qs.ordem ASC, 
+                iqs.ordem ASC;                
+        """;
+
+        GabaritoResponse response = new GabaritoResponse();
+        List<GabaritoQuestoesResponse> questoes = new ArrayList<GabaritoQuestoesResponse>();
+ 
+        jdbcTemplate.query(sql, new RowMapper<Void>() {
+            
+            @Override
+            public Void mapRow(ResultSet rs, int rowNum) throws SQLException {
+                
+                String titulo = rs.getString("SimuladoTitulo");
+                response.setTitulo(titulo);
+                
+                int questao = rs.getInt("QuestaoOrdem");
+                int resposta = rs.getInt("ItemOrdem");
+
+                questoes.add(new GabaritoQuestoesResponse(questao, resposta));
+                
+                return null;
+            }
+        }, simuladoId);
+
+        response.setQuestoes(questoes);
+
+        return response;
+    }
 
     public LocalDateTime calcularHoraFim(UUID simuladoId) {
         Simulado simulado = simuladoRepository.findById(simuladoId).orElseThrow(
