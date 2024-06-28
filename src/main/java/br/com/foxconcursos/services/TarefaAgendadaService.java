@@ -106,6 +106,7 @@ public class TarefaAgendadaService {
     }
 
     public void executarTarefa(TarefaAgendada tarefa) {
+        
         TarefaExecutor executor = getExecutor(tarefa.getTipo());
 
         logger.info("Executando tarefa agendada...");
