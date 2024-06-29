@@ -66,6 +66,7 @@ public class DisciplinaController {
         return ResponseEntity.status(HttpStatus.OK).body("Disciplina deletada com sucesso: " + id);
     }
 
+
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "/assunto",consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UUID> salvarAssunto(@RequestBody Assunto assunto) {
