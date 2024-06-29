@@ -29,6 +29,7 @@ public class CargoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(cargo.getId());
     }
 
+
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Cargo> atualizar(@PathVariable UUID id,
