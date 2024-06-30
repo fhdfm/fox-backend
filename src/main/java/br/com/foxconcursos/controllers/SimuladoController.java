@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import br.com.foxconcursos.domain.StatusSimulado;
 import br.com.foxconcursos.domain.UsuarioLogado;
 import br.com.foxconcursos.dto.DisciplinaQuestoesResponse;
+import br.com.foxconcursos.dto.GabaritoResponse;
 import br.com.foxconcursos.dto.QuestaoSimuladoRequest;
 import br.com.foxconcursos.dto.QuestaoSimuladoResponse;
 import br.com.foxconcursos.dto.QuestoesSimuladoDisciplinaResponse;
@@ -186,17 +187,17 @@ public class SimuladoController {
                 "attachment; filename=simulado-" + usuario.getCpf() +  ".pdf").body(pdf);
     }
 
-   
-    @GetMapping(value = "/api/pf/{simuladoId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<SimuladoCompletoResponse> agajgaj(@PathVariable UUID simuladoId) throws Exception {
+    @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO')")
+    @GetMapping(value = "/api/alunos/simulados/{simuladoId}/gabarito", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> exportarGabaritoPataPDF(@PathVariable UUID simuladoId) throws Exception {
 
-        SimuladoCompletoResponse simulado = simuladoService.findById(simuladoId);
-        //List<DisciplinaQuestoesResponse> disciplinas = simulado.getDisciplinas();
+        GabaritoResponse gabarito = this.simuladoService.obterGabarito(simuladoId);
 
-       // UsuarioLogado usuario = this.authenticationService.obterUsuarioLogadoCompleto();
-
-        return ResponseEntity.status(HttpStatus.OK).body(simulado);
+        byte[] pdf = this.pdfService.exportarGabaritoParaPDF(gabarito);
+        return ResponseEntity.status(HttpStatus.OK).header(
+        "attachment; filename=gabarito-" + UUID.randomUUID() +  ".pdf").body(pdf);
     }
+
         
     @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO')")
     @GetMapping(value = "/api/alunos/simulados/{simuladoId}/status")
