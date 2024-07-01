@@ -2,6 +2,7 @@ package br.com.foxconcursos.controllers;
 
 import br.com.foxconcursos.domain.Assunto;
 import br.com.foxconcursos.domain.Disciplina;
+import br.com.foxconcursos.dto.AssuntoResponse;
 import br.com.foxconcursos.services.AssuntoService;
 import br.com.foxconcursos.services.DisciplinaService;
 import org.springframework.http.HttpStatus;
@@ -91,8 +92,8 @@ public class DisciplinaController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/assunto")
-    public ResponseEntity<List<Assunto>> listarAssunto(
-            @RequestParam(required = false) String filter) throws Exception {
+    public ResponseEntity<List<AssuntoResponse>> listarAssunto(
+            @RequestParam(required = false) Assunto filter) throws Exception {
         return ResponseEntity.ok(assuntoService.findAll(filter));
     }
 

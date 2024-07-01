@@ -1,24 +1,24 @@
 package br.com.foxconcursos.services;
 
 import br.com.foxconcursos.domain.Assunto;
+import br.com.foxconcursos.dto.AssuntoResponse;
 import br.com.foxconcursos.repositories.AssuntoRepository;
-import br.com.foxconcursos.util.FoxUtils;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 @Service
 public class AssuntoService {
 
     private final AssuntoRepository assuntoRepository;
+    private final JdbcTemplate jdbcTemplate;
 
-    public AssuntoService(AssuntoRepository assuntoRepository) {
+    public AssuntoService(AssuntoRepository assuntoRepository, JdbcTemplate jdbcTemplate) {
         this.assuntoRepository = assuntoRepository;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     public Assunto salvar(Assunto assunto) {
@@ -49,33 +49,36 @@ public class AssuntoService {
         return assuntoRepository.save(assunto);
     }
 
-    public List<Assunto> findAll(String filter) throws Exception {
-
-        if (filter == null || filter.isBlank())
-            return this.findAll();
-
-        Assunto assunto =
-                FoxUtils.criarObjetoDinamico(filter, Assunto.class);
-        ExampleMatcher matcher = ExampleMatcher.matching()
-                .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING) // Correspondência parcial
-                .withIgnoreCase() // Ignorar case
-                .withIgnoreNullValues(); // Ignorar valores nulos            
-
-        Iterable<Assunto> assuntos =
-                assuntoRepository.findAll(
-                        Example.of(assunto, matcher));
-
-        List<Assunto> response =
-                StreamSupport.stream(assuntos.spliterator(), false)
-                        .collect(Collectors.toList());
-
-        return response;
+    public List<AssuntoResponse> findAll(Assunto filter) throws Exception {
+        List<AssuntoResponse> result =
+                new ArrayList<>();
+        String sql = """
+                select a.id, a.nome, d.nome as disciplina from assunto a
+                join disciplinas d on d.id = a.disciplina_id
+                where 1 = 1
+                """;
+        if (filter != null) {
+            if (filter.getId() != null)
+                sql += " and a.id = '" + filter.getId() + "' ";
+            if (filter.getDisciplinaId().toString() != null)
+                sql += " and d.id = '" + filter.getDisciplinaId() + "' ";
+        }
+        jdbcTemplate.query(sql, (rs, rowNum) -> {
+            AssuntoResponse obj = new AssuntoResponse(
+                    UUID.fromString(rs.getString("id")),
+                    rs.getString("nome"),
+                    rs.getString("disciplina")
+            );
+            result.add(obj);
+            return obj;
+        });
+        return result;
     }
+
 
     public List<Assunto> findAll() {
         return assuntoRepository.findAll();
     }
-
 
     public void deletar(UUID assuntoId) {
         assuntoRepository.deleteById(assuntoId);
