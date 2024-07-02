@@ -21,18 +21,19 @@ public class AssuntoService {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public Assunto salvar(Assunto assunto) {
+    public Assunto salvar(UUID disciplinaId, Assunto assunto) {
         if (assunto.getNome() == null || assunto.getNome().isBlank())
             throw new IllegalArgumentException("Informe o nome do assunto.");
 
-        if (assunto.getDisciplinaId() == null)
+        if (disciplinaId == null)
             throw new IllegalArgumentException("Informe a disciplina.");
 
         UUID id = assunto.getId();
 
         if (id == null) {
-            if (assuntoRepository.existsByNomeAndDisciplinaId(assunto.getNome(), assunto.getDisciplinaId()))
+            if (assuntoRepository.existsByNomeAndDisciplinaId(assunto.getNome(), disciplinaId))
                 throw new IllegalArgumentException("Assunto já cadastrado.");
+            assunto.setDisciplinaId(disciplinaId);
             return assuntoRepository.save(assunto);
         }
 
@@ -40,35 +41,40 @@ public class AssuntoService {
                 .orElseThrow(() -> new IllegalArgumentException("Assunto não encontrado."));
 
         if (!assuntoDB.getNome().equals(assunto.getNome())
-                && assuntoRepository.existsByNomeAndDisciplinaId(assunto.getNome(), assunto.getDisciplinaId()))
+                && assuntoRepository.existsByNomeAndDisciplinaId(assunto.getNome(), disciplinaId))
             throw new IllegalArgumentException("Assunto já cadastrado.");
 
         assuntoDB.setNome(assunto.getNome());
-        assuntoDB.setDisciplinaId(assunto.getDisciplinaId());
+        assuntoDB.setDisciplinaId(disciplinaId);
 
         return assuntoRepository.save(assunto);
     }
 
     public List<AssuntoResponse> findAll(Assunto filter) throws Exception {
-        List<AssuntoResponse> result =
-                new ArrayList<>();
+        List<AssuntoResponse> result = new ArrayList<>();
+
         String sql = """
                 select a.id, a.nome, d.nome as disciplina from assunto a
                 join disciplinas d on d.id = a.disciplina_id
                 where 1 = 1
                 """;
+
         if (filter != null) {
             if (filter.getId() != null)
                 sql += " and a.id = '" + filter.getId() + "' ";
-            if (filter.getDisciplinaId().toString() != null)
+            if (filter.getNome() != null)
+                sql += " and upper(a.nome) like '%" + filter.getNome().toUpperCase() + "%' ";
+            if (filter.getDisciplinaId() != null)
                 sql += " and d.id = '" + filter.getDisciplinaId() + "' ";
         }
+
         jdbcTemplate.query(sql, (rs, rowNum) -> {
             AssuntoResponse obj = new AssuntoResponse(
                     UUID.fromString(rs.getString("id")),
                     rs.getString("nome"),
                     rs.getString("disciplina")
             );
+
             result.add(obj);
             return obj;
         });
@@ -79,14 +85,15 @@ public class AssuntoService {
     public List<Assunto> findAll() {
         return assuntoRepository.findAll();
     }
+    public List<Assunto> findByDisciplinaId(UUID disciplinaId) {
+        return assuntoRepository.findByDisciplinaId(disciplinaId);
+    }
 
     public void deletar(UUID assuntoId) {
         assuntoRepository.deleteById(assuntoId);
     }
 
-    public Assunto findById(UUID assuntoId) {
-        return assuntoRepository.findById(assuntoId)
-                .orElseThrow(() -> new IllegalArgumentException("Assunto não encontrado."));
+    public Assunto findByIdAndDisciplinaId(UUID id, UUID assuntoId) throws Exception {
+        return assuntoRepository.findByIdAndDisciplinaId(id, assuntoId);
     }
-
 }

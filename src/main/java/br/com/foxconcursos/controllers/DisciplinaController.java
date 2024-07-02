@@ -2,7 +2,6 @@ package br.com.foxconcursos.controllers;
 
 import br.com.foxconcursos.domain.Assunto;
 import br.com.foxconcursos.domain.Disciplina;
-import br.com.foxconcursos.dto.AssuntoResponse;
 import br.com.foxconcursos.services.AssuntoService;
 import br.com.foxconcursos.services.DisciplinaService;
 import org.springframework.http.HttpStatus;
@@ -69,37 +68,47 @@ public class DisciplinaController {
 
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping(value = "/assunto",consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UUID> salvarAssunto(@RequestBody Assunto assunto) {
-        assunto = assuntoService.salvar(assunto);
+    @PostMapping(value = "/{disciplinaId}/assuntos", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UUID> salvarAssuntoPorDisciplina(
+            @PathVariable UUID disciplinaId,
+            @RequestBody Assunto assunto
+    ) {
+        assunto = assuntoService.salvar(disciplinaId, assunto);
         return ResponseEntity.status(HttpStatus.CREATED).body(assunto.getId());
     }
 
-
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping(value = "/assunto/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Assunto> atualizarAssunto(@PathVariable UUID id,
-                                             @RequestBody Assunto assunto) {
+    @PutMapping(value = "/{disciplinaId}/assuntos/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Assunto> atualizarAssuntoPorDisciplina(
+            @PathVariable UUID disciplinaId,
+            @PathVariable UUID id,
+            @RequestBody Assunto assunto) {
         assunto.setId(id);
-        return ResponseEntity.ok(assuntoService.salvar(assunto));
+        return ResponseEntity.ok(assuntoService.salvar(disciplinaId, assunto));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping(value = "/assunto/{id}")
-    public ResponseEntity<Assunto> buscarAssunto(@PathVariable UUID id) {
-        return ResponseEntity.ok(assuntoService.findById(id));
+    @GetMapping(value = "/{disciplinaId}/assuntos/{id}")
+    public ResponseEntity<Assunto> buscarAssuntoPorDisciplina(
+            @PathVariable UUID id,
+            @PathVariable UUID disciplinaId
+    ) throws Exception {
+        return ResponseEntity.ok(assuntoService.findByIdAndDisciplinaId(id, disciplinaId));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping(value = "/assunto")
-    public ResponseEntity<List<AssuntoResponse>> listarAssunto(
-            @RequestParam(required = false) Assunto filter) throws Exception {
-        return ResponseEntity.ok(assuntoService.findAll(filter));
+    @GetMapping(value = "/{disciplinaId}/assuntos")
+    public ResponseEntity<List<Assunto>> buscarTodosAssuntosPorDisciplina(
+            @PathVariable UUID disciplinaId
+    ) {
+        return ResponseEntity.ok(assuntoService.findByDisciplinaId(disciplinaId));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping(value = "/assunto/{id}")
-    public ResponseEntity<String> deletarAssunto(@PathVariable UUID id) {
+    @DeleteMapping(value = "/assuntos/{id}")
+    public ResponseEntity<String> deletarAssuntoPorDisciplina(
+            @PathVariable UUID id
+    ) {
         assuntoService.deletar(id);
         return ResponseEntity.status(HttpStatus.OK).body("Assunto deletado com sucesso: " + id);
     }
