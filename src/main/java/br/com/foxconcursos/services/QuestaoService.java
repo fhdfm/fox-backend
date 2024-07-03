@@ -220,8 +220,6 @@ public class QuestaoService {
             from questoes q where q.status = 'ATIVO' inner join alternativas a 
             on a.questao_id = q.id 
         """;
-    
-        
         
         if (questao.getAssuntoId() != null) {
             sql += " and q.assunto_id = '" + questao.getAssuntoId() + "' ";
