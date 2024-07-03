@@ -1,14 +1,20 @@
 package br.com.foxconcursos.services;
 
 import br.com.foxconcursos.domain.Assunto;
+import br.com.foxconcursos.domain.Disciplina;
 import br.com.foxconcursos.dto.AssuntoResponse;
 import br.com.foxconcursos.repositories.AssuntoRepository;
+import br.com.foxconcursos.util.FoxUtils;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
 public class AssuntoService {
@@ -85,9 +91,25 @@ public class AssuntoService {
     public List<Assunto> findAll() {
         return assuntoRepository.findAll();
     }
-    public List<Assunto> findByDisciplinaId(UUID disciplinaId) {
-        return assuntoRepository.findByDisciplinaId(disciplinaId);
+    public List<Assunto> findByDisciplinaId(UUID disciplinaId, String filter) throws Exception {
+        if (filter == null || filter.isBlank()) {
+            return assuntoRepository.findByDisciplinaId(disciplinaId);
+        }
+
+        Assunto assunto = FoxUtils.criarObjetoDinamico(filter, Assunto.class);
+
+        assunto.setDisciplinaId(disciplinaId);
+
+        ExampleMatcher matcher = FoxUtils.createExampleMatcher(Assunto.class);
+
+        Iterable<Assunto> assuntos = assuntoRepository.findAll(Example.of(assunto, matcher));
+
+        List<Assunto> response = StreamSupport.stream(assuntos.spliterator(), false)
+                .collect(Collectors.toList());
+
+        return response;
     }
+
 
     public void deletar(UUID assuntoId) {
         assuntoRepository.deleteById(assuntoId);
@@ -96,4 +118,6 @@ public class AssuntoService {
     public Assunto findByIdAndDisciplinaId(UUID id, UUID assuntoId) throws Exception {
         return assuntoRepository.findByIdAndDisciplinaId(id, assuntoId);
     }
+
+
 }

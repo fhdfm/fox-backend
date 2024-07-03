@@ -1,14 +1,17 @@
 package br.com.foxconcursos.util;
 
+import org.springframework.data.domain.ExampleMatcher;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.UUID;
 
 public class FoxUtils {
-    
+
     public static Date convertLocalDateTimeToDate(LocalDateTime localDateTime) {
         if (localDateTime == null) {
             return null;
@@ -24,18 +27,18 @@ public class FoxUtils {
     }
 
     public static <T> T criarObjetoDinamico(String query, Class<T> clazz) throws Exception {
-        
+
         if (query == null || query.isEmpty())
             throw new IllegalArgumentException("Query não pode ser nula ou vazia");
-        
+
         String[] pares = query.split(",");
-        
+
         T objeto = getNovaInstancia(clazz);
         for (String par : pares) {
             String[] chaveValor = par.split(":");
             if (chaveValor.length != 2)
                 throw new IllegalArgumentException("Parâmetro inválido: " + par);
-            
+
             String chave = chaveValor[0].trim();
             String valor = chaveValor[1].trim();
             Field field = clazz.getDeclaredField(chave);
@@ -55,6 +58,8 @@ public class FoxUtils {
                     throw new IllegalArgumentException("Valor inválido para o enum: " + valor);
                 }
                 field.set(objeto, enumValue);
+            } else if (field.getType().equals(UUID.class)) {
+                field.set(objeto, UUID.fromString(valor));
             } else {
                 field.set(objeto, valor);
             }
@@ -62,6 +67,20 @@ public class FoxUtils {
 
         return objeto;
     }
+
+
+        public static <T> ExampleMatcher createExampleMatcher(Class<T> clazz) {
+            ExampleMatcher matcher = ExampleMatcher.matching().withIgnoreNullValues(); // Ignorar valores nulos
+
+            for (Field field : clazz.getDeclaredFields()) {
+                if (field.getType().equals(String.class)) {
+                    matcher = matcher.withMatcher(field.getName(), ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
+                }
+            }
+
+            return matcher;
+        }
+
 
     private static <T> T getNovaInstancia(Class<T> clazz) throws Exception {
         Constructor<T> constructor = clazz.getConstructor();

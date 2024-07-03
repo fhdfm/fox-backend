@@ -99,9 +99,9 @@ public class DisciplinaController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/{disciplinaId}/assuntos")
     public ResponseEntity<List<Assunto>> buscarTodosAssuntosPorDisciplina(
-            @PathVariable UUID disciplinaId
-    ) {
-        return ResponseEntity.ok(assuntoService.findByDisciplinaId(disciplinaId));
+            @PathVariable UUID disciplinaId, @RequestParam(required = false) String filter
+    ) throws Exception {
+        return ResponseEntity.ok(assuntoService.findByDisciplinaId(disciplinaId,filter));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
