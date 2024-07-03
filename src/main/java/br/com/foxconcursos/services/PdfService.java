@@ -5,6 +5,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -14,15 +15,153 @@ import org.springframework.stereotype.Service;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 
 import br.com.foxconcursos.domain.UsuarioLogado;
+import br.com.foxconcursos.dto.AlternativaResponse;
+import br.com.foxconcursos.dto.BancoQuestaoResponse;
 import br.com.foxconcursos.dto.DisciplinaQuestoesResponse;
 import br.com.foxconcursos.dto.GabaritoQuestoesResponse;
 import br.com.foxconcursos.dto.GabaritoResponse;
 import br.com.foxconcursos.dto.ItemQuestaoResponse;
+import br.com.foxconcursos.dto.QuestaoResponse;
 import br.com.foxconcursos.dto.QuestaoSimuladoResponse;
 import br.com.foxconcursos.util.FoxUtils;
 
 @Service
 public class PdfService {
+
+    public byte[] gerarPdfFromBancoDeQuestoes(BancoQuestaoResponse bancoQuestao) throws Exception {
+        
+        String start = """
+            <html>
+            <head>
+                <style>
+                    *{
+                        text-align: justify;
+                    }
+                    body {
+                        font-family: Arial, sans-serif;
+                        font-size: 12px;
+                        margin: 0;
+                        padding: 0;
+                    }
+                    div.teste {
+                        margin-top: 10px;
+                        margin-bottom: 10px;
+                    }
+                        .gabarito-container {
+                        display: flex;
+                        flex-wrap: wrap;
+                    }
+                    .questao {
+                        width: 10%;
+                        text-align: center;
+                        border: 1px solid #000;
+                        margin-bottom: 5px;
+                    }
+                    .questao-numero {
+                        font-weight: bold;
+                    }
+                    .questao-letra {
+                        font-size: 14px;
+                    }
+                    .clear {
+                        flex-basis: 100%;
+                        height: 0;
+                    }
+                    
+                    #titulo-centralizado {
+                        width: 100%;
+                        display: flex;
+                        justify-content: center;
+                        background-color: #dadada;
+                        padding: 10px 5px;
+                        text-align: center;
+                        font-size: 14px;
+                        font-weight: 600;
+                    }
+                        
+                    .table-bordered {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-top: 20px;
+                    }
+                    .table-bordered th, .table-bordered td {
+                        border: 1px solid #000;
+                        padding: 8px;
+                        text-align: center;
+                     }                    
+                </style>
+            </head>
+            <body>                
+        """;
+        
+        String cabecalhoHtml = new String(Files.readAllBytes(
+            Path.of(getClass().getClassLoader().getResource(
+                "templates/simulado/cabecalho.html").toURI())));
+        
+        cabecalhoHtml = cabecalhoHtml.replace("${titulo}", 
+            formatToString(bancoQuestao.getFiltros()));
+        cabecalhoHtml = cabecalhoHtml.replace("${modelo}", 
+            "Banco de Questões");
+
+        StringBuilder htmlContent = new StringBuilder();
+
+        List<QuestaoResponse> questoes = bancoQuestao.getQuestoes();
+
+        int i = 1;
+
+        for (QuestaoResponse questao : questoes) {
+            htmlContent.append("<div style='margin-bottom: 0.5cm'>")
+            .append("<h5 style='font-size: 13px; margin: 0'>")
+            .append(i).append(") ")
+            .append(FoxUtils.removerTagsP(questao.getEnunciado()))
+            .append("</h5>");
+
+            for (AlternativaResponse alternativa : questao.getAlternativas()) {
+                htmlContent.append("<p style='margin: 5px 0; padding: 0'>")
+                        .append(alternativa.getLetra()).append(") ")
+                        .append(FoxUtils.removerTagsP(alternativa.getDescricao()))
+                        .append("</p>");
+            }
+
+            htmlContent.append("</div>");
+            i++;
+        }
+
+        Document header = Jsoup.parse(
+            cabecalhoHtml, "UTF-8", Parser.xmlParser());
+        Document content = Jsoup.parse(
+            htmlContent.toString(), "UTF-8", Parser.xmlParser());        
+        
+        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+    
+            PdfRendererBuilder builder = new PdfRendererBuilder();
+            
+            String combinedHtml = start + header.html() + content.html() + "</body></html>";
+            
+            builder.withHtmlContent(combinedHtml, new File(".").toURI().toString());
+            builder.toStream(os);
+            builder.run();
+            
+            return os.toByteArray();
+        }        
+    }
+
+    private String formatToString(Map<String, String> map) {
+        
+        StringBuilder sb = new StringBuilder();
+        
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            if (entry.getValue() != null) {
+                sb.append(entry.getKey()).append(entry.getValue()).append(", ");
+            }
+        }
+        
+        if (sb.length() > 0) {
+            sb.setLength(sb.length() - 2); // remove the last ", "
+        }
+        
+        return sb.toString();
+    }
     
     public byte[] exportarGabaritoParaPDF(GabaritoResponse gabarito) throws Exception {
         
@@ -95,6 +234,7 @@ public class PdfService {
                 "templates/simulado/cabecalho.html").toURI())));
         
         cabecalhoHtml = cabecalhoHtml.replace("${titulo}", gabarito.getTitulo());
+        cabecalhoHtml = cabecalhoHtml.replace("${modelo}", "Gabarito");
         
         StringBuilder container = new StringBuilder("""
             <br/>
