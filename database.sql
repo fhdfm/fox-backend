@@ -194,3 +194,48 @@ CREATE TABLE tarefas_agendadas (
     status VARCHAR(50) NOT NULL,
     version INT NOT NULL DEFAULT 0
 );
+
+CREATE TABLE questoes (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+    enunciado TEXT NOT NULL,
+    alternativa_correta CHAR(1),
+    disciplina_id UUID NOT NULL,
+    assunto_id UUID NOT NULL,
+    banca_id UUID NOT NULL,
+    instituicao_id UUID NOT NULL,
+    cargo_id UUID NOT NULL,
+    ano INT NOT NULL,
+    uf VARCHAR(2) NOT NULL,
+    cidade VARCHAR(255) NOT NULL,
+    escolaridade VARCHAR(50) NOT NULL,
+    status CHAR(1) NOT NULL,
+    version INT NOT NULL DEFAULT 0,
+    CONSTRAINT fk_disciplina
+        FOREIGN KEY(disciplina_id) 
+        REFERENCES disciplinas(id),
+    CONSTRAINT fk_assunto
+        FOREIGN KEY(assunto_id) 
+        REFERENCES assunto(id),
+    CONSTRAINT fk_banca
+        FOREIGN KEY(banca_id) 
+        REFERENCES bancas(id),
+    CONSTRAINT fk_instituicao
+        FOREIGN KEY(instituicao_id) 
+        REFERENCES instituicao(id),
+    CONSTRAINT fk_cargo
+        FOREIGN KEY(cargo_id) 
+        REFERENCES cargo(id)
+);
+
+
+CREATE TABLE alternativas (
+    id UUID PRIMARY key DEFAULT uuid_generate_v4() NOT null UNIQUE,
+    questao_id UUID NOT NULL,
+    letra VARCHAR(1) NOT NULL,
+    descricao TEXT NOT NULL,
+    correta BOOLEAN NOT NULL,
+    version INTEGER NOT NULL,
+    CONSTRAINT fk_questao
+        FOREIGN KEY (questao_id) 
+        REFERENCES questoes (id)
+);
