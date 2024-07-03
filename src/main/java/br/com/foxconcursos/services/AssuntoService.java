@@ -97,7 +97,6 @@ public class AssuntoService {
         }
 
         Assunto assunto = FoxUtils.criarObjetoDinamico(filter, Assunto.class);
-
         assunto.setDisciplinaId(disciplinaId);
 
         ExampleMatcher matcher = FoxUtils.createExampleMatcher(Assunto.class);
