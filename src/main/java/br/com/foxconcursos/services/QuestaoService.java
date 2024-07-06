@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.com.foxconcursos.domain.Alternativa;
+import br.com.foxconcursos.domain.FiltroQuestao;
 import br.com.foxconcursos.domain.Questao;
 import br.com.foxconcursos.domain.Status;
 import br.com.foxconcursos.dto.AlternativaRequest;
@@ -167,41 +168,61 @@ public class QuestaoService {
         this.questaoRepository.save(questao);
     }
 
-    public Map<String, String> getFiltroCorrente(Questao questao) {
+    public Map<String, String> getFiltroCorrente(FiltroQuestao questao) {
         
         Map<String, String> filtros = new HashMap<String, String>();
         
-        if (questao.getAssuntoId() != null)
-            filtros.put("Assunto:", obterDescricaoPorPK(
-                questao.getAssuntoId(), "assunto", "nome"));
+        if (questao.getAssuntoId() != null 
+            && !questao.getAssuntoId().isEmpty()) {
 
-        if (questao.getDisciplinaId() != null)
-            filtros.put("Disciplina:", obterDescricaoPorPK(
-                questao.getDisciplinaId(), "disciplinas", "nome"));
+            StringBuilder sb = new StringBuilder();
+            
+            for (UUID assunto : questao.getAssuntoId()) {
+                sb.append(obterDescricaoPorPK(
+                    assunto, "assunto", "nome")).append(", ");
+            }
+
+            filtros.put("Assunto(s): ", 
+                sb.toString().substring(
+                    0, toString().length() -1) );
+        }
+
+        if (questao.getDisciplinaId() != null && !questao.getDisciplinaId().isEmpty()) {
+            
+            StringBuilder sb = new StringBuilder();
+            
+            for (UUID assunto : questao.getAssuntoId()) {
+                sb.append(obterDescricaoPorPK(
+                    assunto, "disicplinas", "nome")).append(", ");
+            }
+
+            filtros.put("Disciplina(s): ", 
+                sb.toString().substring(0, sb.toString().length() -1));
+        }
 
         if (questao.getInstituicaoId() != null)
-            filtros.put("Instituição:", obterDescricaoPorPK(
+            filtros.put("Instituição: ", obterDescricaoPorPK(
                 questao.getInstituicaoId(), "instituicao", "nome"));
 
         if (questao.getCargoId() != null)
-            filtros.put("Cargo:", obterDescricaoPorPK(
+            filtros.put("Cargo: ", obterDescricaoPorPK(
                 questao.getCargoId(), "cargo", "nome"));
 
         if (questao.getAno() != null)
-            filtros.put("Ano:", questao.getAno().toString());
+            filtros.put("Ano: ", questao.getAno().toString());
         
         if (questao.getBancaId() != null)
-            filtros.put("Banca:", obterDescricaoPorPK(
+            filtros.put("Banca: ", obterDescricaoPorPK(
                 questao.getBancaId(), "bancas", "nome"));
         
         if (questao.getCidade() != null)
             filtros.put("Cidade:", questao.getCidade());
 
         if (questao.getUf() != null)
-            filtros.put("UF:", questao.getUf());
+            filtros.put("UF: ", questao.getUf());
 
         if (questao.getEscolaridade() != null)
-            filtros.put("Escolaridade:", questao.getEscolaridade().toString());
+            filtros.put("Escolaridade: ", questao.getEscolaridade().toString());
 
         return filtros;
     }
@@ -212,7 +233,7 @@ public class QuestaoService {
                 String.class, id);
     }
 
-    public List<QuestaoResponse> findAll(Questao questao,
+    public List<QuestaoResponse> findAll(FiltroQuestao questao,
         Integer limit, Integer offset) {
         
         String sql = """
@@ -221,8 +242,9 @@ public class QuestaoService {
             on a.questao_id = q.id 
         """;
         
-        if (questao.getAssuntoId() != null) {
-            sql += " and q.assunto_id = '" + questao.getAssuntoId() + "' ";
+        if (questao.getAssuntoId() != null && !questao.getAssuntoId().isEmpty()) {
+            sql += " and q.assunto_id in (" 
+                + listToString(questao.getAssuntoId()) + ") ";
         }
 
         if (questao.getAno() != null) {
@@ -253,8 +275,9 @@ public class QuestaoService {
             sql += " and q.cargo_id = '" + questao.getCargoId() + "' ";
         }
 
-        if (questao.getDisciplinaId() != null) {
-            sql += " and q.disciplina_id = '" + questao.getDisciplinaId() + "' ";
+        if (questao.getDisciplinaId() != null && !questao.getDisciplinaId().isEmpty()) {
+            sql += " and q.disciplina_id in (" 
+                + listToString(questao.getDisciplinaId()) + ") ";
         }
 
         if (questao.getInstituicaoId() != null) {
@@ -292,14 +315,15 @@ public class QuestaoService {
         return result;
     }
 
-    public int getRecordCount(Questao questao) {
+    public int getRecordCount(FiltroQuestao questao) {
 
         String sql = """
             select q.id(*) from questoes q where q.status = 'ATIVO' 
         """;
         
-        if (questao.getAssuntoId() != null) {
-            sql += " and q.assunto_id = '" + questao.getAssuntoId() + "' ";
+        if (questao.getAssuntoId() != null && !questao.getAssuntoId().isEmpty()) {
+            sql += " and q.assunto_id in (" 
+                + listToString(questao.getAssuntoId()) + ") ";
         }
 
         if (questao.getAno() != null) {
@@ -330,8 +354,9 @@ public class QuestaoService {
             sql += " and q.cargo_id = '" + questao.getCargoId() + "' ";
         }
 
-        if (questao.getDisciplinaId() != null) {
-            sql += " and q.disciplina_id = '" + questao.getDisciplinaId() + "' ";
+        if (questao.getDisciplinaId() != null && !questao.getDisciplinaId().isEmpty()) {
+            sql += " and q.disciplina_id in (" 
+                + listToString(questao.getDisciplinaId()) + ") ";
         }
 
         if (questao.getInstituicaoId() != null) {
@@ -375,4 +400,11 @@ public class QuestaoService {
         return qr;
     }
 
+    private String listToString(List<UUID> list) {
+        StringBuilder sb = new StringBuilder();
+        for (UUID id : list) {
+            sb.append("'").append(id.toString()).append("',");
+        }
+        return sb.toString().substring(0, sb.length() - 1);
+    }
 }

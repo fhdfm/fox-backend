@@ -239,3 +239,18 @@ CREATE TABLE alternativas (
         FOREIGN KEY (questao_id) 
         REFERENCES questoes (id)
 );
+
+CREATE TABLE comentarios (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+    questao_id UUID NOT NULL,
+    usuario_id UUID NOT NULL,
+    descricao TEXT NOT NULL,
+    data TIMESTAMP NOT NULL,
+    version INT NOT NULL DEFAULT 0,
+    CONSTRAINT fk_questao
+        FOREIGN KEY(questao_id) 
+        REFERENCES questoes(id),
+    CONSTRAINT fk_usuario
+        FOREIGN KEY(usuario_id) 
+        REFERENCES usuarios(id)
+);

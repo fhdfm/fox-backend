@@ -1,11 +1,16 @@
 package br.com.foxconcursos.util;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class FoxUtils {
     
@@ -31,6 +36,8 @@ public class FoxUtils {
         String[] pares = query.split(",");
         
         T objeto = getNovaInstancia(clazz);
+        Map<String, List<String>> parametros = new HashMap<>();
+        
         for (String par : pares) {
             String[] chaveValor = par.split(":");
             if (chaveValor.length != 2)
@@ -38,31 +45,80 @@ public class FoxUtils {
             
             String chave = chaveValor[0].trim();
             String valor = chaveValor[1].trim();
+            
+            if (!parametros.containsKey(chave)) {
+                parametros.put(chave, new ArrayList<>());
+            }
+            parametros.get(chave).add(valor);
+        }
+        
+        for (Map.Entry<String, List<String>> entry : parametros.entrySet()) {
+            String chave = entry.getKey();
+            List<String> valores = entry.getValue();
             Field field = clazz.getDeclaredField(chave);
             field.setAccessible(true);
 
-            if (field.getType().isEnum()) {
-                Object[] enums = field.getType().getEnumConstants();
-                Object enumValue = null;
-                for (Object e : enums) {
-                    if (((Enum<?>) e).name().equalsIgnoreCase(valor)) {
-                        enumValue = e;
-                        break;
+            if (field.getType().isArray() || List.class.isAssignableFrom(field.getType())) {
+                Class<?> componentType = field.getType().isArray() ? field.getType().getComponentType() : String.class;
+                if (field.getType().isEnum()) {
+                    List<Object> enumValues = new ArrayList<>();
+                    for (String valor : valores) {
+                        Object[] enums = componentType.getEnumConstants();
+                        Object enumValue = null;
+                        for (Object e : enums) {
+                            if (((Enum<?>) e).name().equalsIgnoreCase(valor)) {
+                                enumValue = e;
+                                break;
+                            }
+                        }
+                        if (enumValue == null) {
+                            throw new IllegalArgumentException("Valor inválido para o enum: " + valor);
+                        }
+                        enumValues.add(enumValue);
+                    }
+                    if (field.getType().isArray()) {
+                        Object array = Array.newInstance(componentType, enumValues.size());
+                        for (int i = 0; i < enumValues.size(); i++) {
+                            Array.set(array, i, enumValues.get(i));
+                        }
+                        field.set(objeto, array);
+                    } else {
+                        field.set(objeto, enumValues);
+                    }
+                } else {
+                    if (field.getType().isArray()) {
+                        Object array = Array.newInstance(componentType, valores.size());
+                        for (int i = 0; i < valores.size(); i++) {
+                            Array.set(array, i, valores.get(i));
+                        }
+                        field.set(objeto, array);
+                    } else {
+                        field.set(objeto, valores);
                     }
                 }
-
-                if (enumValue == null) {
-                    throw new IllegalArgumentException("Valor inválido para o enum: " + valor);
-                }
-                field.set(objeto, enumValue);
             } else {
-                field.set(objeto, valor);
+                if (field.getType().isEnum()) {
+                    Object[] enums = field.getType().getEnumConstants();
+                    Object enumValue = null;
+                    for (Object e : enums) {
+                        if (((Enum<?>) e).name().equalsIgnoreCase(valores.get(0))) {
+                            enumValue = e;
+                            break;
+                        }
+                    }
+                    if (enumValue == null) {
+                        throw new IllegalArgumentException("Valor inválido para o enum: " + valores.get(0));
+                    }
+                    field.set(objeto, enumValue);
+                } else {
+                    field.set(objeto, valores.get(0));
+                }
             }
         }
 
         return objeto;
     }
-
+    
     private static <T> T getNovaInstancia(Class<T> clazz) throws Exception {
         Constructor<T> constructor = clazz.getConstructor();
         constructor.setAccessible(true);

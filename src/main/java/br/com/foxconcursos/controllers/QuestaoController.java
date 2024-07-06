@@ -18,10 +18,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.foxconcursos.domain.Questao;
+import br.com.foxconcursos.domain.FiltroQuestao;
 import br.com.foxconcursos.dto.BancoQuestaoResponse;
 import br.com.foxconcursos.dto.QuestaoRequest;
 import br.com.foxconcursos.dto.QuestaoResponse;
+import br.com.foxconcursos.services.PdfService;
 import br.com.foxconcursos.services.QuestaoService;
 import br.com.foxconcursos.util.FoxUtils;
 
@@ -32,9 +33,14 @@ import br.com.foxconcursos.util.FoxUtils;
 public class QuestaoController {
     
     private final QuestaoService questaoService;
+    private final PdfService pdfService;
 
-    public QuestaoController(QuestaoService questaoService) {
+    public QuestaoController(QuestaoService questaoService, 
+        PdfService pdfService) {
+
         this.questaoService = questaoService;
+        this.pdfService = pdfService;
+
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -73,10 +79,10 @@ public class QuestaoController {
         @RequestParam(required = true, defaultValue = "25") Integer limit, 
         @RequestParam(required = true, defaultValue = "0") Integer offset) throws Exception {
 
-        Questao questao = new Questao();;
+        FiltroQuestao questao = new FiltroQuestao();
         
         if (filter != null) {
-            questao = FoxUtils.criarObjetoDinamico(filter, Questao.class);
+            questao = FoxUtils.criarObjetoDinamico(filter, FiltroQuestao.class);
         }
 
         int quantidadeRegistros = this.questaoService.getRecordCount(questao);
@@ -99,12 +105,46 @@ public class QuestaoController {
 
     }
 
+    
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/download")
+    public ResponseEntity<byte[]> download(@RequestParam(required = false) String filter, 
+        @RequestParam(required = true, defaultValue = "25") Integer limit, 
+        @RequestParam(required = false, defaultValue = "0") Integer offset) throws Exception {
+
+        FiltroQuestao questao = new FiltroQuestao();
+        
+        if (filter != null) {
+            questao = FoxUtils.criarObjetoDinamico(filter, FiltroQuestao.class);
+        }
+
+        int quantidadeRegistros = this.questaoService.getRecordCount(questao);
+        int quantidadeDePaginas = quantidadeRegistros / limit;
+
+        BancoQuestaoResponse response = new BancoQuestaoResponse();
+        response.setTotalDeRegistros(quantidadeRegistros);
+        response.setTotalDePaginas(quantidadeDePaginas);
+
+        List<QuestaoResponse> questoes = 
+            this.questaoService.findAll(questao, limit, offset);
+
+        response.setQuestoes(questoes);
+
+        Map<String, String> filtro = this.questaoService.getFiltroCorrente(questao);
+
+        response.setFiltros(filtro);
+
+        byte[] pdf = this.pdfService.gerarPdfFromBancoDeQuestoes(response);
+
+        return ResponseEntity.status(HttpStatus.OK).header(
+            "attachment; filename=banco-questoes-" + UUID.randomUUID() + ".pdf").body(pdf);
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<QuestaoResponse> findById(@PathVariable UUID id) {
         QuestaoResponse questao = this.questaoService.findById(id);
         return ResponseEntity.status(HttpStatus.OK).body(questao);
-
     }
 
 }
