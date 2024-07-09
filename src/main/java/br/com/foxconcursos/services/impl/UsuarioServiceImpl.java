@@ -3,11 +3,11 @@ package br.com.foxconcursos.services.impl;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.springdoc.core.converters.models.Pageable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;

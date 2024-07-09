@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.springdoc.core.converters.models.Pageable;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import br.com.foxconcursos.domain.PerfilUsuario;
 import br.com.foxconcursos.domain.StatusUsuario;
