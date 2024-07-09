@@ -4,7 +4,8 @@ public enum Escolaridade {
     
     TECNICO("Técnico"),
     SUPERIOR_INCOMPLETO("Superior Incompleto"),
-    SUPERIOR_COMPLETO("Superior Completo");
+    SUPERIOR("Superior Completo"),
+    MEDIO("Nível Médio");
 
     private final String escolaridade;
 
