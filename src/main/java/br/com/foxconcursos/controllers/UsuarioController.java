@@ -3,6 +3,8 @@ package br.com.foxconcursos.controllers;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -110,10 +112,10 @@ public class UsuarioController {
 
     @GetMapping(value = "/api/admin/usuarios")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<UsuarioResponse>> findAll(
+    public ResponseEntity<Page<UsuarioResponse>> findAll(Pageable pageable,
         @RequestParam(required = false) String filter) throws Exception {
         
-        return ResponseEntity.ok(service.findAll(filter));
+        return ResponseEntity.ok(service.findAll(pageable, filter));
     }
 
     @GetMapping(value = "/api/admin/usuarios/{id}")

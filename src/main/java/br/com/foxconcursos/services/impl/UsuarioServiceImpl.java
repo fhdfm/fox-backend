@@ -1,15 +1,13 @@
 package br.com.foxconcursos.services.impl;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
+import org.springdoc.core.converters.models.Pageable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -177,19 +175,15 @@ public class UsuarioServiceImpl implements UserDetailsService {
                         .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
     }
 
-    private List<UsuarioResponse> findAllAtivos() {
-        return this.usuarioRepository.findAllByStatus(StatusUsuario.ATIVO)
-            .stream()
-                .map(UsuarioResponse::new)
-                    .collect(Collectors.toList());
+    private Page<UsuarioResponse> findAllAtivos(Pageable pageable) {
+        return this.usuarioRepository.findAllByStatus(pageable, StatusUsuario.ATIVO)
+                .map(UsuarioResponse::new);
     }
 
-    public List<UsuarioResponse> findAll(String filter) throws Exception {
-
-        List<UsuarioResponse> response = new ArrayList<UsuarioResponse>();
+    public Page<UsuarioResponse> findAll(Pageable pageable, String filter) throws Exception {
 
         if (filter == null || filter.isBlank())
-            return this.findAllAtivos();
+            return this.findAllAtivos(pageable);
 
         Usuario usuario = FoxUtils.criarObjetoDinamico(filter, Usuario.class);
         usuario.setStatus(StatusUsuario.ATIVO);
@@ -198,13 +192,12 @@ public class UsuarioServiceImpl implements UserDetailsService {
             .withIgnoreCase() // Ignorar case
             .withIgnoreNullValues(); // Ignorar valores nulos            
 
-        Iterable<Usuario> usuarios = 
-            this.usuarioRepository.findAll(
-                Example.of(usuario, matcher));
+        Example<Usuario> example = Example.of(usuario, matcher);
+
+        Page<Usuario> usuarios = 
+            this.usuarioRepository.findAll(example, pageable);
         
-        response.addAll(StreamSupport.stream(usuarios.spliterator(), false)
-            .map(UsuarioResponse::new)
-                .collect(Collectors.toList()));
+        Page<UsuarioResponse> response = usuarios.map(UsuarioResponse::new);
 
         return response;
 
