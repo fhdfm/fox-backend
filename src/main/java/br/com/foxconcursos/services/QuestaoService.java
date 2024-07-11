@@ -184,7 +184,7 @@ public class QuestaoService {
 
             filtros.put("Assunto(s): ", 
                 sb.toString().substring(
-                    0, toString().length() -1) );
+                    0, sb.toString().length() -1) );
         }
 
         if (questao.getDisciplinaId() != null && !questao.getDisciplinaId().isEmpty()) {
