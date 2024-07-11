@@ -235,12 +235,14 @@ public class QuestaoService {
 
     public List<QuestaoResponse> findAll(FiltroQuestao questao,
         Integer limit, Integer offset) {
-        
+
         String sql = """
-            select q.id as qid, q.enunciado, a.id as aid, a.letra, a.descricao 
-            from questoes q where q.status = 'ATIVO' inner join alternativas a 
-            on a.questao_id = q.id 
-        """;
+        select q.id as qid, q.enunciado, a.id as aid, a.letra, a.descricao 
+        from questoes q 
+        inner join alternativas a 
+        on a.questao_id = q.id 
+        where q.status = 'ATIVO'
+    """;
         
         if (questao.getAssuntoId() != null && !questao.getAssuntoId().isEmpty()) {
             sql += " and q.assunto_id in (" 
@@ -316,14 +318,13 @@ public class QuestaoService {
     }
 
     public int getRecordCount(FiltroQuestao questao) {
-
         String sql = """
-            select q.id(*) from questoes q where q.status = 'ATIVO' 
-        """;
-        
+        select count(q.id) from questoes q where q.status = 'ATIVO' 
+    """;
+
         if (questao.getAssuntoId() != null && !questao.getAssuntoId().isEmpty()) {
-            sql += " and q.assunto_id in (" 
-                + listToString(questao.getAssuntoId()) + ") ";
+            sql += " and q.assunto_id in ("
+                    + listToString(questao.getAssuntoId()) + ") ";
         }
 
         if (questao.getAno() != null) {
@@ -341,7 +342,7 @@ public class QuestaoService {
         if (questao.getUf() != null) {
             sql += " and q.uf = '" + questao.getUf() + "' ";
         }
-        
+
         if (questao.getEscolaridade() != null) {
             sql += " and q.escolaridade = '" + questao.getEscolaridade() + "' ";
         }
@@ -355,8 +356,8 @@ public class QuestaoService {
         }
 
         if (questao.getDisciplinaId() != null && !questao.getDisciplinaId().isEmpty()) {
-            sql += " and q.disciplina_id in (" 
-                + listToString(questao.getDisciplinaId()) + ") ";
+            sql += " and q.disciplina_id in ("
+                    + listToString(questao.getDisciplinaId()) + ") ";
         }
 
         if (questao.getInstituicaoId() != null) {
@@ -367,6 +368,7 @@ public class QuestaoService {
 
         return count;
     }
+
 
     public QuestaoResponse findById(UUID id) {
         
