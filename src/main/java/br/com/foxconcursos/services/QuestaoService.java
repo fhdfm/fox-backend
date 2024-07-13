@@ -1,15 +1,5 @@
 package br.com.foxconcursos.services;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import br.com.foxconcursos.domain.Alternativa;
 import br.com.foxconcursos.domain.FiltroQuestao;
 import br.com.foxconcursos.domain.Questao;
@@ -20,17 +10,22 @@ import br.com.foxconcursos.dto.QuestaoRequest;
 import br.com.foxconcursos.dto.QuestaoResponse;
 import br.com.foxconcursos.repositories.AlternativaRepository;
 import br.com.foxconcursos.repositories.QuestaoRepository;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
 
 @Service
 public class QuestaoService {
-    
+
     private final QuestaoRepository questaoRepository;
     private final AlternativaRepository alternativaRepository;
     private final JdbcTemplate jdbcTemplate;
 
-    public QuestaoService(QuestaoRepository questaoRepository, 
-        AlternativaRepository alternativaRepository, JdbcTemplate jdbcTemplate) {
-        
+    public QuestaoService(QuestaoRepository questaoRepository,
+                          AlternativaRepository alternativaRepository, JdbcTemplate jdbcTemplate) {
+
         this.questaoRepository = questaoRepository;
         this.alternativaRepository = alternativaRepository;
         this.jdbcTemplate = jdbcTemplate;
@@ -39,7 +34,7 @@ public class QuestaoService {
 
     @Transactional
     public UUID create(QuestaoRequest request) {
-        
+
         validate(request);
 
         Questao questao = new Questao(request);
@@ -52,19 +47,19 @@ public class QuestaoService {
             Alternativa alternativa = new Alternativa(ar, questaoId);
             this.alternativaRepository.save(alternativa);
         }
-        
+
         return questaoId;
     }
 
     @Transactional
     public UUID update(QuestaoRequest request, UUID id) {
-        
+
         validate(request);
 
         Questao questao = this.questaoRepository.findByIdAndStatus(id, Status.ATIVO)
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Questão não encontrada com o id: " + id));
-        
+
         questao.setEnunciado(request.getEnunciado());
         questao.setDisciplinaId(request.getDisciplinaId());
         questao.setAssuntoId(request.getAssuntoId());
@@ -80,19 +75,19 @@ public class QuestaoService {
 
         List<AlternativaRequest> alternativas = request.getAlternativas();
         for (AlternativaRequest ar : alternativas) {
-            
+
             Alternativa alternativa =
-                this.alternativaRepository.findById(ar.getId()).orElse(null);
-            
+                    this.alternativaRepository.findById(ar.getId()).orElse(null);
+
             if (alternativa != null) {
                 alternativa.setLetra(ar.getOrdem());
                 alternativa.setDescricao(ar.getDescricao());
                 alternativa.setCorreta(ar.getCorreta());
                 this.alternativaRepository.save(alternativa);
             }
-           
+
         }
-        
+
         return id;
     }
 
@@ -169,52 +164,52 @@ public class QuestaoService {
     }
 
     public Map<String, String> getFiltroCorrente(FiltroQuestao questao) {
-        
+
         Map<String, String> filtros = new HashMap<String, String>();
-        
-        if (questao.getAssuntoId() != null 
-            && !questao.getAssuntoId().isEmpty()) {
+
+        if (questao.getAssuntoId() != null
+                && !questao.getAssuntoId().isEmpty()) {
 
             StringBuilder sb = new StringBuilder();
-            
+
             for (UUID assunto : questao.getAssuntoId()) {
                 sb.append(obterDescricaoPorPK(
-                    assunto, "assunto", "nome")).append(", ");
+                        assunto, "assunto", "nome")).append(", ");
             }
 
-            filtros.put("Assunto(s): ", 
-                sb.toString().substring(
-                    0, sb.toString().length() -1) );
+            filtros.put("Assunto(s): ",
+                    sb.toString().substring(
+                            0, sb.toString().length() - 1));
         }
 
         if (questao.getDisciplinaId() != null && !questao.getDisciplinaId().isEmpty()) {
-            
+
             StringBuilder sb = new StringBuilder();
-            
+
             for (UUID assunto : questao.getAssuntoId()) {
                 sb.append(obterDescricaoPorPK(
-                    assunto, "disicplinas", "nome")).append(", ");
+                        assunto, "disicplinas", "nome")).append(", ");
             }
 
-            filtros.put("Disciplina(s): ", 
-                sb.toString().substring(0, sb.toString().length() -1));
+            filtros.put("Disciplina(s): ",
+                    sb.toString().substring(0, sb.toString().length() - 1));
         }
 
         if (questao.getInstituicaoId() != null)
             filtros.put("Instituição: ", obterDescricaoPorPK(
-                questao.getInstituicaoId(), "instituicao", "nome"));
+                    questao.getInstituicaoId(), "instituicao", "nome"));
 
         if (questao.getCargoId() != null)
             filtros.put("Cargo: ", obterDescricaoPorPK(
-                questao.getCargoId(), "cargo", "nome"));
+                    questao.getCargoId(), "cargo", "nome"));
 
         if (questao.getAno() != null)
             filtros.put("Ano: ", questao.getAno().toString());
-        
+
         if (questao.getBancaId() != null)
             filtros.put("Banca: ", obterDescricaoPorPK(
-                questao.getBancaId(), "bancas", "nome"));
-        
+                    questao.getBancaId(), "bancas", "nome"));
+
         if (questao.getCidade() != null)
             filtros.put("Cidade:", questao.getCidade());
 
@@ -234,19 +229,19 @@ public class QuestaoService {
     }
 
     public List<QuestaoResponse> findAll(FiltroQuestao questao,
-        Integer limit, Integer offset) {
+                                         Integer limit, Integer offset) {
 
         String sql = """
-        select q.id as qid, q.enunciado, a.id as aid, a.letra, a.descricao 
-        from questoes q 
-        inner join alternativas a 
-        on a.questao_id = q.id 
-        where q.status = 'ATIVO'
-    """;
-        
+                    select q.id as qid, q.enunciado, a.id as aid, a.letra, a.descricao 
+                    from questoes q 
+                    inner join alternativas a 
+                    on a.questao_id = q.id 
+                    where q.status = 'ATIVO'
+                """;
+
         if (questao.getAssuntoId() != null && !questao.getAssuntoId().isEmpty()) {
-            sql += " and q.assunto_id in (" 
-                + listToString(questao.getAssuntoId()) + ") ";
+            sql += " and q.assunto_id in ("
+                    + listToString(questao.getAssuntoId()) + ") ";
         }
 
         if (questao.getAno() != null) {
@@ -264,7 +259,7 @@ public class QuestaoService {
         if (questao.getUf() != null) {
             sql += " and q.uf = '" + questao.getUf() + "' ";
         }
-        
+
         if (questao.getEscolaridade() != null) {
             sql += " and q.escolaridade = '" + questao.getEscolaridade() + "' ";
         }
@@ -278,8 +273,8 @@ public class QuestaoService {
         }
 
         if (questao.getDisciplinaId() != null && !questao.getDisciplinaId().isEmpty()) {
-            sql += " and q.disciplina_id in (" 
-                + listToString(questao.getDisciplinaId()) + ") ";
+            sql += " and q.disciplina_id in ("
+                    + listToString(questao.getDisciplinaId()) + ") ";
         }
 
         if (questao.getInstituicaoId() != null) {
@@ -295,7 +290,7 @@ public class QuestaoService {
 
             UUID questaoId = UUID.fromString(rs.getString("qid"));
             QuestaoResponse qr = questaoMap.get(questaoId);
-    
+
             if (qr == null) {
                 qr = new QuestaoResponse();
                 qr.setId(questaoId);
@@ -303,12 +298,12 @@ public class QuestaoService {
                 qr.setAlternativas(new ArrayList<>());
                 questaoMap.put(questaoId, qr);
             }
-    
+
             AlternativaResponse alternativa = new AlternativaResponse();
             alternativa.setId(UUID.fromString(rs.getString("aid")));
             alternativa.setLetra(rs.getString("letra"));
             alternativa.setDescricao(rs.getString("descricao"));
-    
+
             qr.getAlternativas().add(alternativa);
 
         });
@@ -319,8 +314,8 @@ public class QuestaoService {
 
     public int getRecordCount(FiltroQuestao questao) {
         String sql = """
-        select count(q.id) from questoes q where q.status = 'ATIVO' 
-    """;
+                    select count(q.id) from questoes q where q.status = 'ATIVO' 
+                """;
 
         if (questao.getAssuntoId() != null && !questao.getAssuntoId().isEmpty()) {
             sql += " and q.assunto_id in ("
@@ -371,36 +366,68 @@ public class QuestaoService {
 
 
     public QuestaoResponse findById(UUID id) {
-        
-        QuestaoResponse qr = new QuestaoResponse();
-
         String sql = """
-            select q.id as qid, q.enunciado, a.id as aid, a.letra, a.descricao 
-            from questoes q where q.status = 'ATIVO' inner join alternativas a 
-            on a.questao_id = q.id and q.id = ?
-        """;
-        
-        jdbcTemplate.query(sql, rs -> {
+                    select 
+                          q.id as qid,
+                          q.enunciado,
+                          q.escolaridade,
+                          q.ano,
+                          q.uf,
+                          q.cidade,
+                          a.id as aid,
+                          a.letra,
+                          a.descricao,
+                          b.id as bid,
+                          i.id as iid,
+                          c.id as cid,
+                          d.id as did,
+                          a2.id as a2id
+                       from questoes q
+                                inner join alternativas a
+                                           on a.questao_id = q.id
+                                left join bancas b on q.banca_id = b.id
+                                left join instituicao i on q.instituicao_id = i.id
+                                left join cargo c on q.cargo_id = c.id
+                                left join assunto a2 on q.assunto_id = a2.id
+                                left join disciplinas d on q.disciplina_id = d.id
+                       where q.status = 'ATIVO'
+                         and q.id = ?
+                """;
 
-            if (qr.getId() == null) {
-                qr.setId(UUID.fromString(rs.getString("qid")));
-                qr.setEnunciado(rs.getString("enunciado"));
-                qr.setAlternativas(new ArrayList<>());
+        QuestaoResponse questaoResponse = jdbcTemplate.query(sql, rs -> {
+            QuestaoResponse qr = null;
+
+            while (rs.next()) {
+                if (qr == null) {
+                    qr = new QuestaoResponse();
+                    qr.setId(UUID.fromString(rs.getString("qid")));
+                    qr.setEnunciado(rs.getString("enunciado"));
+                    qr.setEscolaridade(rs.getString("escolaridade"));
+                    qr.setUf(rs.getString("uf"));
+                    qr.setCidade(rs.getString("cidade"));
+                    qr.setAno(rs.getInt("ano"));
+                    qr.setBancaId(UUID.fromString(rs.getString("bid")));
+                    qr.setDisciplinaId(UUID.fromString(rs.getString("did")));
+                    qr.setInstituicaoId(UUID.fromString(rs.getString("iid")));
+                    qr.setCargoId(UUID.fromString(rs.getString("cid")));
+                    qr.setAssuntoId(UUID.fromString(rs.getString("aid")));
+                    qr.setAlternativas(new ArrayList<>());
+                }
+
+                AlternativaResponse alternativa = new AlternativaResponse();
+                alternativa.setId(UUID.fromString(rs.getString("aid")));
+                alternativa.setLetra(rs.getString("letra"));
+                alternativa.setDescricao(rs.getString("descricao"));
+
+                qr.getAlternativas().add(alternativa);
             }
 
-            AlternativaResponse alternativa = new AlternativaResponse();
-            alternativa.setId(UUID.fromString(rs.getString("aid")));
-            alternativa.setLetra(rs.getString("letra"));
-            alternativa.setDescricao(rs.getString("descricao"));
-
-            qr.getAlternativas().add(alternativa);
-
             return qr;
-
         }, id);
 
-        return qr;
+        return questaoResponse;
     }
+
 
     private String listToString(List<UUID> list) {
         StringBuilder sb = new StringBuilder();
