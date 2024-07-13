@@ -12,10 +12,15 @@ public class QuestaoResponse {
     private String cidade;
     private int ano;
     private UUID bancaId;
+    private String banca;
     private UUID instituicaoId;
+    private String instituicao;
     private UUID disciplinaId;
+    private String disciplina;
     private UUID cargoId;
+    private String cargo;
     private UUID assuntoId;
+    private String assunto;
     private List<AlternativaResponse> alternativas;
 
     public QuestaoResponse() {  }
@@ -76,12 +81,28 @@ public class QuestaoResponse {
         this.bancaId = bancaId;
     }
 
+    public String getBanca() {
+        return banca;
+    }
+
+    public void setBanca(String banca) {
+        this.banca = banca;
+    }
+
     public UUID getInstituicaoId() {
         return instituicaoId;
     }
 
     public void setInstituicaoId(UUID instituicaoId) {
         this.instituicaoId = instituicaoId;
+    }
+
+    public String getInstituicao() {
+        return instituicao;
+    }
+
+    public void setInstituicao(String instituicao) {
+        this.instituicao = instituicao;
     }
 
     public UUID getDisciplinaId() {
@@ -92,6 +113,14 @@ public class QuestaoResponse {
         this.disciplinaId = disciplinaId;
     }
 
+    public String getDisciplina() {
+        return disciplina;
+    }
+
+    public void setDisciplina(String disciplina) {
+        this.disciplina = disciplina;
+    }
+
     public UUID getCargoId() {
         return cargoId;
     }
@@ -100,12 +129,28 @@ public class QuestaoResponse {
         this.cargoId = cargoId;
     }
 
+    public String getCargo() {
+        return cargo;
+    }
+
+    public void setCargo(String cargo) {
+        this.cargo = cargo;
+    }
+
     public UUID getAssuntoId() {
         return assuntoId;
     }
 
     public void setAssuntoId(UUID assuntoId) {
         this.assuntoId = assuntoId;
+    }
+
+    public String getAssunto() {
+        return assunto;
+    }
+
+    public void setAssunto(String assunto) {
+        this.assunto = assunto;
     }
 
     public List<AlternativaResponse> getAlternativas() {

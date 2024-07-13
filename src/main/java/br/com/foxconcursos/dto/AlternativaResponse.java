@@ -7,6 +7,7 @@ public class AlternativaResponse {
     private UUID id;
     private String letra;
     private String descricao;
+    private Boolean correta;
 
     public AlternativaResponse() {
 
@@ -31,9 +32,16 @@ public class AlternativaResponse {
     public String getDescricao() {
         return descricao;
     }
-    
+
     public void setDescricao(String descricao) {
         this.descricao = descricao;
     }
 
+    public Boolean getCorreta() {
+        return correta;
+    }
+
+    public void setCorreta(Boolean correta) {
+        this.correta = correta;
+    }
 }

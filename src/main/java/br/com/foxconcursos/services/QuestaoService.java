@@ -1,9 +1,6 @@
 package br.com.foxconcursos.services;
 
-import br.com.foxconcursos.domain.Alternativa;
-import br.com.foxconcursos.domain.FiltroQuestao;
-import br.com.foxconcursos.domain.Questao;
-import br.com.foxconcursos.domain.Status;
+import br.com.foxconcursos.domain.*;
 import br.com.foxconcursos.dto.AlternativaRequest;
 import br.com.foxconcursos.dto.AlternativaResponse;
 import br.com.foxconcursos.dto.QuestaoRequest;
@@ -174,7 +171,7 @@ public class QuestaoService {
 
             for (UUID assunto : questao.getAssuntoId()) {
                 sb.append(obterDescricaoPorPK(
-                        assunto, "assunto", "nome")).append(", ");
+                        "" + assunto, "assunto", "nome")).append(", ");
             }
 
             filtros.put("Assunto(s): ",
@@ -186,10 +183,15 @@ public class QuestaoService {
 
             StringBuilder sb = new StringBuilder();
 
-            for (UUID assunto : questao.getAssuntoId()) {
+            for (int i = 0; i < questao.getDisciplinaId().size(); i++) {
                 sb.append(obterDescricaoPorPK(
-                        assunto, "disicplinas", "nome")).append(", ");
+                        "" + questao.getDisciplinaId().get(i), "disciplinas", "nome")).append(", ");
             }
+
+//            for (UUID assunto : questao.getDisciplinaId()) {
+//                sb.append(obterDescricaoPorPK(
+//                        assunto, "disicplinas", "nome")).append(", ");
+//            }
 
             filtros.put("Disciplina(s): ",
                     sb.toString().substring(0, sb.toString().length() - 1));
@@ -197,18 +199,18 @@ public class QuestaoService {
 
         if (questao.getInstituicaoId() != null)
             filtros.put("Instituição: ", obterDescricaoPorPK(
-                    questao.getInstituicaoId(), "instituicao", "nome"));
+                    "" + questao.getInstituicaoId(), "instituicao", "nome"));
 
         if (questao.getCargoId() != null)
             filtros.put("Cargo: ", obterDescricaoPorPK(
-                    questao.getCargoId(), "cargo", "nome"));
+                    "" + questao.getCargoId(), "cargo", "nome"));
 
         if (questao.getAno() != null)
             filtros.put("Ano: ", questao.getAno().toString());
 
         if (questao.getBancaId() != null)
             filtros.put("Banca: ", obterDescricaoPorPK(
-                    questao.getBancaId(), "bancas", "nome"));
+                    "" + questao.getBancaId(), "bancas", "nome"));
 
         if (questao.getCidade() != null)
             filtros.put("Cidade:", questao.getCidade());
@@ -222,21 +224,44 @@ public class QuestaoService {
         return filtros;
     }
 
-    private String obterDescricaoPorPK(UUID id, String tabela, String campo) {
+    private String obterDescricaoPorPK(String id, String tabela, String campo) {
         return this.jdbcTemplate.queryForObject(
                 "select " + campo + " from " + tabela + " where id = ?",
-                String.class, id);
+                String.class, UUID.fromString(id));
     }
 
     public List<QuestaoResponse> findAll(FiltroQuestao questao,
                                          Integer limit, Integer offset) {
 
         String sql = """
-                    select q.id as qid, q.enunciado, a.id as aid, a.letra, a.descricao 
-                    from questoes q 
-                    inner join alternativas a 
-                    on a.questao_id = q.id 
-                    where q.status = 'ATIVO'
+                   select q.id as qid,
+                          q.enunciado,
+                          q.ano,
+                          q.uf,
+                          q.escolaridade,
+                          q.cidade,
+                          a.id as aid,
+                          a.descricao,
+                          a.letra,
+                          c.nome as cargo,
+                          d.nome as disciplina,
+                          i.nome as instituicao,
+                          a2.nome as assunto,
+                          b.nome as banca
+                   from questoes q
+                            inner join alternativas a
+                                       on a.questao_id = q.id
+                            left join bancas b
+                                      on q.banca_id = b.id
+                            left join instituicao i
+                                      on q.instituicao_id = i.id
+                            left join cargo c
+                                      on q.cargo_id = c.id
+                            left join assunto a2
+                                      on q.assunto_id = a2.id
+                            left join disciplinas d
+                                      on q.disciplina_id = d.id
+                   where q.status = 'ATIVO'
                 """;
 
         if (questao.getAssuntoId() != null && !questao.getAssuntoId().isEmpty()) {
@@ -295,6 +320,11 @@ public class QuestaoService {
                 qr = new QuestaoResponse();
                 qr.setId(questaoId);
                 qr.setEnunciado(rs.getString("enunciado"));
+                qr.setBanca(rs.getString("banca"));
+                qr.setInstituicao(rs.getString("instituicao"));
+                qr.setDisciplina(rs.getString("disciplina"));
+                qr.setCargo(rs.getString("cargo"));
+                qr.setAssunto(rs.getString("assunto"));
                 qr.setAlternativas(new ArrayList<>());
                 questaoMap.put(questaoId, qr);
             }
@@ -365,33 +395,33 @@ public class QuestaoService {
     }
 
 
-    public QuestaoResponse findById(UUID id) {
+    public QuestaoResponse findById(UUID id, PerfilUsuario perfil) {
         String sql = """
-                    select 
-                          q.id as qid,
-                          q.enunciado,
-                          q.escolaridade,
-                          q.ano,
-                          q.uf,
-                          q.cidade,
-                          a.id as aid,
-                          a.letra,
-                          a.descricao,
-                          b.id as bid,
-                          i.id as iid,
-                          c.id as cid,
-                          d.id as did,
-                          a2.id as a2id
-                       from questoes q
-                                inner join alternativas a
-                                           on a.questao_id = q.id
-                                left join bancas b on q.banca_id = b.id
-                                left join instituicao i on q.instituicao_id = i.id
-                                left join cargo c on q.cargo_id = c.id
-                                left join assunto a2 on q.assunto_id = a2.id
-                                left join disciplinas d on q.disciplina_id = d.id
-                       where q.status = 'ATIVO'
-                         and q.id = ?
+                    select q.id as qid,
+                           q.enunciado,
+                           q.escolaridade,
+                           q.ano,
+                           q.uf,
+                           q.cidade,
+                           a.id as aid,
+                           a.letra,
+                           a.correta,
+                           a.descricao,
+                           b.id as bid,
+                           i.id as iid,
+                           c.id as cid,
+                           d.id as did,
+                           a2.id as a2id,
+                        from questoes q
+                                 inner join alternativas a
+                                            on a.questao_id = q.id
+                                 left join bancas b on q.banca_id = b.id
+                                 left join instituicao i on q.instituicao_id = i.id
+                                 left join cargo c on q.cargo_id = c.id
+                                 left join assunto a2 on q.assunto_id = a2.id
+                                 left join disciplinas d on q.disciplina_id = d.id
+                        where q.status = 'ATIVO'
+                          and q.id = ?
                 """;
 
         QuestaoResponse questaoResponse = jdbcTemplate.query(sql, rs -> {
@@ -418,6 +448,7 @@ public class QuestaoService {
                 alternativa.setId(UUID.fromString(rs.getString("aid")));
                 alternativa.setLetra(rs.getString("letra"));
                 alternativa.setDescricao(rs.getString("descricao"));
+                alternativa.setCorreta(perfil == PerfilUsuario.ADMIN && rs.getBoolean("correta"));
 
                 qr.getAlternativas().add(alternativa);
             }
@@ -431,9 +462,14 @@ public class QuestaoService {
 
     private String listToString(List<UUID> list) {
         StringBuilder sb = new StringBuilder();
-        for (UUID id : list) {
-            sb.append("'").append(id.toString()).append("',");
+        if (list.size() == 1) {
+            return "'" + list.get(0) + "'";
         }
-        return sb.toString().substring(0, sb.length() - 1);
+
+        for (int i = 0; i < list.size(); i++) {
+            sb.append("'").append(list.get(i)).append("',");
+        }
+
+        return sb.substring(0, sb.length() - 1);
     }
 }
