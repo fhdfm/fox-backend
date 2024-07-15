@@ -2,13 +2,17 @@ package br.com.foxconcursos.util;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.ExampleMatcher;
 
@@ -29,24 +33,38 @@ public class FoxUtils {
     }
 
     public static <T> T criarObjetoDinamico(String query, Class<T> clazz) throws Exception {
-        
-        if (query == null || query.isEmpty())
+        if (query == null || query.isEmpty()) {
             throw new IllegalArgumentException("Query não pode ser nula ou vazia");
-        
+        }
+
         String[] pares = query.split(",");
-        
         T objeto = getNovaInstancia(clazz);
+
+        // Usar um mapa para armazenar as listas de valores
+        Map<String, List<String>> listaDeValores = new HashMap<>();
+
         for (String par : pares) {
             String[] chaveValor = par.split(":");
-            if (chaveValor.length != 2)
+            if (chaveValor.length != 2) {
                 throw new IllegalArgumentException("Parâmetro inválido: " + par);
-            
+            }
+
             String chave = chaveValor[0].trim();
             String valor = chaveValor[1].trim();
+
+            // Adicionar o valor à lista correspondente no mapa
+            listaDeValores.computeIfAbsent(chave, k -> new ArrayList<>()).add(valor);
+        }
+
+        for (Map.Entry<String, List<String>> entry : listaDeValores.entrySet()) {
+            String chave = entry.getKey();
+            List<String> valores = entry.getValue();
+
             Field field = clazz.getDeclaredField(chave);
             field.setAccessible(true);
 
             if (field.getType().isEnum()) {
+                String valor = valores.get(0); // Assumindo que a enum tem um único valor
                 Object[] enums = field.getType().getEnumConstants();
                 Object enumValue = null;
                 for (Object e : enums) {
@@ -61,12 +79,23 @@ public class FoxUtils {
                 }
                 field.set(objeto, enumValue);
             } else if (field.getType() == List.class) {
-                String[] itens = valor.split(",");
-                List<String> list = Arrays.asList(itens);
-                field.set(objeto, list);        
+                // Converta a lista de strings para a lista correta
+                ParameterizedType listType = (ParameterizedType) field.getGenericType();
+                Class<?> listClass = (Class<?>) listType.getActualTypeArguments()[0];
+
+                if (listClass == UUID.class) {
+                    List<UUID> uuidList = valores.stream()
+                        .map(UUID::fromString)
+                        .collect(Collectors.toList());
+                    field.set(objeto, uuidList);
+                } else {
+                    field.set(objeto, valores);
+                }
             } else if (field.getType() == UUID.class) {
+                String valor = valores.get(0); // Assumindo que o campo UUID tem um único valor
                 field.set(objeto, UUID.fromString(valor));
             } else {
+                String valor = valores.get(0); // Assumindo que campos simples têm um único valor
                 field.set(objeto, valor);
             }
         }
