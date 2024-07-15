@@ -321,6 +321,7 @@ public class QuestaoService {
                 qr.setId(questaoId);
                 qr.setEnunciado(rs.getString("enunciado"));
                 qr.setBanca(rs.getString("banca"));
+                qr.setAno(rs.getInt("ano"));
                 qr.setInstituicao(rs.getString("instituicao"));
                 qr.setDisciplina(rs.getString("disciplina"));
                 qr.setCargo(rs.getString("cargo"));
@@ -411,7 +412,7 @@ public class QuestaoService {
                            i.id as iid,
                            c.id as cid,
                            d.id as did,
-                           a2.id as a2id,
+                           a2.id as a2id
                         from questoes q
                                  inner join alternativas a
                                             on a.questao_id = q.id
@@ -440,7 +441,7 @@ public class QuestaoService {
                     qr.setDisciplinaId(UUID.fromString(rs.getString("did")));
                     qr.setInstituicaoId(UUID.fromString(rs.getString("iid")));
                     qr.setCargoId(UUID.fromString(rs.getString("cid")));
-                    qr.setAssuntoId(UUID.fromString(rs.getString("aid")));
+                    qr.setAssuntoId(UUID.fromString(rs.getString("a2id")));
                     qr.setAlternativas(new ArrayList<>());
                 }
 
