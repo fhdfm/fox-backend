@@ -1,7 +1,6 @@
 package br.com.foxconcursos.services;
 
 import br.com.foxconcursos.domain.Assunto;
-import br.com.foxconcursos.domain.Disciplina;
 import br.com.foxconcursos.dto.AssuntoResponse;
 import br.com.foxconcursos.repositories.AssuntoRepository;
 import br.com.foxconcursos.util.FoxUtils;
@@ -10,6 +9,7 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -119,4 +119,37 @@ public class AssuntoService {
     }
 
 
+    public List<AssuntoResponse> buscarAssuntosPorDisciplinas(List<String> disciplinas) {
+        List<AssuntoResponse> result = new ArrayList<>();
+
+        String inSql = disciplinas.stream()
+                .map(d -> "?")
+                .collect(Collectors.joining(", "));
+
+        String sql = String.format("""
+                select *
+                from assunto a
+                where disciplina_id in (%s)
+                """, inSql);
+
+        jdbcTemplate.query(connection -> {
+                    PreparedStatement ps = connection.prepareStatement(sql);
+                    for (int i = 0; i < disciplinas.size(); i++) {
+                        ps.setObject(i + 1, UUID.fromString(disciplinas.get(i)));
+                    }
+                    return ps;
+                },
+                (rs, rowNum) -> {
+                    AssuntoResponse obj = new AssuntoResponse(
+                            UUID.fromString(rs.getString("id")),
+                            rs.getString("nome"),
+                            rs.getString("disciplina_id")
+                    );
+
+                    result.add(obj);
+                    return obj;
+                });
+
+        return result;
+    }
 }
