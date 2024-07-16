@@ -38,7 +38,7 @@ public class CursoController {
     }
 
     @PostMapping(value = "/api/admin/cursos", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<UUID> save(@RequestBody CursoDTO courseDTO) {
 
         UUID newCurso = this.cursoService.save(courseDTO);
@@ -47,7 +47,7 @@ public class CursoController {
     }
 
     @DeleteMapping(value = "/api/admin/cursos/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> delete(@PathVariable UUID id) {
         this.cursoService.delete(id);
         return ResponseEntity.status(HttpStatus.OK).body("Curso deletado com sucesso.");
@@ -68,7 +68,7 @@ public class CursoController {
         return ResponseEntity.ok(this.disciplinaService.findByCursoId(cursoId));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping(value = "/api/admin/cursos/{cursoId}/disciplinas", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> adicionarDisciplinas(@PathVariable UUID cursoId, 
         @RequestBody AddDisciplinaRequest disciplinas) {
@@ -76,7 +76,7 @@ public class CursoController {
         return ResponseEntity.status(HttpStatus.OK).body("Disciplina adicionada com sucesso.");
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping(value = "/api/admin/cursos/{cursoId}/disciplinas/{disciplinaId}")
     public ResponseEntity<String> removerDisciplina(@PathVariable UUID cursoId, @PathVariable UUID disciplinaId) {
         CursoDisciplina cursoDisciplina = new CursoDisciplina(cursoId, disciplinaId);

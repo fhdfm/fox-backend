@@ -43,7 +43,7 @@ public class QuestaoController {
 
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping
     public ResponseEntity<UUID> create(@RequestBody QuestaoRequest request) {
         
@@ -52,7 +52,7 @@ public class QuestaoController {
 
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<String> update(@RequestBody QuestaoRequest request, 
         @PathVariable UUID id) {
@@ -63,7 +63,7 @@ public class QuestaoController {
 
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable UUID id) {
 
@@ -73,7 +73,7 @@ public class QuestaoController {
 
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping
     public ResponseEntity<BancoQuestaoResponse> findAll(@RequestParam(required = false) String filter, 
         @RequestParam(required = true, defaultValue = "25") Integer limit, 
@@ -106,7 +106,7 @@ public class QuestaoController {
     }
 
     
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/download")
     public ResponseEntity<byte[]> download(@RequestParam(required = false) String filter, 
         @RequestParam(required = true, defaultValue = "25") Integer limit, 
@@ -140,7 +140,7 @@ public class QuestaoController {
             "attachment; filename=banco-questoes-" + UUID.randomUUID() + ".pdf").body(pdf);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<QuestaoResponse> findById(@PathVariable UUID id) {
         QuestaoResponse questao = this.questaoService.findById(id);

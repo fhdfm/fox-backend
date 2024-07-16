@@ -42,7 +42,8 @@ public class MatriculaController {
         produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> myeggs(@RequestBody TesteMP testeMP) {
         if (testeMP.getData() != null)
-            System.out.println(testeMP.getType() + " - " + testeMP.getData().getId());
+            System.out.println(testeMP.getType() + " - " + testeMP.getData().getId() + " " + testeMP.getUserId());
+            // testeMP.getData().
         return ResponseEntity.status(HttpStatus.OK).body(testeMP.toString());
     }
 
@@ -90,6 +91,5 @@ public class MatriculaController {
         UUID matriculaId = this.matriculaService.matricularContingencia(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(matriculaId);
     }
-
 
 }
