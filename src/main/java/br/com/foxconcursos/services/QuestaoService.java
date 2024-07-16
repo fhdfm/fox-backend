@@ -1,17 +1,27 @@
 package br.com.foxconcursos.services;
 
-import br.com.foxconcursos.domain.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import br.com.foxconcursos.domain.Alternativa;
+import br.com.foxconcursos.domain.FiltroQuestao;
+import br.com.foxconcursos.domain.PerfilUsuario;
+import br.com.foxconcursos.domain.Questao;
+import br.com.foxconcursos.domain.Status;
+import br.com.foxconcursos.domain.UsuarioLogado;
 import br.com.foxconcursos.dto.AlternativaRequest;
 import br.com.foxconcursos.dto.AlternativaResponse;
 import br.com.foxconcursos.dto.QuestaoRequest;
 import br.com.foxconcursos.dto.QuestaoResponse;
 import br.com.foxconcursos.repositories.AlternativaRepository;
 import br.com.foxconcursos.repositories.QuestaoRepository;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.*;
 
 @Service
 public class QuestaoService {
@@ -19,13 +29,17 @@ public class QuestaoService {
     private final QuestaoRepository questaoRepository;
     private final AlternativaRepository alternativaRepository;
     private final JdbcTemplate jdbcTemplate;
+    private final AuthenticationService authenticationService;
 
     public QuestaoService(QuestaoRepository questaoRepository,
-                          AlternativaRepository alternativaRepository, JdbcTemplate jdbcTemplate) {
+                          AlternativaRepository alternativaRepository, 
+                          JdbcTemplate jdbcTemplate, 
+                          AuthenticationService authenticationService) {
 
         this.questaoRepository = questaoRepository;
         this.alternativaRepository = alternativaRepository;
         this.jdbcTemplate = jdbcTemplate;
+        this.authenticationService = authenticationService;
 
     }
 
@@ -398,7 +412,7 @@ public class QuestaoService {
     }
 
 
-    public QuestaoResponse findById(UUID id, PerfilUsuario perfil) {
+    public QuestaoResponse findById(UUID id) {
         String sql = """
                     select q.id as qid,
                            q.enunciado,
@@ -426,6 +440,9 @@ public class QuestaoService {
                         where q.status = 'ATIVO'
                           and q.id = ?
                 """;
+
+        UsuarioLogado user = this.authenticationService.obterUsuarioLogadoCompleto();
+        PerfilUsuario perfil = user.getPerfil();
 
         QuestaoResponse questaoResponse = jdbcTemplate.query(sql, rs -> {
             QuestaoResponse qr = null;

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.foxconcursos.domain.Recurso;
 import br.com.foxconcursos.dto.AbrirRecursoRequest;
+import br.com.foxconcursos.dto.Recurso01Response;
 import br.com.foxconcursos.services.AuthenticationService;
 import br.com.foxconcursos.services.RecursoService;
 
@@ -33,14 +34,14 @@ public class RecursoController {
 
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/api/admin/recursos")
     public ResponseEntity<List<Recurso>> findAll() {
         List<Recurso> recursos = recursoService.findAll();
         return ResponseEntity.status(HttpStatus.OK).body(recursos);
     }
 
-    @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO')")
+    @PreAuthorize("hasRole('ROLE_ALUNO') or hasRole('ROLE_EXTERNO')")
     @GetMapping("/api/alunos/recursos")
     public ResponseEntity<List<Recurso>> findByUsuarioId() {
         UUID usuarioId = authenticationService.obterUsuarioLogado();
@@ -48,24 +49,32 @@ public class RecursoController {
         return ResponseEntity.status(HttpStatus.OK).body(recursos);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/api/admin/recursos/usuario/{usuarioId}")
     public ResponseEntity<List<Recurso>> findByUsuarioId(@PathVariable UUID usuarioId) {
         List<Recurso> recursos = recursoService.findByUsuarioId(usuarioId);
         return ResponseEntity.status(HttpStatus.OK).body(recursos);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/api/admin/recursos/simulado/{simuladoId}")
     public ResponseEntity<List<Recurso>> findBySimuladoId(@PathVariable UUID simuladoId) {
         List<Recurso> recursos = recursoService.findBySimuladoId(simuladoId);
         return ResponseEntity.status(HttpStatus.OK).body(recursos); 
     }
 
-    @PreAuthorize("hasRole('ALUNO') or hasRole('EXTERNO')")
+    @PreAuthorize("hasRole('ROLE_ALUNO') or hasRole('ROLE_EXTERNO')")
     @PostMapping("/api/alunos/recursos")
-    public UUID abrirRecurso(@RequestBody AbrirRecursoRequest request) {
-        return recursoService.abrirRecurso(request);
+    public ResponseEntity<UUID> abrirRecurso(@RequestBody AbrirRecursoRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+            recursoService.abrirRecurso(request));
+    }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @GetMapping("/api/admin/recursos/{recursoId}")
+    public ResponseEntity<Recurso01Response> findById(@PathVariable UUID recursoId) {
+        Recurso01Response recurso = recursoService.findById(recursoId);
+        return ResponseEntity.status(HttpStatus.OK).body(recurso);
     }
 
 }

@@ -7,6 +7,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import br.com.foxconcursos.domain.Comentario;
+import br.com.foxconcursos.domain.PerfilUsuario;
+import br.com.foxconcursos.domain.UsuarioLogado;
 import br.com.foxconcursos.dto.ComentarioRequest;
 import br.com.foxconcursos.dto.ComentarioResponse;
 import br.com.foxconcursos.repositories.ComentarioRepository;
@@ -38,6 +40,24 @@ public class ComentarioService {
         comentario.setUsuarioId(usuarioId);
 
         this.repository.save(comentario);
+    }
+
+    public void delete(UUID comentarioId) {
+        
+        UsuarioLogado user = this.authenticationService.obterUsuarioLogadoCompleto();
+        
+        if (user.getPerfil() == PerfilUsuario.ADMIN) {
+            this.repository.deleteById(comentarioId);
+        } else {
+            Comentario comentario = this.repository.findById(
+                comentarioId).orElseThrow();
+            if (comentario.getUsuarioId().equals(user.getId())) {
+                this.repository.deleteById(comentarioId);
+            } else {
+                throw new IllegalArgumentException(
+                    "Somente o autor pode excluir o comentário.");
+            }
+        }
     }
 
     public List<ComentarioResponse> findByQuestaoId(UUID questaoId) {

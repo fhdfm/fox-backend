@@ -30,34 +30,34 @@ public class BancaController {
         this.bancaService = bancaService;
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping(consumes =  MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UUID> salvar(@RequestBody Banca banca) {
         banca = bancaService.salvar(banca);
         return ResponseEntity.status(HttpStatus.CREATED).body(banca.getId());
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping(value = "/{id}")
     public ResponseEntity<Banca> buscar(@PathVariable UUID id) {
         return ResponseEntity.ok(bancaService.findById(id));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping(value = "/{id}", consumes =  MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Banca> atualizar(@PathVariable UUID id, @RequestBody Banca banca) {
         banca.setId(id);
         return ResponseEntity.ok(bancaService.salvar(banca));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping
     public ResponseEntity<List<Banca>> listar(
         @RequestParam(required = false) String filter) throws Exception {
         return ResponseEntity.ok(bancaService.findAll(filter));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<String> deletar(@PathVariable UUID id) {
         bancaService.delete(id);

@@ -7,6 +7,7 @@ import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.stereotype.Repository;
 
 import br.com.foxconcursos.domain.Recurso;
+import br.com.foxconcursos.dto.Recurso01Response;
 import br.com.foxconcursos.repositories.custom.CustomCrudRepository;
 
 @Repository

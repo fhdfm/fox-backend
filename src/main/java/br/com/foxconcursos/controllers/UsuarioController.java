@@ -55,7 +55,7 @@ public class UsuarioController {
     }
 
     @DeleteMapping(value = "/api/admin/usuarios/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<UUID> delete(@PathVariable UUID id) {
         this.service.desativar(id);
         return ResponseEntity.status(HttpStatus.OK).body(id);
@@ -91,7 +91,7 @@ public class UsuarioController {
 
     @PutMapping(value = "/api/admin/usuarios/{id}", 
         consumes = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<UUID> update(@PathVariable UUID id, @RequestBody Usuario user) {
         user.setId(id);
         this.service.save(user);
@@ -99,19 +99,19 @@ public class UsuarioController {
     }
 
     @GetMapping(value = "/api/admin/usuarios/{id}/produtos-nao-matriculados")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<List<ProdutoResponse>> obterProdutosNaoMatriculados(@PathVariable UUID id) {
         return ResponseEntity.ok(produtoService.obterProdutosNaoMatriculados(id));
     }
 
     @GetMapping(value = "/api/alunos/usuarios/{id}/produtos-matriculados")
-    @PreAuthorize("hasRole('USUARIO') or hasRole('EXTERNO')")
+    @PreAuthorize("hasRole('ROLE_USUARIO') or hasRole('ROLE_EXTERNO')")
     public ResponseEntity<List<ProdutoResponse>> obterProdutosMatriculados(@PathVariable UUID id) {
         return ResponseEntity.ok(produtoService.obterProdutosMatriculados(id));
     }    
 
     @GetMapping(value = "/api/admin/usuarios")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Page<UsuarioResponse>> findAll(Pageable pageable,
         @RequestParam(required = false) String filter) throws Exception {
         
@@ -119,7 +119,7 @@ public class UsuarioController {
     }
 
     @GetMapping(value = "/api/admin/usuarios/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<UsuarioResponse> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(service.findById(id));
     }
