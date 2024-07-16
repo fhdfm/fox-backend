@@ -108,7 +108,8 @@ public class FoxUtils {
 
         for (Field field : clazz.getDeclaredFields()) {
             if (field.getType().equals(String.class)) {
-                matcher = matcher.withMatcher(field.getName(), ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
+                matcher = matcher.withMatcher(field.getName(), 
+                    ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
             }
         }
 
