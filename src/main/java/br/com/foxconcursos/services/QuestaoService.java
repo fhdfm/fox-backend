@@ -242,6 +242,7 @@ public class QuestaoService {
                           q.cidade,
                           a.id as aid,
                           a.descricao,
+                          a.correta,
                           a.letra,
                           c.nome as cargo,
                           d.nome as disciplina,
@@ -333,6 +334,7 @@ public class QuestaoService {
             AlternativaResponse alternativa = new AlternativaResponse();
             alternativa.setId(UUID.fromString(rs.getString("aid")));
             alternativa.setLetra(rs.getString("letra"));
+            alternativa.setCorreta(rs.getBoolean("correta"));
             alternativa.setDescricao(rs.getString("descricao"));
 
             qr.getAlternativas().add(alternativa);
