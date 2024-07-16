@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import br.com.foxconcursos.domain.Recurso;
 import br.com.foxconcursos.domain.StatusRecurso;
 import br.com.foxconcursos.dto.AbrirRecursoRequest;
+import br.com.foxconcursos.dto.Recurso01Response;
 import br.com.foxconcursos.repositories.RecursoRepository;
 
 @Service
@@ -80,6 +81,11 @@ public class RecursoService {
 
         // TODO: Enviar e-mail para o usuário informando que o recurso foi deferido
         // complementar com o conteúdo do recurso
+    }
+
+    public Recurso01Response findById(UUID recursoId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'findById'");
     }
 
 }
