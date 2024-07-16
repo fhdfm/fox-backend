@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.foxconcursos.domain.Assunto;
 import br.com.foxconcursos.domain.Disciplina;
+import br.com.foxconcursos.dto.AssuntoResponse;
 import br.com.foxconcursos.services.AssuntoService;
 import br.com.foxconcursos.services.DisciplinaService;
 
@@ -111,6 +112,14 @@ public class DisciplinaController {
             @PathVariable UUID disciplinaId, @RequestParam(required = false) String filter
     ) throws Exception {
         return ResponseEntity.ok(assuntoService.findByDisciplinaId(disciplinaId,filter));
+    }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PostMapping(value = "/assuntos")
+    public ResponseEntity<List<AssuntoResponse>> buscarAssuntosPorDisciplinas(
+            @RequestBody List<String> disciplinas
+    ) {
+        return ResponseEntity.ok(assuntoService.buscarAssuntosPorDisciplinas(disciplinas));
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")

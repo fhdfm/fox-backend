@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import br.com.foxconcursos.domain.PerfilUsuario;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -143,7 +144,7 @@ public class QuestaoController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<QuestaoResponse> findById(@PathVariable UUID id) {
-        QuestaoResponse questao = this.questaoService.findById(id);
+        QuestaoResponse questao = this.questaoService.findById(id, PerfilUsuario.ADMIN);
         return ResponseEntity.status(HttpStatus.OK).body(questao);
     }
 
