@@ -36,10 +36,10 @@ public class SecurityConfig {
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/admin/*").hasRole("ADMIN")
-                    .requestMatchers("/api/aluno/*").hasAnyRole("EXTERNO", "ALUNO")
-                    .anyRequest().authenticated())
-                .httpBasic(Customizer.withDefaults())
+                .authorizeHttpRequests(auth -> {
+                    auth.requestMatchers("/api/admin/*").hasRole("ADMIN");
+                    auth.requestMatchers("/api/aluno/*").hasAnyRole("EXTERNO", "ALUNO", "ADMIN");
+                }).httpBasic(Customizer.withDefaults())
                 .oauth2ResourceServer(conf -> conf.jwt(Customizer.withDefaults()));
         return http.build();
     }
