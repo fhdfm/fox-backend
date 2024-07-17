@@ -47,7 +47,7 @@ public class QuestaoController {
 
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/api/admin/questoes")
     public ResponseEntity<UUID> create(@RequestBody QuestaoRequest request) {
         
@@ -56,7 +56,7 @@ public class QuestaoController {
 
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/api/admin/questoes/{id}")
     public ResponseEntity<String> update(@RequestBody QuestaoRequest request, 
         @PathVariable UUID id) {
@@ -67,7 +67,7 @@ public class QuestaoController {
 
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/api/admin/questoes/{id}")
     public ResponseEntity<String> delete(@PathVariable UUID id) {
 
@@ -77,7 +77,7 @@ public class QuestaoController {
 
     }
 
-    @PreAuthorize("hasRole('ROLE_ALUNO') or hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ALUNO') or hasRole('ADMIN')")
     @DeleteMapping({"/api/admin/questoes/{questaoId}/comentarios/{comentarioId}", 
         "/api/aluno/questoes/{questaoId}/comentarios/{comentarioId}"})
     public ResponseEntity<String> deletarComentario(
@@ -87,7 +87,7 @@ public class QuestaoController {
             "Comentario deletado com sucesso.");
     }
 
-    @PreAuthorize("hasRole('ROLE_ALUNO') or hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ALUNO') or hasRole('ADMIN')")
     @PostMapping({"/api/admin/questoes/{questaoId}/comentarios", 
         "/api/aluno/questoes/{questaoId}/comentarios"})
     public ResponseEntity<String> postarComentario(
@@ -97,7 +97,7 @@ public class QuestaoController {
             "Comentario deletado com sucesso.");
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/api/admin/questoes")
     public ResponseEntity<BancoQuestaoResponse> findAll(@RequestParam(required = false) String filter, 
         @RequestParam(required = true, defaultValue = "25") Integer limit, 
@@ -129,7 +129,7 @@ public class QuestaoController {
 
     }
     
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/api/admin/questoes/download")
     public ResponseEntity<byte[]> download(@RequestParam(required = false) String filter, 
         @RequestParam(required = true, defaultValue = "25") Integer limit, 
@@ -163,7 +163,7 @@ public class QuestaoController {
             "attachment; filename=banco-questoes-" + UUID.randomUUID() + ".pdf").body(pdf);
     }
 
-    @PreAuthorize("hasRole('ROLE_ALUNO') or hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ALUNO') or hasRole('ADMIN')")
     @GetMapping({"/api/admin/questoes/{id}", "/api/aluno/questoes/{id}"})
     public ResponseEntity<QuestaoResponse> findById(@PathVariable UUID id) {
         QuestaoResponse questao = this.questaoService.findById(id);

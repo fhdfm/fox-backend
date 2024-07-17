@@ -83,7 +83,7 @@ public class MatriculaController {
        return ResponseEntity.status(HttpStatus.CREATED).body(preference.getId());
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/api/admin/matricula", 
         consumes = MediaType.APPLICATION_JSON_VALUE, 
         produces = MediaType.APPLICATION_JSON_VALUE)

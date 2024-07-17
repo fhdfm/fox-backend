@@ -34,7 +34,7 @@ public class RecursoController {
 
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/api/admin/recursos")
     public ResponseEntity<List<Recurso>> findAll() {
         List<Recurso> recursos = recursoService.findAll();
@@ -49,14 +49,14 @@ public class RecursoController {
         return ResponseEntity.status(HttpStatus.OK).body(recursos);
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/api/admin/recursos/usuario/{usuarioId}")
     public ResponseEntity<List<Recurso>> findByUsuarioId(@PathVariable UUID usuarioId) {
         List<Recurso> recursos = recursoService.findByUsuarioId(usuarioId);
         return ResponseEntity.status(HttpStatus.OK).body(recursos);
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/api/admin/recursos/simulado/{simuladoId}")
     public ResponseEntity<List<Recurso>> findBySimuladoId(@PathVariable UUID simuladoId) {
         List<Recurso> recursos = recursoService.findBySimuladoId(simuladoId);
@@ -70,7 +70,7 @@ public class RecursoController {
             recursoService.abrirRecurso(request));
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/api/admin/recursos/{recursoId}")
     public ResponseEntity<Recurso01Response> findById(@PathVariable UUID recursoId) {
         Recurso01Response recurso = recursoService.findById(recursoId);
