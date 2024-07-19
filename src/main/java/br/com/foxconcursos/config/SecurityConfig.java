@@ -1,8 +1,8 @@
 package br.com.foxconcursos.config;
 
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
-
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,9 +19,8 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
-import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.jwk.RSAKey;
-import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 
 @Configuration
 @EnableWebSecurity
@@ -38,27 +37,15 @@ public class SecurityConfig {
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers("/api/admin/*").hasRole("ADMIN");
-                    auth.requestMatchers("/api/aluno/*").hasAnyRole("EXTERNO", "ALUNO", "ADMIN");
-                    auth.requestMatchers("/swagger*").permitAll();
-                }).httpBasic(Customizer.withDefaults())
+                .authorizeHttpRequests(auth ->
+                        auth.requestMatchers("/api/admin/**").hasAuthority("SCOPE_ROLE_ADMIN")
+                                .requestMatchers("/api/aluno/**").hasAnyAuthority("SCOPE_ROLE_EXTERNO", "SCOPE_ROLE_ALUNO", "SCOPE_ROLE_ADMIN")
+                                .anyRequest().permitAll()
+                ).httpBasic(Customizer.withDefaults())
                 .oauth2ResourceServer(conf -> conf.jwt(Customizer.withDefaults()));
         return http.build();
     }
 
-//    @Bean
-//    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//        http.csrf(csrf -> csrf.disable())
-//                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-//                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers("/api/admin/*").hasRole("ADMIN")
-//                        .requestMatchers("/api/aluno/*").hasAnyRole("EXTERNO", "ALUNO")
-//                        .anyRequest().authenticated())
-//                .httpBasic(Customizer.withDefaults())
-//                .oauth2ResourceServer(conf -> conf.jwt(Customizer.withDefaults()));
-//        return http.build();
-//    }
 
     @Bean
     JwtDecoder jwtDecoder() {

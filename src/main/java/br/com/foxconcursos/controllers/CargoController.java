@@ -31,7 +31,7 @@ public class CargoController {
         this.cargoService = cargoService;
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @PostMapping(consumes =  MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UUID> salvar(@RequestBody Cargo cargo) {
         cargo = cargoService.salvar(cargo);
@@ -39,7 +39,7 @@ public class CargoController {
     }
 
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Cargo> atualizar(@PathVariable UUID id,
         @RequestBody Cargo cargo) {
@@ -47,13 +47,13 @@ public class CargoController {
         return ResponseEntity.ok(cargoService.salvar(cargo));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @GetMapping(value = "/{id}")
     public ResponseEntity<Cargo> buscar(@PathVariable UUID id) {
         return ResponseEntity.ok(cargoService.findById(id));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @GetMapping
     public ResponseEntity<List<Cargo>> listar(
         @RequestParam(required = false) String filter) throws Exception {
@@ -61,7 +61,7 @@ public class CargoController {
         return ResponseEntity.ok(cargoService.findAll(filter));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<String> deletar(@PathVariable UUID id) {
         cargoService.deletar(id);

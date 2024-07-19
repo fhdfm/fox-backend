@@ -31,14 +31,14 @@ public class InstituicaoController {
         this.instituicaoService = instituicaoService;
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @PostMapping(consumes =  MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UUID> salvar(@RequestBody Instituicao instituicao) {
         instituicao = instituicaoService.salvar(instituicao);
         return ResponseEntity.status(HttpStatus.CREATED).body(instituicao.getId());
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Instituicao> atualizar(@PathVariable UUID id,
         @RequestBody Instituicao instituicao) {
@@ -46,13 +46,13 @@ public class InstituicaoController {
         return ResponseEntity.ok(instituicaoService.salvar(instituicao));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @GetMapping(value = "/{id}")
     public ResponseEntity<Instituicao> buscar(@PathVariable UUID id) {
         return ResponseEntity.ok(instituicaoService.findById(id));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @GetMapping
     public ResponseEntity<List<Instituicao>> listar(
         @RequestParam(required = false) String filter) throws Exception {
@@ -60,7 +60,7 @@ public class InstituicaoController {
         return ResponseEntity.ok(instituicaoService.findAll(filter));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<String> deletar(@PathVariable UUID id) {
         instituicaoService.deletar(id);

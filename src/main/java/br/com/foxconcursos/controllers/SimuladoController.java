@@ -68,7 +68,7 @@ public class SimuladoController {
     //     return ResponseEntity.status(HttpStatus.OK).body("Data de início atualizada com sucesso.");
     // }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @PostMapping(value = "/api/admin/simulados", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UUID> save(@RequestBody SimuladoRequest request) {
         UUID id = simuladoService.save(request);
@@ -84,7 +84,7 @@ public class SimuladoController {
         return ResponseEntity.ok(simuladoService.findAll());
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @PutMapping(value = "/api/admin/simulados/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SimuladoResponse> update(@PathVariable UUID id, 
         @RequestBody SimuladoRequest request) {
@@ -92,7 +92,7 @@ public class SimuladoController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @DeleteMapping(value = "/api/admin/simulados/{id}")
     public ResponseEntity<String> delete(@PathVariable UUID id) {
         simuladoService.delete(id);
@@ -100,7 +100,7 @@ public class SimuladoController {
             .body("Simulado deletado com sucesso." + id);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @GetMapping(value = "/api/admin/simulados/{id}")
     public ResponseEntity<SimuladoCompletoResponse> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(simuladoService.findById(id));
@@ -108,7 +108,7 @@ public class SimuladoController {
 
     /* Questões do Simulado */
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @GetMapping(value = "/api/admin/simulados/{simuladoId}/questoes")
     public ResponseEntity<QuestoesSimuladoDisciplinaResponse>
         findBySimuladoId(@PathVariable UUID simuladoId) {
@@ -117,7 +117,7 @@ public class SimuladoController {
             this.questaoSimuladoService.findBySimuladoId(cursoId, simuladoId));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @DeleteMapping(value = "/api/admin/simulados/{simuladoId}/questoes/{questaoId}")
     public ResponseEntity<String> deleteQuestao(@PathVariable UUID simuladoId, 
         @PathVariable UUID questaoId) {
@@ -126,14 +126,14 @@ public class SimuladoController {
             .body("Questão deletada com sucesso.");
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @GetMapping(value = "/api/admin/simulados/{simuladoId}/questoes/{questaoId}")
     public ResponseEntity<QuestaoSimuladoResponse> findQuestaoById(
         @PathVariable UUID simuladoId, @PathVariable UUID questaoId) {
         return ResponseEntity.ok(this.questaoSimuladoService.findById(questaoId));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @PostMapping(value = "/api/admin/simulados/{simuladoId}/questoes", 
         consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UUID> salvarQuestao(@PathVariable UUID simuladoId, 
@@ -142,7 +142,7 @@ public class SimuladoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(id);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @PutMapping(value = "/api/admin/simulados/{simuladoId}/questoes/{questaoId}", 
         consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<QuestaoSimuladoResponse> atualizarQuestao(
@@ -155,7 +155,7 @@ public class SimuladoController {
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasRole('ROLE_ALUNO') or hasRole('ROLE_EXTERNO')")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO') or hasAuthority('SCOPE_ROLE_EXTERNO')")
     @PostMapping(value = "/api/alunos/simulados/{simuladoId}/iniciar", 
         consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SimuladoCompletoResponse> iniciarSimulado(
@@ -170,7 +170,7 @@ public class SimuladoController {
                 simuladoId, false));
     }
 
-    @PreAuthorize("hasRole('ROLE_ALUNO') or hasRole('ROLE_EXTERNO')")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO') or hasAuthority('SCOPE_ROLE_EXTERNO')")
     @GetMapping(value = "/api/alunos/simulados/{simuladoId}/download", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> exportarSimuladoParaPDF(@PathVariable UUID simuladoId) throws Exception {
 
@@ -187,7 +187,7 @@ public class SimuladoController {
                 "attachment; filename=simulado-" + usuario.getCpf() +  ".pdf").body(pdf);
     }
 
-    @PreAuthorize("hasRole('ROLE_ALUNO') or hasRole('ROLE_EXTERNO')")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO') or hasAuthority('SCOPE_ROLE_EXTERNO')")
     @GetMapping(value = "/api/alunos/simulados/{simuladoId}/gabarito", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> exportarGabaritoPataPDF(@PathVariable UUID simuladoId) throws Exception {
 
@@ -199,7 +199,7 @@ public class SimuladoController {
     }
 
         
-    @PreAuthorize("hasRole('ROLE_ALUNO') or hasRole('ROLE_EXTERNO')")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO') or hasAuthority('SCOPE_ROLE_EXTERNO')")
     @GetMapping(value = "/api/alunos/simulados/{simuladoId}/status")
     public ResponseEntity<String> obterStatus(@PathVariable UUID simuladoId) {
 
@@ -211,7 +211,7 @@ public class SimuladoController {
         return ResponseEntity.status(HttpStatus.OK).body(status.name());
     }
 
-    @PreAuthorize("hasRole('ROLE_ALUNO') or hasRole('ROLE_EXTERNO')")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO') or hasAuthority('SCOPE_ROLE_EXTERNO')")
     @PostMapping(value = "/api/alunos/simulados/{simuladoId}/salvar", 
         consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UUID> salvar(@PathVariable UUID simuladoId, 
@@ -226,7 +226,7 @@ public class SimuladoController {
         return ResponseEntity.status(HttpStatus.OK).body(respostaSimuladoId);
     }
 
-    @PreAuthorize("hasRole('ROLE_ALUNO') or hasRole('ROLE_EXTERNO')")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO') or hasAuthority('SCOPE_ROLE_EXTERNO')")
     @PostMapping(value = "/api/alunos/simulados/{simuladoId}/finalizar", 
         consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UUID> finalizarSimulado(@PathVariable UUID simuladoId) {
@@ -237,7 +237,7 @@ public class SimuladoController {
             simuladoId, usuarioId));
     }
 
-    @PreAuthorize("hasRole('ROLE_ALUNO') or hasRole('ROLE_EXTERNO')")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO') or hasAuthority('SCOPE_ROLE_EXTERNO')")
     @GetMapping(path = "/api/alunos/simulados/{simuladoId}/corrente")
     public ResponseEntity<SimuladoCompletoResponse> obterSimuladoCorrente(
         @PathVariable UUID simuladoId) {
@@ -260,7 +260,7 @@ public class SimuladoController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PreAuthorize("hasRole('ROLE_ALUNO') or hasRole('ROLE_EXTERNO') or hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO') or hasAuthority('SCOPE_ROLE_EXTERNO') or hasAuthority('SCOPE_ROLE_ADMIN')")
     @GetMapping(path = "/api/alunos/simulados/{simuladoId}/ranking-geral")
     public ResponseEntity<ResultadoSimuladoResponse> obterRankingGeral(
         @PathVariable UUID simuladoId) {
@@ -269,7 +269,7 @@ public class SimuladoController {
             this.respostaSimuladoService.obterRanking(simuladoId));
     }
 
-    @PreAuthorize("hasRole('ROLE_ALUNO') or hasRole('ROLE_EXTERNO') or hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO') or hasAuthority('SCOPE_ROLE_EXTERNO') or hasAuthority('SCOPE_ROLE_ADMIN')")
     @GetMapping(path = "/api/alunos/simulados/{simuladoId}/ranking-individual")
     public ResponseEntity<ResultadoSimuladoResponse> obterRankingIndividual(
         @PathVariable UUID simuladoId) {

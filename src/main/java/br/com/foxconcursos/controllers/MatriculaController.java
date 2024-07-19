@@ -47,7 +47,7 @@ public class MatriculaController {
         return ResponseEntity.status(HttpStatus.OK).body(testeMP.toString());
     }
 
-    @PreAuthorize("hasRole('ROLE_ALUNO') || hasRole('ROLE_EXTERNO')")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO') || hasAuthority('SCOPE_ROLE_EXTERNO')")
     @PostMapping(path = "/api/alunos/matricula", 
         consumes = MediaType.APPLICATION_JSON_VALUE, 
         produces = MediaType.APPLICATION_JSON_VALUE)
@@ -57,7 +57,7 @@ public class MatriculaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(payment != null ? payment.getId() : 0L);
     }
 
-    @PreAuthorize("hasRole('ROLE_ALUNO') || hasRole('ROLE_EXTERNO')")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO') || hasAuthority('SCOPE_ROLE_EXTERNO')")
     @PostMapping(path = "/api/alunos/pre-matricula")
     public ResponseEntity<String> prematricula() throws Exception {
        
@@ -83,7 +83,7 @@ public class MatriculaController {
        return ResponseEntity.status(HttpStatus.CREATED).body(preference.getId());
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @PostMapping(path = "/api/admin/matricula", 
         consumes = MediaType.APPLICATION_JSON_VALUE, 
         produces = MediaType.APPLICATION_JSON_VALUE)
