@@ -22,6 +22,7 @@ import br.com.foxconcursos.dto.QuestaoRequest;
 import br.com.foxconcursos.dto.QuestaoResponse;
 import br.com.foxconcursos.repositories.AlternativaRepository;
 import br.com.foxconcursos.repositories.QuestaoRepository;
+import br.com.foxconcursos.util.SecurityUtil;
 
 @Service
 public class QuestaoService {
@@ -29,18 +30,29 @@ public class QuestaoService {
     private final QuestaoRepository questaoRepository;
     private final AlternativaRepository alternativaRepository;
     private final JdbcTemplate jdbcTemplate;
-    private final AuthenticationService authenticationService;
 
     public QuestaoService(QuestaoRepository questaoRepository,
                           AlternativaRepository alternativaRepository, 
-                          JdbcTemplate jdbcTemplate, 
-                          AuthenticationService authenticationService) {
+                          JdbcTemplate jdbcTemplate) {
 
         this.questaoRepository = questaoRepository;
         this.alternativaRepository = alternativaRepository;
         this.jdbcTemplate = jdbcTemplate;
-        this.authenticationService = authenticationService;
 
+    }
+
+    public boolean isAlternativaCorreta(UUID questaoId, UUID alternativaId) {
+
+        String query = """
+                select a.correta from alternativas a inner join questoes q on a.questao_id = q.id
+                where q.id = ? and a.id = ? and q.status = 'ATIVO' 
+            """;
+
+        boolean acertou = jdbcTemplate.query(query, rs -> {
+            return rs.getBoolean("correta");
+        }, questaoId, alternativaId);
+
+        return acertou;
     }
 
     @Transactional
@@ -201,11 +213,6 @@ public class QuestaoService {
                 sb.append(obterDescricaoPorPK(
                         "" + questao.getDisciplinaId().get(i), "disciplinas", "nome")).append(", ");
             }
-
-//            for (UUID assunto : questao.getDisciplinaId()) {
-//                sb.append(obterDescricaoPorPK(
-//                        assunto, "disicplinas", "nome")).append(", ");
-//            }
 
             filtros.put("Disciplina(s): ",
                     sb.toString().substring(0, sb.toString().length() - 1));
@@ -441,7 +448,7 @@ public class QuestaoService {
                           and q.id = ?
                 """;
 
-        UsuarioLogado user = this.authenticationService.obterUsuarioLogadoCompleto();
+        UsuarioLogado user = SecurityUtil.obterUsuarioLogado();
         PerfilUsuario perfil = user.getPerfil();
 
         QuestaoResponse questaoResponse = jdbcTemplate.query(sql, rs -> {

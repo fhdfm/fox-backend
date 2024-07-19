@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.foxconcursos.domain.StatusSimulado;
-import br.com.foxconcursos.domain.UsuarioLogado;
 import br.com.foxconcursos.dto.DisciplinaQuestoesResponse;
 import br.com.foxconcursos.dto.GabaritoResponse;
 import br.com.foxconcursos.dto.QuestaoSimuladoRequest;
@@ -30,7 +29,6 @@ import br.com.foxconcursos.dto.SimuladoCompletoResponse;
 import br.com.foxconcursos.dto.SimuladoRequest;
 import br.com.foxconcursos.dto.SimuladoResponse;
 import br.com.foxconcursos.dto.SimuladoResumoResponse;
-import br.com.foxconcursos.services.AuthenticationService;
 import br.com.foxconcursos.services.PdfService;
 import br.com.foxconcursos.services.QuestaoSimuladoService;
 import br.com.foxconcursos.services.RespostaSimuladoService;
@@ -43,19 +41,16 @@ public class SimuladoController {
     private final SimuladoService simuladoService;
     private final QuestaoSimuladoService questaoSimuladoService;
     private final RespostaSimuladoService respostaSimuladoService;
-    private final AuthenticationService authenticationService;
     private final PdfService pdfService;
 
     public SimuladoController(SimuladoService simuladoService, 
         QuestaoSimuladoService questaoSimuladoService, 
         RespostaSimuladoService respostaSimuladoService,
-        AuthenticationService authenticationService,
         PdfService pdfService) {
         
         this.simuladoService = simuladoService;
         this.questaoSimuladoService = questaoSimuladoService;
         this.respostaSimuladoService = respostaSimuladoService;
-        this.authenticationService = authenticationService;
         this.pdfService = pdfService;
 
     }
@@ -160,10 +155,8 @@ public class SimuladoController {
         consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SimuladoCompletoResponse> iniciarSimulado(
         @PathVariable UUID simuladoId) {
-        
-        UUID usuarioId = this.authenticationService.obterUsuarioLogado();
 
-        respostaSimuladoService.iniciar(simuladoId, usuarioId);
+        respostaSimuladoService.iniciar(simuladoId);
 
         return ResponseEntity.ok(
             simuladoService.findById(
@@ -177,14 +170,12 @@ public class SimuladoController {
         SimuladoCompletoResponse simulado = simuladoService.findById(simuladoId);
         List<DisciplinaQuestoesResponse> disciplinas = simulado.getDisciplinas();
 
-        UsuarioLogado usuario = this.authenticationService.obterUsuarioLogadoCompleto();
-
         byte[] pdf = this.pdfService.exportarSimuladoParaPDF(
-            simulado.getTitulo(), usuario, disciplinas);
+            simulado.getTitulo(), disciplinas);
 
         return ResponseEntity.status(HttpStatus.OK)
             .header("Content-Disposition", 
-                "attachment; filename=simulado-" + usuario.getCpf() +  ".pdf").body(pdf);
+                "attachment; filename=simulado-" + UUID.randomUUID() +  ".pdf").body(pdf);
     }
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO') or hasAuthority('SCOPE_ROLE_EXTERNO')")
@@ -203,10 +194,8 @@ public class SimuladoController {
     @GetMapping(value = "/api/alunos/simulados/{simuladoId}/status")
     public ResponseEntity<String> obterStatus(@PathVariable UUID simuladoId) {
 
-        UUID usuarioId = this.authenticationService.obterUsuarioLogado();
-
         StatusSimulado status = 
-            this.respostaSimuladoService.obterStatus(simuladoId, usuarioId);
+            this.respostaSimuladoService.obterStatus(simuladoId);
         
         return ResponseEntity.status(HttpStatus.OK).body(status.name());
     }
@@ -216,12 +205,9 @@ public class SimuladoController {
         consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UUID> salvar(@PathVariable UUID simuladoId, 
         @RequestBody RespostaSimuladoRequest respostas) throws Exception {
-
-        UUID usuarioId = this.authenticationService.obterUsuarioLogado();
         
         UUID respostaSimuladoId =
-            this.respostaSimuladoService.salvar(
-                simuladoId, usuarioId, respostas);
+            this.respostaSimuladoService.salvar(simuladoId, respostas);
 
         return ResponseEntity.status(HttpStatus.OK).body(respostaSimuladoId);
     }
@@ -231,10 +217,8 @@ public class SimuladoController {
         consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UUID> finalizarSimulado(@PathVariable UUID simuladoId) {
         
-        UUID usuarioId = this.authenticationService.obterUsuarioLogado();
-
-        return ResponseEntity.ok(this.respostaSimuladoService.finalizar(
-            simuladoId, usuarioId));
+        return ResponseEntity.ok(
+            this.respostaSimuladoService.finalizar(simuladoId));
     }
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO') or hasAuthority('SCOPE_ROLE_EXTERNO')")
@@ -242,11 +226,8 @@ public class SimuladoController {
     public ResponseEntity<SimuladoCompletoResponse> obterSimuladoCorrente(
         @PathVariable UUID simuladoId) {
        
-        UUID usuarioId = this.authenticationService.obterUsuarioLogado();
-
         StatusSimulado status =
-            this.respostaSimuladoService.obterStatus(
-                simuladoId, usuarioId);     
+            this.respostaSimuladoService.obterStatus(simuladoId);     
 
        SimuladoCompletoResponse response = null;
          if (status == StatusSimulado.FINALIZADO)
@@ -255,7 +236,7 @@ public class SimuladoController {
            response = this.simuladoService.findById(simuladoId, false);     
        
        response = this.respostaSimuladoService.obterRespostas(
-            response, usuarioId);
+            response);
     
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -273,13 +254,10 @@ public class SimuladoController {
     @GetMapping(path = "/api/alunos/simulados/{simuladoId}/ranking-individual")
     public ResponseEntity<ResultadoSimuladoResponse> obterRankingIndividual(
         @PathVariable UUID simuladoId) {
-        
-        UUID usuarioId = this.authenticationService.obterUsuarioLogado();
-        
+                
         return ResponseEntity.status(HttpStatus.OK).body(
-            this.respostaSimuladoService.obterRanking(simuladoId, usuarioId));
+            this.respostaSimuladoService.obterRankingPorUsuario(simuladoId));
     }
-
 
     @GetMapping(path = "/api/simulados/{simuladoId}/prepare")
     public ResponseEntity<String> prepareCache(@PathVariable UUID simuladoId) {

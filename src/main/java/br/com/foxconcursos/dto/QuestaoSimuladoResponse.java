@@ -59,5 +59,4 @@ public class QuestaoSimuladoResponse {
     public List<ItemQuestaoResponse> getAlternativas() {
         return alternativas;
     }
-
 }

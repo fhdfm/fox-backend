@@ -254,3 +254,29 @@ CREATE TABLE comentarios (
         FOREIGN KEY(usuario_id) 
         REFERENCES usuarios(id)
 );
+
+CREATE TABLE respostas (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4() UNIQUE NOT NULL,
+    questaoId UUID NOT NULL,
+    alternativaId UUID NOT NULL,
+    usuarioId UUID NOT NULL,
+    acerto BOOLEAN NOT NULL,
+    data TIMESTAMP NOT NULL,
+    version INT NOT NULL DEFAULT 0,
+    CONSTRAINT fk_questao FOREIGN KEY (questaoId) REFERENCES questoes(id),
+    CONSTRAINT fk_alternativa FOREIGN KEY (alternativaId) REFERENCES alternativas(id),
+    CONSTRAINT fk_usuario FOREIGN KEY (usuarioId) REFERENCES usuarios(id)
+);
+
+CREATE TABLE performance (
+    id UUID PRIMARY key DEFAULT uuid_generate_v4() UNIQUE NOT NULL,
+    usuarioId UUID NOT NULL,
+    mes INT NOT NULL,
+    ano INT NOT NULL,
+    acertos INT NOT NULL,
+    erros INT NOT NULL,
+    version INT NOT NULL,
+    CONSTRAINT fk_usuario
+        FOREIGN KEY(usuarioId) 
+        REFERENCES usuarios(id)
+);

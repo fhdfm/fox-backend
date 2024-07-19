@@ -24,6 +24,7 @@ import br.com.foxconcursos.dto.ItemQuestaoResponse;
 import br.com.foxconcursos.dto.QuestaoResponse;
 import br.com.foxconcursos.dto.QuestaoSimuladoResponse;
 import br.com.foxconcursos.util.FoxUtils;
+import br.com.foxconcursos.util.SecurityUtil;
 
 @Service
 public class PdfService {
@@ -294,8 +295,10 @@ public class PdfService {
         }
     }
 
-    public byte[] exportarSimuladoParaPDF(String titulo, UsuarioLogado usuario,
-            List<DisciplinaQuestoesResponse> disciplinas) throws Exception {
+    public byte[] exportarSimuladoParaPDF(String titulo, List<DisciplinaQuestoesResponse> disciplinas) 
+        throws Exception {
+
+        UsuarioLogado usuario = SecurityUtil.obterUsuarioLogado();
 
         String instrucoesHtml = new String(Files.readAllBytes(
             Path.of(getClass().getClassLoader().getResource(

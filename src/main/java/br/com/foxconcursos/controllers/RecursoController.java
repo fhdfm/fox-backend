@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import br.com.foxconcursos.domain.Recurso;
 import br.com.foxconcursos.dto.AbrirRecursoRequest;
 import br.com.foxconcursos.dto.Recurso01Response;
-import br.com.foxconcursos.services.AuthenticationService;
 import br.com.foxconcursos.services.RecursoService;
 
 @RestController
@@ -24,14 +23,9 @@ import br.com.foxconcursos.services.RecursoService;
 public class RecursoController {
     
     private final RecursoService recursoService;
-    private final AuthenticationService authenticationService;
 
-    public RecursoController(RecursoService recursoService, 
-        AuthenticationService authenticationService) {
-        
+    public RecursoController(RecursoService recursoService) {
         this.recursoService = recursoService;
-        this.authenticationService = authenticationService;
-
     }
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
@@ -41,13 +35,13 @@ public class RecursoController {
         return ResponseEntity.status(HttpStatus.OK).body(recursos);
     }
 
-    @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO') or hasAuthority('SCOPE_ROLE_EXTERNO')")
-    @GetMapping("/api/alunos/recursos")
-    public ResponseEntity<List<Recurso>> findByUsuarioId() {
-        UUID usuarioId = authenticationService.obterUsuarioLogado();
-        List<Recurso> recursos = recursoService.findByUsuarioId(usuarioId);
-        return ResponseEntity.status(HttpStatus.OK).body(recursos);
-    }
+    // @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO') or hasAuthority('SCOPE_ROLE_EXTERNO')")
+    // @GetMapping("/api/alunos/recursos")
+    // public ResponseEntity<List<Recurso>> findByUsuarioId() {
+    //     UUID usuarioId = authenticationService.obterUsuarioLogado();
+    //     List<Recurso> recursos = recursoService.findByUsuarioId(usuarioId);
+    //     return ResponseEntity.status(HttpStatus.OK).body(recursos);
+    // }
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @GetMapping("/api/admin/recursos/usuario/{usuarioId}")

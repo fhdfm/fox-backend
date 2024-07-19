@@ -23,9 +23,11 @@ import br.com.foxconcursos.dto.BancoQuestaoResponse;
 import br.com.foxconcursos.dto.ComentarioRequest;
 import br.com.foxconcursos.dto.QuestaoRequest;
 import br.com.foxconcursos.dto.QuestaoResponse;
+import br.com.foxconcursos.dto.RespostaRequest;
 import br.com.foxconcursos.services.ComentarioService;
 import br.com.foxconcursos.services.PdfService;
 import br.com.foxconcursos.services.QuestaoService;
+import br.com.foxconcursos.services.RespostaService;
 import br.com.foxconcursos.util.FoxUtils;
 
 @RestController
@@ -36,14 +38,17 @@ public class QuestaoController {
     
     private final ComentarioService comentarioService;
     private final QuestaoService questaoService;
+    private final RespostaService respostaService;
     private final PdfService pdfService;
 
     public QuestaoController(QuestaoService questaoService, 
-        PdfService pdfService, ComentarioService comentarioService) {
+        PdfService pdfService, ComentarioService comentarioService, 
+        RespostaService respostaService) {
 
         this.questaoService = questaoService;
         this.pdfService = pdfService;
         this.comentarioService = comentarioService;
+        this.respostaService = respostaService;
 
     }
 
@@ -97,7 +102,7 @@ public class QuestaoController {
             "Comentario deletado com sucesso.");
     }
 
-    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN') or hasAuthority('SCOPE_ROLE_ALUNO')")
     @GetMapping("/api/admin/questoes")
     public ResponseEntity<BancoQuestaoResponse> findAll(@RequestParam(required = false) String filter, 
         @RequestParam(required = true, defaultValue = "25") Integer limit, 
@@ -168,6 +173,14 @@ public class QuestaoController {
     public ResponseEntity<QuestaoResponse> findById(@PathVariable UUID id) {
         QuestaoResponse questao = this.questaoService.findById(id);
         return ResponseEntity.status(HttpStatus.OK).body(questao);
+    }
+
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO')")
+    @PostMapping("/api/aluno/questoes/{questaoId}/responder")
+    public ResponseEntity<UUID> responder(@RequestBody RespostaRequest request, 
+        @PathVariable UUID questaoId) {
+        UUID uuid = respostaService.save(request, questaoId);
+        return ResponseEntity.status(HttpStatus.OK).body(uuid);
     }
 
 }

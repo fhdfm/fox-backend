@@ -19,6 +19,7 @@ import br.com.foxconcursos.domain.RespostaSimulado;
 import br.com.foxconcursos.domain.RespostaSimuladoQuestao;
 import br.com.foxconcursos.domain.Simulado;
 import br.com.foxconcursos.domain.StatusSimulado;
+import br.com.foxconcursos.domain.UsuarioLogado;
 import br.com.foxconcursos.dto.ItemQuestaoResponse;
 import br.com.foxconcursos.dto.QuestaoSimuladoResponse;
 import br.com.foxconcursos.dto.RankingSimuladoResponse;
@@ -28,6 +29,7 @@ import br.com.foxconcursos.dto.SimuladoCompletoResponse;
 import br.com.foxconcursos.repositories.RespostaQuestaoSimuladoRepository;
 import br.com.foxconcursos.repositories.RespostaSimuladoRepository;
 import br.com.foxconcursos.util.FoxUtils;
+import br.com.foxconcursos.util.SecurityUtil;
 
 @Service
 public class RespostaSimuladoService {
@@ -52,8 +54,12 @@ public class RespostaSimuladoService {
     }
 
     @Transactional
-    public UUID iniciar(UUID simuladoId, UUID usuarioId) {
+    public UUID iniciar(UUID simuladoId) {
         
+        UsuarioLogado usuarioLogado = SecurityUtil.obterUsuarioLogado();
+
+        UUID usuarioId = usuarioLogado.getId();
+
         Optional<RespostaSimulado> respostaDB = 
             this.respostaSimuladoRepository.findBySimuladoIdAndUsuarioId(
                 simuladoId, usuarioId);
@@ -72,7 +78,10 @@ public class RespostaSimuladoService {
     }
 
     @Transactional
-    public StatusSimulado obterStatus(UUID simuladoId, UUID usuarioId) {
+    public StatusSimulado obterStatus(UUID simuladoId) {
+
+        UsuarioLogado usuarioLogado = SecurityUtil.obterUsuarioLogado();
+        UUID usuarioId = usuarioLogado.getId();
 
         Optional<RespostaSimulado> respostaSimulado = 
             this.respostaSimuladoRepository.findBySimuladoIdAndUsuarioId(
@@ -88,9 +97,12 @@ public class RespostaSimuladoService {
     }
 
     @Transactional
-    public UUID salvar(UUID simuladoId, UUID usuarioId, 
-        RespostaSimuladoRequest resposta) throws SQLException {
-                
+    public UUID salvar(UUID simuladoId, RespostaSimuladoRequest resposta) 
+        throws SQLException {
+
+        UsuarioLogado usuarioLogado = SecurityUtil.obterUsuarioLogado();
+        UUID usuarioId = usuarioLogado.getId();            
+
         String findBySimuladoIdAndUsuarioId = """
                 select id, version from respostas_simulado where simulado_id = ?
                 and usuario_id = ? and status = 'EM_ANDAMENTO';                
@@ -247,8 +259,11 @@ public class RespostaSimuladoService {
     }
 
     @Transactional
-    public UUID finalizar(UUID simuladoId, UUID usuarioId) {
+    public UUID finalizar(UUID simuladoId) {
         
+        UsuarioLogado usuarioLogado = SecurityUtil.obterUsuarioLogado();
+        UUID usuarioId = usuarioLogado.getId();        
+
         LocalDateTime horaFim = LocalDateTime.now();
         
         Simulado simulado = simuladoService.obterPorId(simuladoId);
@@ -283,8 +298,11 @@ public class RespostaSimuladoService {
     }
 
     @Transactional
-    public SimuladoCompletoResponse obterRespostas(SimuladoCompletoResponse simulado, UUID usuarioId) {
+    public SimuladoCompletoResponse obterRespostas(SimuladoCompletoResponse simulado) {
         
+        UsuarioLogado usuarioLogado = SecurityUtil.obterUsuarioLogado();
+        UUID usuarioId = usuarioLogado.getId();
+
         Optional<RespostaSimulado> respostaSimulado = this.respostaSimuladoRepository
             .findBySimuladoIdAndUsuarioId(simulado.getId(), usuarioId);
 
@@ -408,8 +426,11 @@ public class RespostaSimuladoService {
         return response;
     }
 
-    public ResultadoSimuladoResponse obterRanking(UUID simuladoId, UUID usuarioId) {
-                
+    public ResultadoSimuladoResponse obterRankingPorUsuario(UUID simuladoId) {
+        
+        UsuarioLogado usuarioLogado = SecurityUtil.obterUsuarioLogado();
+        UUID usuarioId = usuarioLogado.getId();
+
         ResultadoSimuladoResponse response = new ResultadoSimuladoResponse();
 
         Simulado simulado = simuladoService.obterPorId(simuladoId);

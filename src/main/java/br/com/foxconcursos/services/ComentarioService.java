@@ -13,19 +13,18 @@ import br.com.foxconcursos.dto.ComentarioRequest;
 import br.com.foxconcursos.dto.ComentarioResponse;
 import br.com.foxconcursos.repositories.ComentarioRepository;
 import br.com.foxconcursos.util.FoxUtils;
+import br.com.foxconcursos.util.SecurityUtil;
 
 @Service
 public class ComentarioService {
     
     private final ComentarioRepository repository;
     private final JdbcTemplate jdbcTemplate;
-    private final AuthenticationService authenticationService;
 
     public ComentarioService(ComentarioRepository repository, 
-        JdbcTemplate jdbcTemplate, AuthenticationService authenticationService) {
+        JdbcTemplate jdbcTemplate) {
         this.repository = repository;
         this.jdbcTemplate = jdbcTemplate;
-        this.authenticationService = authenticationService;
     }
 
     public void save(ComentarioRequest request, UUID questaoId) {
@@ -36,7 +35,9 @@ public class ComentarioService {
         Comentario comentario = new Comentario(request);
         comentario.setQuestaoId(questaoId);
 
-        UUID usuarioId = this.authenticationService.obterUsuarioLogado();
+        UsuarioLogado usuarioLogado = SecurityUtil.obterUsuarioLogado();
+        UUID usuarioId = usuarioLogado.getId();
+
         comentario.setUsuarioId(usuarioId);
 
         this.repository.save(comentario);
@@ -44,7 +45,7 @@ public class ComentarioService {
 
     public void delete(UUID comentarioId) {
         
-        UsuarioLogado user = this.authenticationService.obterUsuarioLogadoCompleto();
+        UsuarioLogado user = SecurityUtil.obterUsuarioLogado();
         
         if (user.getPerfil() == PerfilUsuario.ADMIN) {
             this.repository.deleteById(comentarioId);

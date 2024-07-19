@@ -8,9 +8,11 @@ import org.springframework.stereotype.Service;
 
 import br.com.foxconcursos.domain.Recurso;
 import br.com.foxconcursos.domain.StatusRecurso;
+import br.com.foxconcursos.domain.UsuarioLogado;
 import br.com.foxconcursos.dto.AbrirRecursoRequest;
 import br.com.foxconcursos.dto.Recurso01Response;
 import br.com.foxconcursos.repositories.RecursoRepository;
+import br.com.foxconcursos.util.SecurityUtil;
 
 @Service
 public class RecursoService {
@@ -47,7 +49,8 @@ public class RecursoService {
             throw new IllegalArgumentException("Fundamentação não informada");
         }
 
-        UUID usuarioId = authenticationService.obterUsuarioLogado();
+        UsuarioLogado usuarioLogado = SecurityUtil.obterUsuarioLogado();
+        UUID usuarioId = usuarioLogado.getId();
 
         Recurso recurso = new Recurso();
         recurso.setQuestaoId(request.getQuestaoId());
