@@ -2,6 +2,7 @@ package br.com.foxconcursos.domain;
 
 public enum Escolaridade {
     
+    FUNDAMENTAL("Fundamental"),
     TECNICO("Técnico"),
     SUPERIOR_INCOMPLETO("Superior Incompleto"),
     SUPERIOR("Superior Completo"),
