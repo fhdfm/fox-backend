@@ -23,6 +23,7 @@ public class QuestaoResponse {
     private String assunto;
     private String acerto;
     private List<AlternativaResponse> alternativas;
+    private int comentarios;
 
     public QuestaoResponse() {  }
 
@@ -168,5 +169,13 @@ public class QuestaoResponse {
 
     public String getAcerto() {
         return this.acerto;
+    }
+
+    public int getComentarios() {
+        return this.comentarios;
+    }
+
+    public void setComentarios(int qtd) {
+        this.comentarios = qtd;
     }
 }

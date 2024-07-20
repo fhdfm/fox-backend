@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.com.foxconcursos.domain.Alternativa;
 import br.com.foxconcursos.domain.FiltroQuestao;
-import br.com.foxconcursos.domain.PerfilUsuario;
 import br.com.foxconcursos.domain.Questao;
 import br.com.foxconcursos.domain.Status;
 import br.com.foxconcursos.domain.UsuarioLogado;
@@ -256,14 +255,15 @@ public class QuestaoService {
                           d.nome as disciplina,
                           i.nome as instituicao,
                           a2.nome as assunto,
-                          b.nome as banca
+                          b.nome as banca,
                 """;
         
         if (isAluno)
-            sql += ", r.acerto as acerto ";
+            sql += " r.acerto as acerto, ";
 
                         
         sql += """
+                   count(cm.id) as comentario_count 
                    from questoes q
                             inner join alternativas a
                                        on a.questao_id = q.id
@@ -277,6 +277,8 @@ public class QuestaoService {
                                       on q.assunto_id = a2.id
                             left join disciplinas d
                                       on q.disciplina_id = d.id 
+                            left join comentarios cm
+                                      on cm.questao_id = q.id
             """;
 
         if (isAluno)
@@ -326,6 +328,15 @@ public class QuestaoService {
             sql += " and q.instituicao_id = '" + questao.getInstituicaoId() + "' ";
         }
 
+        sql += """
+            GROUP BY 
+                q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, 
+                a.id, a.descricao, a.correta, a.letra, 
+                c.nome, d.nome, i.nome, a2.nome, b.nome, 
+                r.id, r.alternativaId, r.acerto, r.data
+            ORDER BY q.id;                
+        """;
+        
         sql += "limit " + limit + " offset " + offset;
 
         Map<UUID, QuestaoResponse> questaoMap = new HashMap<UUID, QuestaoResponse>();
@@ -351,6 +362,7 @@ public class QuestaoService {
                         != null ? (rs.getBoolean("acerto") ? "true" : "false") : null;
                     qr.setAcerto(acerto);
                 }
+                qr.setComentarios(rs.getInt("comentario_count"));
                 qr.setAlternativas(new ArrayList<>());
                 questaoMap.put(questaoId, qr);
             }
@@ -423,6 +435,10 @@ public class QuestaoService {
 
 
     public QuestaoResponse findById(UUID id) {
+
+        UsuarioLogado user = SecurityUtil.obterUsuarioLogado();
+        boolean isAluno = user.isAluno();   
+
         String sql = """
                     select q.id as qid,
                            q.enunciado,
@@ -438,21 +454,36 @@ public class QuestaoService {
                            i.id as iid,
                            c.id as cid,
                            d.id as did,
-                           a2.id as a2id
-                        from questoes q
-                                 inner join alternativas a
-                                            on a.questao_id = q.id
-                                 left join bancas b on q.banca_id = b.id
-                                 left join instituicao i on q.instituicao_id = i.id
-                                 left join cargo c on q.cargo_id = c.id
-                                 left join assunto a2 on q.assunto_id = a2.id
-                                 left join disciplinas d on q.disciplina_id = d.id
-                        where q.status = 'ATIVO'
-                          and q.id = ?
-                """;
+                           a2.id as a2id,
+            """;
 
-        UsuarioLogado user = SecurityUtil.obterUsuarioLogado();
-        PerfilUsuario perfil = user.getPerfil();
+        if (isAluno)
+            sql += " r.acerto as acerto, ";
+                    
+        sql += """
+                COUNT(cm.id) AS comentario_count
+                from questoes q
+                            inner join alternativas a
+                                    on a.questao_id = q.id
+                            left join bancas b on q.banca_id = b.id
+                            left join instituicao i on q.instituicao_id = i.id
+                            left join cargo c on q.cargo_id = c.id
+                            left join assunto a2 on q.assunto_id = a2.id
+                            left join disciplinas d on q.disciplina_id = d.id
+                            LEFT JOIN comentarios cm ON cm.questao_id = q.id
+            """;
+                    
+        if (isAluno)
+            sql += " left join respostas r on r.questao_id and r.usuario_id = '" + user.getId() + "' ";            
+
+        sql += """
+            where q.status = 'ATIVO' and q.id = ? 
+            group by q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, 
+            a.id, a.descricao, a.correta, a.letra, 
+            c.nome, d.nome, i.nome, a2.nome, b.nome, 
+            r.id, r.alternativaId, r.acerto, r.data 
+            ORDER BY q.id;
+        """; 
 
         QuestaoResponse questaoResponse = jdbcTemplate.query(sql, rs -> {
             QuestaoResponse qr = null;
@@ -471,6 +502,12 @@ public class QuestaoService {
                     qr.setInstituicaoId(UUID.fromString(rs.getString("iid")));
                     qr.setCargoId(UUID.fromString(rs.getString("cid")));
                     qr.setAssuntoId(UUID.fromString(rs.getString("a2id")));
+                    if (isAluno) {
+                        String acerto = rs.getObject("acerto") 
+                            != null ? (rs.getBoolean("acerto") ? "true" : "false") : null;
+                        qr.setAcerto(acerto);
+                    }
+                    qr.setComentarios(rs.getInt("comentario_count"));  
                     qr.setAlternativas(new ArrayList<>());
                 }
 
@@ -478,7 +515,7 @@ public class QuestaoService {
                 alternativa.setId(UUID.fromString(rs.getString("aid")));
                 alternativa.setLetra(rs.getString("letra"));
                 alternativa.setDescricao(rs.getString("descricao"));
-                alternativa.setCorreta(perfil == PerfilUsuario.ADMIN && rs.getBoolean("correta"));
+                alternativa.setCorreta(!isAluno && rs.getBoolean("correta"));
 
                 qr.getAlternativas().add(alternativa);
             }

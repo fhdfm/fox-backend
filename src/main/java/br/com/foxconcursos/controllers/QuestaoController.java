@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import br.com.foxconcursos.domain.FiltroQuestao;
 import br.com.foxconcursos.dto.BancoQuestaoResponse;
 import br.com.foxconcursos.dto.ComentarioRequest;
+import br.com.foxconcursos.dto.ComentarioResponse;
 import br.com.foxconcursos.dto.QuestaoRequest;
 import br.com.foxconcursos.dto.QuestaoResponse;
 import br.com.foxconcursos.dto.RespostaRequest;
@@ -183,7 +184,14 @@ public class QuestaoController {
     public ResponseEntity<UUID> responder(@RequestBody RespostaRequest request, 
         @PathVariable UUID questaoId) {
         UUID uuid = respostaService.save(request, questaoId);
-        return ResponseEntity.status(HttpStatus.OK).body(uuid);
+        return ResponseEntity.status(HttpStatus.CREATED).body(uuid);
     }
 
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO') or hasAuthority('SCOPE_ROLE_ADMIN')")
+    @GetMapping({"/api/aluno/questoes/{questaoId}/comentarios", "/api/admin/questoes/{questaoId}/comentarios"})
+    public ResponseEntity<List<ComentarioResponse>> listarComentarios(
+        @PathVariable("questaoId") UUID questaoId) {
+        return ResponseEntity.status(HttpStatus.OK).body(
+            comentarioService.findByQuestaoId(questaoId));
+    }
 }
