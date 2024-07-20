@@ -21,6 +21,7 @@ public class QuestaoResponse {
     private String cargo;
     private UUID assuntoId;
     private String assunto;
+    private String acerto;
     private List<AlternativaResponse> alternativas;
 
     public QuestaoResponse() {  }
@@ -159,5 +160,13 @@ public class QuestaoResponse {
 
     public void setAlternativas(List<AlternativaResponse> alternativas) {
         this.alternativas = alternativas;
+    }
+
+    public void setAcerto(String acerto) {
+        this.acerto = acerto;
+    }
+
+    public String getAcerto() {
+        return this.acerto;
     }
 }

@@ -44,6 +44,10 @@ public class UsuarioLogado implements UserDetails {
         return List.of(new SimpleGrantedAuthority("ROLE_EXTERNO"));
     }
 
+    public boolean isAluno() {
+        return this.usuario.getPerfil() == PerfilUsuario.ALUNO;
+    }
+
     @Override
     public String getPassword() {
         return this.usuario.getPassword();

@@ -257,26 +257,31 @@ CREATE TABLE comentarios (
 
 CREATE TABLE respostas (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4() UNIQUE NOT NULL,
-    questaoId UUID NOT NULL,
-    alternativaId UUID NOT NULL,
-    usuarioId UUID NOT NULL,
+    questao_id UUID NOT NULL,
+    alternativa_id UUID NOT NULL,
+    usuario_id UUID NOT NULL,
     acerto BOOLEAN NOT NULL,
     data TIMESTAMP NOT NULL,
     version INT NOT NULL DEFAULT 0,
-    CONSTRAINT fk_questao FOREIGN KEY (questaoId) REFERENCES questoes(id),
-    CONSTRAINT fk_alternativa FOREIGN KEY (alternativaId) REFERENCES alternativas(id),
-    CONSTRAINT fk_usuario FOREIGN KEY (usuarioId) REFERENCES usuarios(id)
+    CONSTRAINT fk_questao FOREIGN KEY (questao_id) REFERENCES questoes(id),
+    CONSTRAINT fk_alternativa FOREIGN KEY (alternativa_id) REFERENCES alternativas(id),
+    CONSTRAINT fk_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );
 
 CREATE TABLE performance (
     id UUID PRIMARY key DEFAULT uuid_generate_v4() UNIQUE NOT NULL,
-    usuarioId UUID NOT NULL,
+    usuario_id UUID NOT NULL,
     mes INT NOT NULL,
     ano INT NOT NULL,
     acertos INT NOT NULL,
     erros INT NOT NULL,
     version INT NOT NULL,
     CONSTRAINT fk_usuario
-        FOREIGN KEY(usuarioId) 
+        FOREIGN KEY(usuario_id) 
         REFERENCES usuarios(id)
 );
+
+-- indices
+CREATE INDEX idx_respostas_questao_id ON respostas(questao_id);
+CREATE INDEX idx_respostas_usuario_id ON respostas(usuario_id);
+CREATE INDEX idx_questoes_status ON questoes(status);

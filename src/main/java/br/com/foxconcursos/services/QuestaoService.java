@@ -238,6 +238,9 @@ public class QuestaoService {
     public List<QuestaoResponse> findAll(FiltroQuestao questao,
                                          Integer limit, Integer offset) {
 
+        UsuarioLogado user = SecurityUtil.obterUsuarioLogado();
+        boolean isAluno = user.isAluno();                                  
+
         String sql = """
                    select q.id as qid,
                           q.enunciado,
@@ -254,6 +257,13 @@ public class QuestaoService {
                           i.nome as instituicao,
                           a2.nome as assunto,
                           b.nome as banca
+                """;
+        
+        if (isAluno)
+            sql += ", r.acerto as acerto ";
+
+                        
+        sql += """
                    from questoes q
                             inner join alternativas a
                                        on a.questao_id = q.id
@@ -266,9 +276,13 @@ public class QuestaoService {
                             left join assunto a2
                                       on q.assunto_id = a2.id
                             left join disciplinas d
-                                      on q.disciplina_id = d.id
-                   where q.status = 'ATIVO'
-                """;
+                                      on q.disciplina_id = d.id 
+            """;
+
+        if (isAluno)
+            sql += " left join respostas r on r.questao_id and r.usuario_id = '" + user.getId() + "'";
+                   
+        sql += " where q.status = 'ATIVO'";
 
         if (questao.getAssuntoId() != null && !questao.getAssuntoId().isEmpty()) {
             sql += " and q.assunto_id in ("
@@ -332,6 +346,11 @@ public class QuestaoService {
                 qr.setDisciplina(rs.getString("disciplina"));
                 qr.setCargo(rs.getString("cargo"));
                 qr.setAssunto(rs.getString("assunto"));
+                if (isAluno) {
+                    String acerto = rs.getObject("acerto") 
+                        != null ? (rs.getBoolean("acerto") ? "true" : "false") : null;
+                    qr.setAcerto(acerto);
+                }
                 qr.setAlternativas(new ArrayList<>());
                 questaoMap.put(questaoId, qr);
             }

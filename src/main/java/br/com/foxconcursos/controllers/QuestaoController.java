@@ -29,6 +29,7 @@ import br.com.foxconcursos.services.PdfService;
 import br.com.foxconcursos.services.QuestaoService;
 import br.com.foxconcursos.services.RespostaService;
 import br.com.foxconcursos.util.FoxUtils;
+import br.com.foxconcursos.util.SecurityUtil;
 
 @RestController
 @RequestMapping( 
@@ -129,6 +130,8 @@ public class QuestaoController {
         Map<String, String> filtro = this.questaoService.getFiltroCorrente(questao);
 
         response.setFiltros(filtro);
+
+        response.setPerfil(SecurityUtil.obterUsuarioLogado().getPerfil().name());
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
 

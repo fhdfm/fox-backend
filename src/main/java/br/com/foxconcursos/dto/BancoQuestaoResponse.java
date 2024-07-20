@@ -9,6 +9,7 @@ public class BancoQuestaoResponse {
     
     private int totalDePaginas;
     private int totalDeRegistros;
+    private String perfil;
 
     private List<QuestaoResponse> questoes;
 
@@ -45,6 +46,14 @@ public class BancoQuestaoResponse {
 
     public void setFiltros(Map<String, String> filtros) {
         this.filtros = filtros;
+    }
+
+    public void setPerfil(String perfil) {
+        this.perfil = perfil;
+    }
+
+    public String getPerfil() {
+        return this.perfil;
     }
 
 }
