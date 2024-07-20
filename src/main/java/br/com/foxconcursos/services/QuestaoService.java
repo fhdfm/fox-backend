@@ -133,24 +133,8 @@ public class QuestaoService {
             throw new IllegalArgumentException("Banca é obrigatória.");
         }
 
-        if (request.getInstituicaoId() == null) {
-            throw new IllegalArgumentException("Instituição é obrigatória.");
-        }
-
-        if (request.getCargoId() == null) {
-            throw new IllegalArgumentException("Cargo é obrigatório.");
-        }
-
         if (request.getAno() == null) {
             throw new IllegalArgumentException("Ano é obrigatório.");
-        }
-
-        if (request.getUf() == null) {
-            throw new IllegalArgumentException("UF é obrigatória.");
-        }
-
-        if (request.getCidade() == null) {
-            throw new IllegalArgumentException("Cidade é obrigatória.");
         }
 
         if (request.getEscolaridade() == null) {

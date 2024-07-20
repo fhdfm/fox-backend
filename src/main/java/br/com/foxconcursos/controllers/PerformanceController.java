@@ -1,18 +1,19 @@
 package br.com.foxconcursos.controllers;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.mercadopago.net.HttpStatus;
-
 import br.com.foxconcursos.dto.PerformanceResponse;
 import br.com.foxconcursos.services.PerformanceService;
 
 @RestController
-@RequestMapping("/api/aluno/performance")
+@RequestMapping(path = "/api/aluno/performance", produces=MediaType.APPLICATION_JSON_VALUE)
 public class PerformanceController {
     
     private final PerformanceService performanceService;
@@ -21,6 +22,7 @@ public class PerformanceController {
         this.performanceService = performanceService;
     }
 
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO')")
     @GetMapping
     public ResponseEntity<PerformanceResponse> getPeformance(
         @RequestParam(name = "mesInicial", required = false) Integer mesInicial,
