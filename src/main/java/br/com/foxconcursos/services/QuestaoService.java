@@ -1,20 +1,6 @@
 package br.com.foxconcursos.services;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import br.com.foxconcursos.domain.Alternativa;
-import br.com.foxconcursos.domain.FiltroQuestao;
-import br.com.foxconcursos.domain.Questao;
-import br.com.foxconcursos.domain.Status;
-import br.com.foxconcursos.domain.UsuarioLogado;
+import br.com.foxconcursos.domain.*;
 import br.com.foxconcursos.dto.AlternativaRequest;
 import br.com.foxconcursos.dto.AlternativaResponse;
 import br.com.foxconcursos.dto.QuestaoRequest;
@@ -22,6 +8,11 @@ import br.com.foxconcursos.dto.QuestaoResponse;
 import br.com.foxconcursos.repositories.AlternativaRepository;
 import br.com.foxconcursos.repositories.QuestaoRepository;
 import br.com.foxconcursos.util.SecurityUtil;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
 
 @Service
 public class QuestaoService {
@@ -31,7 +22,7 @@ public class QuestaoService {
     private final JdbcTemplate jdbcTemplate;
 
     public QuestaoService(QuestaoRepository questaoRepository,
-                          AlternativaRepository alternativaRepository, 
+                          AlternativaRepository alternativaRepository,
                           JdbcTemplate jdbcTemplate) {
 
         this.questaoRepository = questaoRepository;
@@ -43,9 +34,9 @@ public class QuestaoService {
     public boolean isAlternativaCorreta(UUID questaoId, UUID alternativaId) {
 
         String query = """
-                select a.correta from alternativas a inner join questoes q on a.questao_id = q.id
-                where q.id = ? and a.id = ? and q.status = 'ATIVO' 
-            """;
+                    select a.correta from alternativas a inner join questoes q on a.questao_id = q.id
+                    where q.id = ? and a.id = ? and q.status = 'ATIVO' 
+                """;
 
         boolean acertou = jdbcTemplate.query(query, rs -> {
             return rs.getBoolean("correta");
@@ -238,7 +229,7 @@ public class QuestaoService {
                                          Integer limit, Integer offset) {
 
         UsuarioLogado user = SecurityUtil.obterUsuarioLogado();
-        boolean isAluno = user.isAluno();                                  
+        boolean isAluno = user.isAluno();
 
         String sql = """
                    select q.id as qid,
@@ -257,33 +248,33 @@ public class QuestaoService {
                           a2.nome as assunto,
                           b.nome as banca,
                 """;
-        
+
         if (isAluno)
             sql += " r.acerto as acerto, ";
 
-                        
+
         sql += """
-                   count(cm.id) as comentario_count 
-                   from questoes q
-                            inner join alternativas a
-                                       on a.questao_id = q.id
-                            left join bancas b
-                                      on q.banca_id = b.id
-                            left join instituicao i
-                                      on q.instituicao_id = i.id
-                            left join cargo c
-                                      on q.cargo_id = c.id
-                            left join assunto a2
-                                      on q.assunto_id = a2.id
-                            left join disciplinas d
-                                      on q.disciplina_id = d.id 
-                            left join comentarios cm
-                                      on cm.questao_id = q.id
-            """;
+                       count(cm.id) as comentario_count 
+                       from questoes q
+                                inner join alternativas a
+                                           on a.questao_id = q.id
+                                left join bancas b
+                                          on q.banca_id = b.id
+                                left join instituicao i
+                                          on q.instituicao_id = i.id
+                                left join cargo c
+                                          on q.cargo_id = c.id
+                                left join assunto a2
+                                          on q.assunto_id = a2.id
+                                left join disciplinas d
+                                          on q.disciplina_id = d.id 
+                                left join comentarios cm
+                                          on cm.questao_id = q.id
+                """;
 
         if (isAluno)
             sql += " left join respostas r on r.questao_id and r.usuario_id = '" + user.getId() + "'";
-                   
+
         sql += " where q.status = 'ATIVO'";
 
         if (questao.getAssuntoId() != null && !questao.getAssuntoId().isEmpty()) {
@@ -329,15 +320,16 @@ public class QuestaoService {
         }
 
         sql += """
-            GROUP BY 
-                q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, 
-                a.id, a.descricao, a.correta, a.letra, 
-                c.nome, d.nome, i.nome, a2.nome, b.nome, 
-                r.id, r.alternativaId, r.acerto, r.data
-            ORDER BY q.id;                
-        """;
-        
-        sql += "limit " + limit + " offset " + offset;
+                    GROUP BY 
+                        q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, 
+                        a.id, a.descricao, a.correta, a.letra, 
+                        c.nome, d.nome, i.nome, a2.nome, b.nome                
+                """;
+
+        if (isAluno)
+            sql += ", r.acerto ";
+
+        sql += " ORDER BY q.id limit " + limit + " offset " + offset;
 
         Map<UUID, QuestaoResponse> questaoMap = new HashMap<UUID, QuestaoResponse>();
         List<QuestaoResponse> result = new ArrayList<QuestaoResponse>();
@@ -358,8 +350,8 @@ public class QuestaoService {
                 qr.setCargo(rs.getString("cargo"));
                 qr.setAssunto(rs.getString("assunto"));
                 if (isAluno) {
-                    String acerto = rs.getObject("acerto") 
-                        != null ? (rs.getBoolean("acerto") ? "true" : "false") : null;
+                    String acerto = rs.getObject("acerto")
+                            != null ? (rs.getBoolean("acerto") ? "true" : "false") : null;
                     qr.setAcerto(acerto);
                 }
                 qr.setComentarios(rs.getInt("comentario_count"));
@@ -437,53 +429,56 @@ public class QuestaoService {
     public QuestaoResponse findById(UUID id) {
 
         UsuarioLogado user = SecurityUtil.obterUsuarioLogado();
-        boolean isAluno = user.isAluno();   
+        boolean isAluno = user.isAluno();
 
         String sql = """
-                    select q.id as qid,
-                           q.enunciado,
-                           q.escolaridade,
-                           q.ano,
-                           q.uf,
-                           q.cidade,
-                           a.id as aid,
-                           a.letra,
-                           a.correta,
-                           a.descricao,
-                           b.id as bid,
-                           i.id as iid,
-                           c.id as cid,
-                           d.id as did,
-                           a2.id as a2id,
-            """;
+                        select q.id as qid,
+                               q.enunciado,
+                               q.escolaridade,
+                               q.ano,
+                               q.uf,
+                               q.cidade,
+                               a.id as aid,
+                               a.letra,
+                               a.correta,
+                               a.descricao,
+                               b.id as bid,
+                               i.id as iid,
+                               c.id as cid,
+                               d.id as did,
+                               a2.id as a2id,
+                """;
 
         if (isAluno)
             sql += " r.acerto as acerto, ";
-                    
-        sql += """
-                COUNT(cm.id) AS comentario_count
-                from questoes q
-                            inner join alternativas a
-                                    on a.questao_id = q.id
-                            left join bancas b on q.banca_id = b.id
-                            left join instituicao i on q.instituicao_id = i.id
-                            left join cargo c on q.cargo_id = c.id
-                            left join assunto a2 on q.assunto_id = a2.id
-                            left join disciplinas d on q.disciplina_id = d.id
-                            LEFT JOIN comentarios cm ON cm.questao_id = q.id
-            """;
-                    
-        if (isAluno)
-            sql += " left join respostas r on r.questao_id and r.usuario_id = '" + user.getId() + "' ";            
 
         sql += """
-            where q.status = 'ATIVO' and q.id = ? 
-            group by q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, 
-            a.id, a.descricao, a.correta, a.letra, 
-            c.nome, d.nome, i.nome, a2.nome, b.nome, 
-            r.id, r.alternativaId, r.acerto, r.data 
-            ORDER BY q.id;
-        """; 
+                    COUNT(cm.id) AS comentario_count
+                    from questoes q
+                                inner join alternativas a
+                                        on a.questao_id = q.id
+                                left join bancas b on q.banca_id = b.id
+                                left join instituicao i on q.instituicao_id = i.id
+                                left join cargo c on q.cargo_id = c.id
+                                left join assunto a2 on q.assunto_id = a2.id
+                                left join disciplinas d on q.disciplina_id = d.id
+                                LEFT JOIN comentarios cm ON cm.questao_id = q.id
+                """;
+
+        if (isAluno)
+            sql += " left join respostas r on r.questao_id and r.usuario_id = '" + user.getId() + "' ";
+
+        sql += """
+                    where q.status = 'ATIVO' and q.id = ? 
+                    group by q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, 
+                    a.id, a.descricao, a.correta, a.letra, 
+                    c.nome, d.nome, i.nome, a2.nome, b.nome 
+                """;
+
+        if (isAluno)
+            sql += ", r.acerto ";
+
+        sql += " ORDER BY q.id";
 
         QuestaoResponse questaoResponse = jdbcTemplate.query(sql, rs -> {
             QuestaoResponse qr = null;
@@ -503,11 +498,11 @@ public class QuestaoService {
                     qr.setCargoId(UUID.fromString(rs.getString("cid")));
                     qr.setAssuntoId(UUID.fromString(rs.getString("a2id")));
                     if (isAluno) {
-                        String acerto = rs.getObject("acerto") 
-                            != null ? (rs.getBoolean("acerto") ? "true" : "false") : null;
+                        String acerto = rs.getObject("acerto")
+                                != null ? (rs.getBoolean("acerto") ? "true" : "false") : null;
                         qr.setAcerto(acerto);
                     }
-                    qr.setComentarios(rs.getInt("comentario_count"));  
+                    qr.setComentarios(rs.getInt("comentario_count"));
                     qr.setAlternativas(new ArrayList<>());
                 }
 
