@@ -273,7 +273,7 @@ public class QuestaoService {
                 """;
 
         if (isAluno)
-            sql += " left join respostas r on r.questao_id and r.usuario_id = '" + user.getId() + "'";
+            sql += " left join respostas r on r.questao_id = q.id and r.usuario_id = '" + user.getId() + "'";
 
         sql += " where q.status = 'ATIVO'";
 
@@ -362,7 +362,7 @@ public class QuestaoService {
             AlternativaResponse alternativa = new AlternativaResponse();
             alternativa.setId(UUID.fromString(rs.getString("aid")));
             alternativa.setLetra(rs.getString("letra"));
-            alternativa.setCorreta(rs.getBoolean("correta"));
+            alternativa.setCorreta(isAluno && qr.getAcerto() != null || !isAluno && rs.getBoolean("correta"));
             alternativa.setDescricao(rs.getString("descricao"));
 
             qr.getAlternativas().add(alternativa);
