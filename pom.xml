@@ -97,6 +97,7 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<!--
 				<executions>
 					<execution>
 						<id>pre-integration-test</id>
@@ -111,6 +112,7 @@
 						</goals>
 					</execution>
 				</executions>
+				-->
 			</plugin>
 			<plugin>
 				<groupId>org.springdoc</groupId>
@@ -118,7 +120,7 @@
 				<version>1.4</version>
 				<executions>
 					<execution>
-						<phase>integration-test</phase>
+						<phase>compile</phase>
 						<goals>
 							<goal>generate</goal>
 						</goals>
