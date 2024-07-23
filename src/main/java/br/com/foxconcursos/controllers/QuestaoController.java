@@ -42,7 +42,7 @@ public class QuestaoController {
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @PostMapping("/api/admin/questoes")
-    public ResponseEntity<UUID> create(@RequestBody QuestaoRequest request) {
+    public ResponseEntity<UUID> salvar(@RequestBody QuestaoRequest request) {
 
         UUID id = this.questaoService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(id);
@@ -51,7 +51,7 @@ public class QuestaoController {
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @PutMapping("/api/admin/questoes/{id}")
-    public ResponseEntity<String> update(@RequestBody QuestaoRequest request,
+    public ResponseEntity<String> atualizar(@RequestBody QuestaoRequest request,
                                          @PathVariable UUID id) {
 
         this.questaoService.update(request, id);
@@ -81,8 +81,10 @@ public class QuestaoController {
     }
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO') or hasAuthority('SCOPE_ROLE_ADMIN')")
-    @PostMapping({"/api/admin/questoes/{questaoId}/comentarios",
-            "/api/aluno/questoes/{questaoId}/comentarios"})
+    @PostMapping({
+            "/api/admin/questoes/{questaoId}/comentarios",
+            "/api/aluno/questoes/{questaoId}/comentarios"
+    })
     public ResponseEntity<String> postarComentario(
             @PathVariable UUID questaoId, @RequestBody ComentarioRequest request) {
         comentarioService.save(request, questaoId);

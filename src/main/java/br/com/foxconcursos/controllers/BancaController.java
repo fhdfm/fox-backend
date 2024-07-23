@@ -1,29 +1,22 @@
 package br.com.foxconcursos.controllers;
 
-import java.util.List;
-import java.util.UUID;
-
+import br.com.foxconcursos.domain.Banca;
+import br.com.foxconcursos.services.BancaService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import br.com.foxconcursos.domain.Banca;
-import br.com.foxconcursos.services.BancaService;
+import java.util.List;
+import java.util.UUID;
 
 @RestController
-@RequestMapping(value = "/api/admin/bancas", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(
+        consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
 public class BancaController {
-    
+
     private final BancaService bancaService;
 
     public BancaController(BancaService bancaService) {
@@ -31,34 +24,37 @@ public class BancaController {
     }
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
-    @PostMapping(consumes =  MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping("/api/admin/bancas")
     public ResponseEntity<UUID> salvar(@RequestBody Banca banca) {
         banca = bancaService.salvar(banca);
         return ResponseEntity.status(HttpStatus.CREATED).body(banca.getId());
     }
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
-    @GetMapping(value = "/{id}")
+    @GetMapping("/api/admin/bancas/{id}")
     public ResponseEntity<Banca> buscar(@PathVariable UUID id) {
         return ResponseEntity.ok(bancaService.findById(id));
     }
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
-    @PutMapping(value = "/{id}", consumes =  MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/api/admin/bancas/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Banca> atualizar(@PathVariable UUID id, @RequestBody Banca banca) {
         banca.setId(id);
         return ResponseEntity.ok(bancaService.salvar(banca));
     }
 
-    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
-    @GetMapping
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN') or hasAuthority('SCOPE_ROLE_ALUNO')")
+    @GetMapping({
+            "/api/admin/bancas",
+            "/api/aluno/bancas"
+    })
     public ResponseEntity<List<Banca>> listar(
-        @RequestParam(required = false) String filter) throws Exception {
+            @RequestParam(required = false) String filter) throws Exception {
         return ResponseEntity.ok(bancaService.findAll(filter));
     }
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
-    @DeleteMapping(value = "/{id}")
+    @DeleteMapping(value = "/api/admin/bancas/{id}")
     public ResponseEntity<String> deletar(@PathVariable UUID id) {
         bancaService.delete(id);
         return ResponseEntity.status(HttpStatus.OK).body("Banca deletada com sucesso.");

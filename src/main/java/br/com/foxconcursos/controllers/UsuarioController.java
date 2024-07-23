@@ -89,9 +89,12 @@ public class UsuarioController {
             .body(this.service.alterarPassowrd(request.getToken(), request.getNovaSenha()));
     }
 
-    @PutMapping(value = "/api/admin/usuarios/{id}", 
+    @PutMapping(value = {
+            "/api/admin/usuarios/{id}",
+            "/api/aluno/usuarios/{id}",
+    },
         consumes = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN') or hasAuthority('SCOPE_ROLE_ALUNO') ")
     public ResponseEntity<UUID> update(@PathVariable UUID id, @RequestBody Usuario user) {
         user.setId(id);
         this.service.save(user);
@@ -104,7 +107,7 @@ public class UsuarioController {
         return ResponseEntity.ok(produtoService.obterProdutosNaoMatriculados(id));
     }
 
-    @GetMapping(value = "/api/alunos/usuarios/{id}/produtos-matriculados")
+    @GetMapping(value = "/api/aluno/usuarios/{id}/produtos-matriculados")
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO') or hasAuthority('SCOPE_ROLE_EXTERNO')")
     public ResponseEntity<List<ProdutoResponse>> obterProdutosMatriculados(@PathVariable UUID id) {
         return ResponseEntity.ok(produtoService.obterProdutosMatriculados(id));
@@ -118,8 +121,11 @@ public class UsuarioController {
         return ResponseEntity.ok(service.findAll(pageable, filter));
     }
 
-    @GetMapping(value = "/api/admin/usuarios/{id}")
-    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
+    @GetMapping(value = {
+            "/api/admin/usuarios/{id}",
+            "/api/aluno/usuarios/{id}",
+    })
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN') or hasAuthority('SCOPE_ROLE_ALUNO')")
     public ResponseEntity<UsuarioResponse> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(service.findById(id));
     }
