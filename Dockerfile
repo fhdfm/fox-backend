@@ -20,4 +20,6 @@ EXPOSE 8080
 
 COPY --from=build /target/*.jar app.jar
 
+ENV SPRING_PROFILES_ACTIVE=prod
+
 ENTRYPOINT ["java", "-javaagent:/usr/local/newrelic/newrelic.jar", "-jar", "app.jar"]
