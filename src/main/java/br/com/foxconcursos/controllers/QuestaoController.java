@@ -1,6 +1,7 @@
 package br.com.foxconcursos.controllers;
 
 import br.com.foxconcursos.domain.FiltroQuestao;
+import br.com.foxconcursos.domain.Resposta;
 import br.com.foxconcursos.dto.*;
 import br.com.foxconcursos.services.ComentarioService;
 import br.com.foxconcursos.services.PdfService;
