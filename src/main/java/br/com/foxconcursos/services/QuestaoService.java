@@ -1,6 +1,20 @@
 package br.com.foxconcursos.services;
 
-import br.com.foxconcursos.domain.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import br.com.foxconcursos.domain.Alternativa;
+import br.com.foxconcursos.domain.FiltroQuestao;
+import br.com.foxconcursos.domain.Questao;
+import br.com.foxconcursos.domain.Status;
+import br.com.foxconcursos.domain.UsuarioLogado;
 import br.com.foxconcursos.dto.AlternativaRequest;
 import br.com.foxconcursos.dto.AlternativaResponse;
 import br.com.foxconcursos.dto.QuestaoRequest;
@@ -8,11 +22,6 @@ import br.com.foxconcursos.dto.QuestaoResponse;
 import br.com.foxconcursos.repositories.AlternativaRepository;
 import br.com.foxconcursos.repositories.QuestaoRepository;
 import br.com.foxconcursos.util.SecurityUtil;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.*;
 
 @Service
 public class QuestaoService {
@@ -39,7 +48,9 @@ public class QuestaoService {
                 """;
 
         boolean acertou = jdbcTemplate.query(query, rs -> {
-            return rs.getBoolean("correta");
+            if (rs.next())
+                return rs.getBoolean("correta");
+            return false;
         }, questaoId, alternativaId);
 
         return acertou;
