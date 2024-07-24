@@ -1,20 +1,6 @@
 package br.com.foxconcursos.services;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import br.com.foxconcursos.domain.Alternativa;
-import br.com.foxconcursos.domain.FiltroQuestao;
-import br.com.foxconcursos.domain.Questao;
-import br.com.foxconcursos.domain.Status;
-import br.com.foxconcursos.domain.UsuarioLogado;
+import br.com.foxconcursos.domain.*;
 import br.com.foxconcursos.dto.AlternativaRequest;
 import br.com.foxconcursos.dto.AlternativaResponse;
 import br.com.foxconcursos.dto.QuestaoRequest;
@@ -22,6 +8,11 @@ import br.com.foxconcursos.dto.QuestaoResponse;
 import br.com.foxconcursos.repositories.AlternativaRepository;
 import br.com.foxconcursos.repositories.QuestaoRepository;
 import br.com.foxconcursos.util.SecurityUtil;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
 
 @Service
 public class QuestaoService {
@@ -373,7 +364,8 @@ public class QuestaoService {
             AlternativaResponse alternativa = new AlternativaResponse();
             alternativa.setId(UUID.fromString(rs.getString("aid")));
             alternativa.setLetra(rs.getString("letra"));
-            alternativa.setCorreta(isAluno && qr.getAcerto() != null || !isAluno && rs.getBoolean("correta"));
+
+            alternativa.setCorreta(isAluno && qr.getAcerto() != null || !isAluno ? rs.getBoolean("correta") : false);
             alternativa.setDescricao(rs.getString("descricao"));
 
             qr.getAlternativas().add(alternativa);
