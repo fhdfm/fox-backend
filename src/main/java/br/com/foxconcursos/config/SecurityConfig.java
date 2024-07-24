@@ -3,7 +3,6 @@ package br.com.foxconcursos.config;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -28,11 +27,13 @@ import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    @Value("${jwt.public.key}")
     private RSAPublicKey publicKey;
-
-    @Value("${jwt.private.key}")
     private RSAPrivateKey privateKey;
+
+    public SecurityConfig(RSAPublicKey publicKey, RSAPrivateKey privateKey) {
+        this.publicKey = publicKey;
+        this.privateKey = privateKey;
+    }    
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
