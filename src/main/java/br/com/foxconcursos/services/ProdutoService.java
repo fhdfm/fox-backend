@@ -30,9 +30,8 @@ public class ProdutoService {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public List<ProdutoResponse> obterProdutosNaoMatriculados() {
-        UsuarioLogado usuarioLogado = SecurityUtil.obterUsuarioLogado();
-        UUID usuarioId = usuarioLogado.getId();
+    public List<ProdutoResponse> obterProdutosNaoMatriculados(UUID usuarioId) {
+
 
         List<ProdutoResponse> produtos = new ArrayList<ProdutoResponse>();
 
