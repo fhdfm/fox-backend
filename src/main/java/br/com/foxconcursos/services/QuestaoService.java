@@ -1,10 +1,7 @@
 package br.com.foxconcursos.services;
 
 import br.com.foxconcursos.domain.*;
-import br.com.foxconcursos.dto.AlternativaRequest;
-import br.com.foxconcursos.dto.AlternativaResponse;
-import br.com.foxconcursos.dto.QuestaoRequest;
-import br.com.foxconcursos.dto.QuestaoResponse;
+import br.com.foxconcursos.dto.*;
 import br.com.foxconcursos.repositories.AlternativaRepository;
 import br.com.foxconcursos.repositories.QuestaoRepository;
 import br.com.foxconcursos.util.SecurityUtil;
@@ -31,20 +28,25 @@ public class QuestaoService {
 
     }
 
-    public boolean isAlternativaCorreta(UUID questaoId, UUID alternativaId) {
+    public ResultadoResponse isAlternativaCorreta(UUID questaoId, UUID alternativaId) {
 
-        String query = """
-                    select a.correta from alternativas a inner join questoes q on a.questao_id = q.id
-                    where q.id = ? and a.id = ? and q.status = 'ATIVO' 
-                """;
+        String queryIdCorreta = """
+               select a.id
+               from questoes q
+                        inner join alternativas a on q.id = a.questao_id
+               where q.id = ?
+                 and  a.correta = true
+                    """;
 
-        boolean acertou = jdbcTemplate.query(query, rs -> {
-            if (rs.next())
-                return rs.getBoolean("correta");
-            return false;
-        }, questaoId, alternativaId);
+        ResultadoResponse resultadoResponse = new ResultadoResponse();
 
-        return acertou;
+        jdbcTemplate.query(queryIdCorreta, rs -> {
+            resultadoResponse.setAlternativaCorreta(UUID.fromString(rs.getString("id")));
+            resultadoResponse.setCorreta(UUID.fromString(rs.getString("id")).equals(alternativaId));
+        }, questaoId);
+
+        return resultadoResponse;
+
     }
 
     @Transactional
@@ -252,7 +254,8 @@ public class QuestaoService {
                 """;
 
         if (isAluno)
-            sql += " r.acerto as acerto, ";
+            sql += " r.acerto as acerto," +
+                    " r.alternativa_id as alternativaSelecionadaId, ";
 
 
         sql += """
@@ -329,7 +332,7 @@ public class QuestaoService {
                 """;
 
         if (isAluno)
-            sql += ", r.acerto ";
+            sql += ", r.acerto, r.alternativa_id ";
 
         sql += " ORDER BY q.id limit " + limit + " offset " + offset;
 
@@ -357,7 +360,12 @@ public class QuestaoService {
                     qr.setAcerto(acerto);
                 }
                 qr.setComentarios(rs.getInt("comentario_count"));
+                qr.setAlternativaSelecionadaId(
+                        rs.getString("alternativaSelecionadaId") != null ?
+                                UUID.fromString(rs.getString("alternativaSelecionadaId")) :
+                                null);
                 qr.setAlternativas(new ArrayList<>());
+
                 questaoMap.put(questaoId, qr);
             }
 

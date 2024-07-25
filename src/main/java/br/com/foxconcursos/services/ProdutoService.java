@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import br.com.foxconcursos.domain.UsuarioLogado;
+import br.com.foxconcursos.util.SecurityUtil;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -28,8 +30,10 @@ public class ProdutoService {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public List<ProdutoResponse> obterProdutosNaoMatriculados(UUID usuarioId) {
-        
+    public List<ProdutoResponse> obterProdutosNaoMatriculados() {
+        UsuarioLogado usuarioLogado = SecurityUtil.obterUsuarioLogado();
+        UUID usuarioId = usuarioLogado.getId();
+
         List<ProdutoResponse> produtos = new ArrayList<ProdutoResponse>();
 
         String queryCursosNaoMatriculados = """

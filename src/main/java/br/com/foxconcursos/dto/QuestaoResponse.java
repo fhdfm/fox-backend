@@ -24,6 +24,8 @@ public class QuestaoResponse {
     private String acerto;
     private List<AlternativaResponse> alternativas;
     private int comentarios;
+    private UUID alternativaSelecionadaId;
+
 
     public QuestaoResponse() {  }
 
@@ -177,5 +179,13 @@ public class QuestaoResponse {
 
     public void setComentarios(int qtd) {
         this.comentarios = qtd;
+    }
+
+    public UUID getAlternativaSelecionadaId() {
+        return alternativaSelecionadaId;
+    }
+
+    public void setAlternativaSelecionadaId(UUID alternativaSelecionadaId) {
+        this.alternativaSelecionadaId = alternativaSelecionadaId;
     }
 }

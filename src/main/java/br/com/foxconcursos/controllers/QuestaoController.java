@@ -173,9 +173,9 @@ public class QuestaoController {
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO')")
     @PostMapping("/api/aluno/questoes/{questaoId}/responder")
-    public ResponseEntity<UUID> responder(@RequestBody RespostaRequest request,
+    public ResponseEntity<ResultadoResponse> responder(@RequestBody RespostaRequest request,
                                           @PathVariable UUID questaoId) {
-        UUID uuid = respostaService.save(request, questaoId);
+        ResultadoResponse uuid = respostaService.save(request, questaoId);
         return ResponseEntity.status(HttpStatus.CREATED).body(uuid);
     }
 
