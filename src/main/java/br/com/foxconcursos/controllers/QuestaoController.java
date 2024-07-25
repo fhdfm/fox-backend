@@ -108,11 +108,9 @@ public class QuestaoController {
         }
 
         int quantidadeRegistros = this.questaoService.getRecordCount(questao);
-        int quantidadeDePaginas = quantidadeRegistros / limit;
 
         BancoQuestaoResponse response = new BancoQuestaoResponse();
         response.setTotalDeRegistros(quantidadeRegistros);
-        response.setTotalDePaginas(quantidadeDePaginas);
 
         List<QuestaoResponse> questoes =
                 this.questaoService.findAll(questao, limit, offset);
@@ -142,11 +140,9 @@ public class QuestaoController {
         }
 
         int quantidadeRegistros = this.questaoService.getRecordCount(questao);
-        int quantidadeDePaginas = quantidadeRegistros / limit;
 
         BancoQuestaoResponse response = new BancoQuestaoResponse();
         response.setTotalDeRegistros(quantidadeRegistros);
-        response.setTotalDePaginas(quantidadeDePaginas);
 
         List<QuestaoResponse> questoes =
                 this.questaoService.findAll(questao, limit, offset);

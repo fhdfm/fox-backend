@@ -7,21 +7,12 @@ public class BancoQuestaoResponse {
     
     private Map<String, String> filtros;
     
-    private int totalDePaginas;
     private int totalDeRegistros;
     private String perfil;
 
     private List<QuestaoResponse> questoes;
 
     public BancoQuestaoResponse() {
-    }
-
-    public int getTotalDePaginas() {
-        return totalDePaginas;
-    }
-
-    public void setTotalDePaginas(int totalDePaginas) {
-        this.totalDePaginas = totalDePaginas;
     }
 
     public int getTotalDeRegistros() {
