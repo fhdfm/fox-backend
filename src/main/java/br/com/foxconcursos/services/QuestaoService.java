@@ -360,10 +360,12 @@ public class QuestaoService {
                     qr.setAcerto(acerto);
                 }
                 qr.setComentarios(rs.getInt("comentario_count"));
-                qr.setAlternativaSelecionadaId(
-                        rs.getString("alternativaSelecionadaId") != null ?
-                                UUID.fromString(rs.getString("alternativaSelecionadaId")) :
-                                null);
+                if (isAluno) {
+                    qr.setAlternativaSelecionadaId(
+                            rs.getString("alternativaSelecionadaId") != null ?
+                                    UUID.fromString(rs.getString("alternativaSelecionadaId")) :
+                                    null);
+                }
                 qr.setAlternativas(new ArrayList<>());
 
                 questaoMap.put(questaoId, qr);
@@ -482,8 +484,8 @@ public class QuestaoService {
         sql += """
                     where q.status = 'ATIVO' and q.id = ? 
                     group by q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, 
-                    a.id, a.descricao, a.correta, a.letra, 
-                    c.nome, d.nome, i.nome, a2.nome, b.nome 
+                    a.id, a.descricao, a.correta, a.letra, a2.id,
+                    c.id, c.nome, d.id, d.nome, i.id, i.nome, a2.nome, b.id, b.nome 
                 """;
 
         if (isAluno)
@@ -500,21 +502,30 @@ public class QuestaoService {
                     qr.setId(UUID.fromString(rs.getString("qid")));
                     qr.setEnunciado(rs.getString("enunciado"));
                     qr.setEscolaridade(rs.getString("escolaridade"));
-                    qr.setUf(rs.getString("uf"));
-                    qr.setCidade(rs.getString("cidade"));
                     qr.setAno(rs.getInt("ano"));
                     qr.setBancaId(UUID.fromString(rs.getString("bid")));
                     qr.setDisciplinaId(UUID.fromString(rs.getString("did")));
-                    qr.setInstituicaoId(UUID.fromString(rs.getString("iid")));
-                    qr.setCargoId(UUID.fromString(rs.getString("cid")));
                     qr.setAssuntoId(UUID.fromString(rs.getString("a2id")));
+                    qr.setAlternativas(new ArrayList<>());
+
+                    String uf = rs.getString("uf");
+                    String cidade = rs.getString("cidade");
+                    String instituicaoId = rs.getString("iid");
+                    String cargoId = rs.getString("cid");
+                    String comentarios = rs.getString("comentario_count");
+
+                    qr.setComentarios(comentarios != null ? Integer.valueOf(comentarios) : 0 );
+                    qr.setUf(uf != null && !uf.trim().isEmpty() ? uf : null);
+                    qr.setCidade(cidade != null && !cidade.trim().isEmpty() ? cidade : null);
+                    qr.setInstituicaoId(instituicaoId != null && !instituicaoId.trim().isEmpty() ? UUID.fromString(instituicaoId) : null);
+                    qr.setCargoId(cargoId != null && !cargoId.trim().isEmpty() ? UUID.fromString(cargoId) : null);
+
+
                     if (isAluno) {
                         String acerto = rs.getObject("acerto")
                                 != null ? (rs.getBoolean("acerto") ? "true" : "false") : null;
                         qr.setAcerto(acerto);
                     }
-                    qr.setComentarios(rs.getInt("comentario_count"));
-                    qr.setAlternativas(new ArrayList<>());
                 }
 
                 AlternativaResponse alternativa = new AlternativaResponse();

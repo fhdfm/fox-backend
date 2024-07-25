@@ -1,7 +1,6 @@
 package br.com.foxconcursos.controllers;
 
 import br.com.foxconcursos.domain.FiltroQuestao;
-import br.com.foxconcursos.domain.Resposta;
 import br.com.foxconcursos.dto.*;
 import br.com.foxconcursos.services.ComentarioService;
 import br.com.foxconcursos.services.PdfService;
@@ -53,7 +52,7 @@ public class QuestaoController {
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @PutMapping("/api/admin/questoes/{id}")
     public ResponseEntity<String> atualizar(@RequestBody QuestaoRequest request,
-                                         @PathVariable UUID id) {
+                                            @PathVariable UUID id) {
 
         this.questaoService.update(request, id);
         return ResponseEntity.status(HttpStatus.OK).body("Questao: " + id
@@ -164,8 +163,8 @@ public class QuestaoController {
                 "attachment; filename=banco-questoes-" + UUID.randomUUID() + ".pdf").body(pdf);
     }
 
-    @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO') or hasAuthority('SCOPE_ROLE_ADMIN')")
-    @GetMapping({"/api/admin/questoes/{id}", "/api/aluno/questoes/{id}"})
+    @PreAuthorize(" hasAuthority('SCOPE_ROLE_ADMIN')")
+    @GetMapping("/api/admin/questoes/{id}")
     public ResponseEntity<QuestaoResponse> findById(@PathVariable UUID id) {
         QuestaoResponse questao = this.questaoService.findById(id);
         return ResponseEntity.status(HttpStatus.OK).body(questao);
@@ -174,7 +173,7 @@ public class QuestaoController {
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO')")
     @PostMapping("/api/aluno/questoes/{questaoId}/responder")
     public ResponseEntity<ResultadoResponse> responder(@RequestBody RespostaRequest request,
-                                          @PathVariable UUID questaoId) {
+                                                       @PathVariable UUID questaoId) {
         ResultadoResponse uuid = respostaService.save(request, questaoId);
         return ResponseEntity.status(HttpStatus.CREATED).body(uuid);
     }
