@@ -6,17 +6,14 @@ import br.com.foxconcursos.repositories.AlternativaRepository;
 import br.com.foxconcursos.repositories.QuestaoRepository;
 import br.com.foxconcursos.util.SecurityUtil;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
-@Service
 public class QuestaoService {
-
     private final QuestaoRepository questaoRepository;
     private final AlternativaRepository alternativaRepository;
-    private final JdbcTemplate jdbcTemplate;
+    private JdbcTemplate jdbcTemplate;
 
     public QuestaoService(QuestaoRepository questaoRepository,
                           AlternativaRepository alternativaRepository,
@@ -28,25 +25,148 @@ public class QuestaoService {
 
     }
 
-    public ResultadoResponse isAlternativaCorreta(UUID questaoId, UUID alternativaId) {
+    public List<QuestaoResponse> findAll(FiltroQuestao questao, int limit, int offset) {
+        UsuarioLogado user = SecurityUtil.obterUsuarioLogado();
+        boolean isAluno = user.isAluno();
 
-        String queryIdCorreta = """
-               select a.id
-               from questoes q
-                        inner join alternativas a on q.id = a.questao_id
-               where q.id = ?
-                 and  a.correta = true
-                    """;
+        String sql = """
+                    WITH PagedQuestions AS (
+                        SELECT 
+                            q.id as qid,
+                            q.enunciado,
+                            q.ano,
+                            q.uf,
+                            q.escolaridade,
+                            q.cidade,
+                            c.nome as cargo,
+                            d.nome as disciplina,
+                            i.nome as instituicao,
+                            a2.nome as assunto,
+                            b.nome as banca,
+                """;
 
-        ResultadoResponse resultadoResponse = new ResultadoResponse();
+        if (isAluno)
+            sql += " r.acerto as acerto, ";
 
-        jdbcTemplate.query(queryIdCorreta, rs -> {
-            resultadoResponse.setAlternativaCorreta(UUID.fromString(rs.getString("id")));
-            resultadoResponse.setCorreta(UUID.fromString(rs.getString("id")).equals(alternativaId));
-        }, questaoId);
+        sql += """
+                            COUNT(cm.id) as comentario_count,
+                            ROW_NUMBER() OVER (ORDER BY q.id) as row_num
+                        FROM questoes q
+                            LEFT JOIN bancas b ON q.banca_id = b.id
+                            LEFT JOIN instituicao i ON q.instituicao_id = i.id
+                            LEFT JOIN cargo c ON q.cargo_id = c.id
+                            LEFT JOIN assunto a2 ON q.assunto_id = a2.id
+                            LEFT JOIN disciplinas d ON q.disciplina_id = d.id 
+                            LEFT JOIN comentarios cm ON cm.questao_id = q.id
+                """;
 
-        return resultadoResponse;
+        if (isAluno)
+            sql += " LEFT JOIN respostas r ON r.questao_id = q.id AND r.usuario_id = '" + user.getId() + "'";
 
+        sql += " WHERE q.status = 'ATIVO'";
+
+        if (questao.getAssuntoId() != null && !questao.getAssuntoId().isEmpty()) {
+            sql += " AND q.assunto_id IN (" + listToString(questao.getAssuntoId()) + ") ";
+        }
+
+        if (questao.getAno() != null) {
+            sql += " AND q.ano = " + questao.getAno();
+        }
+
+        if (questao.getBancaId() != null) {
+            sql += " AND q.banca_id = '" + questao.getBancaId() + "' ";
+        }
+
+        if (questao.getCidade() != null) {
+            sql += " AND q.cidade = '" + questao.getCidade() + "' ";
+        }
+
+        if (questao.getUf() != null) {
+            sql += " AND q.uf = '" + questao.getUf() + "' ";
+        }
+
+        if (questao.getEscolaridade() != null) {
+            sql += " AND q.escolaridade = '" + questao.getEscolaridade() + "' ";
+        }
+
+        if (questao.getEnunciado() != null && !questao.getEnunciado().trim().isEmpty()) {
+            sql += " AND q.enunciado LIKE '%" + questao.getEnunciado() + "%' ";
+        }
+
+        if (questao.getCargoId() != null) {
+            sql += " AND q.cargo_id = '" + questao.getCargoId() + "' ";
+        }
+
+        if (questao.getDisciplinaId() != null && !questao.getDisciplinaId().isEmpty()) {
+            sql += " AND q.disciplina_id IN (" + listToString(questao.getDisciplinaId()) + ") ";
+        }
+
+        if (questao.getInstituicaoId() != null) {
+            sql += " AND q.instituicao_id = '" + questao.getInstituicaoId() + "' ";
+        }
+
+        sql += """
+                        GROUP BY 
+                            q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, 
+                            c.nome, d.nome, i.nome, a2.nome, b.nome
+                """;
+
+        if (isAluno)
+            sql += ", r.acerto";
+
+        sql += """
+                    )
+                    SELECT 
+                        pq.qid, pq.enunciado, pq.ano, pq.uf, pq.escolaridade, pq.cidade,
+                        pq.cargo, pq.disciplina, pq.instituicao, pq.assunto, pq.banca,
+                        pq.acerto, pq.comentario_count, a.id as aid, a.descricao, a.correta, a.letra
+                    FROM PagedQuestions pq
+                    LEFT JOIN alternativas a ON a.questao_id = pq.qid
+                    WHERE pq.row_num BETWEEN ? AND ?
+                    ORDER BY pq.qid, a.id
+                """;
+
+        // Calcule os limites da página
+        int startRow = offset + 1;
+        int endRow = offset + limit;
+
+        Map<UUID, QuestaoResponse> questaoMap = new HashMap<UUID, QuestaoResponse>();
+        List<QuestaoResponse> result = new ArrayList<QuestaoResponse>();
+
+        this.jdbcTemplate.query(sql, rs -> {
+            UUID questaoId = UUID.fromString(rs.getString("qid"));
+            QuestaoResponse qr = questaoMap.get(questaoId);
+
+            if (qr == null) {
+                qr = new QuestaoResponse();
+                qr.setId(questaoId);
+                qr.setEnunciado(rs.getString("enunciado"));
+                qr.setBanca(rs.getString("banca"));
+                qr.setAno(rs.getInt("ano"));
+                qr.setInstituicao(rs.getString("instituicao"));
+                qr.setDisciplina(rs.getString("disciplina"));
+                qr.setCargo(rs.getString("cargo"));
+                qr.setAssunto(rs.getString("assunto"));
+                if (isAluno) {
+                    String acerto = rs.getObject("acerto") != null ? (rs.getBoolean("acerto") ? "true" : "false") : null;
+                    qr.setAcerto(acerto);
+                }
+                qr.setComentarios(rs.getInt("comentario_count"));
+                qr.setAlternativas(new ArrayList<>());
+                questaoMap.put(questaoId, qr);
+            }
+
+            AlternativaResponse alternativa = new AlternativaResponse();
+            alternativa.setId(UUID.fromString(rs.getString("aid")));
+            alternativa.setLetra(rs.getString("letra"));
+            alternativa.setCorreta(isAluno && qr.getAcerto() != null || !isAluno ? rs.getBoolean("correta") : false);
+            alternativa.setDescricao(rs.getString("descricao"));
+
+            qr.getAlternativas().add(alternativa);
+        }, startRow, endRow);
+
+        result.addAll(questaoMap.values());
+        return result;
     }
 
     @Transactional
@@ -229,163 +349,6 @@ public class QuestaoService {
                 String.class, UUID.fromString(id));
     }
 
-    public List<QuestaoResponse> findAll(FiltroQuestao questao,
-                                         Integer limit, Integer offset) {
-
-        UsuarioLogado user = SecurityUtil.obterUsuarioLogado();
-        boolean isAluno = user.isAluno();
-
-        String sql = """
-                   select q.id as qid,
-                          q.enunciado,
-                          q.ano,
-                          q.uf,
-                          q.escolaridade,
-                          q.cidade,
-                          a.id as aid,
-                          a.descricao,
-                          a.correta,
-                          a.letra,
-                          c.nome as cargo,
-                          d.nome as disciplina,
-                          i.nome as instituicao,
-                          a2.nome as assunto,
-                          b.nome as banca,
-                """;
-
-        if (isAluno)
-            sql += " r.acerto as acerto," +
-                    " r.alternativa_id as alternativaSelecionadaId, ";
-
-
-        sql += """
-                       count(cm.id) as comentario_count 
-                       from questoes q
-                                inner join alternativas a
-                                           on a.questao_id = q.id
-                                left join bancas b
-                                          on q.banca_id = b.id
-                                left join instituicao i
-                                          on q.instituicao_id = i.id
-                                left join cargo c
-                                          on q.cargo_id = c.id
-                                left join assunto a2
-                                          on q.assunto_id = a2.id
-                                left join disciplinas d
-                                          on q.disciplina_id = d.id 
-                                left join comentarios cm
-                                          on cm.questao_id = q.id
-                """;
-
-        if (isAluno)
-            sql += " left join respostas r on r.questao_id = q.id and r.usuario_id = '" + user.getId() + "'";
-
-        sql += " where q.status = 'ATIVO'";
-
-        if (questao.getAssuntoId() != null && !questao.getAssuntoId().isEmpty()) {
-            sql += " and q.assunto_id in ("
-                    + listToString(questao.getAssuntoId()) + ") ";
-        }
-
-        if (questao.getAno() != null) {
-            sql += " and q.ano = " + questao.getAno();
-        }
-
-        if (questao.getBancaId() != null) {
-            sql += " and q.banca_id = '" + questao.getBancaId() + "' ";
-        }
-
-        if (questao.getCidade() != null) {
-            sql += " and q.cidade = '" + questao.getCidade() + "' ";
-        }
-
-        if (questao.getUf() != null) {
-            sql += " and q.uf = '" + questao.getUf() + "' ";
-        }
-
-        if (questao.getEscolaridade() != null) {
-            sql += " and q.escolaridade = '" + questao.getEscolaridade() + "' ";
-        }
-
-        if (questao.getEnunciado() != null && !questao.getEnunciado().trim().isEmpty()) {
-            sql += " and q.enunciado like '%" + questao.getEnunciado() + "%' ";
-        }
-
-        if (questao.getCargoId() != null) {
-            sql += " and q.cargo_id = '" + questao.getCargoId() + "' ";
-        }
-
-        if (questao.getDisciplinaId() != null && !questao.getDisciplinaId().isEmpty()) {
-            sql += " and q.disciplina_id in ("
-                    + listToString(questao.getDisciplinaId()) + ") ";
-        }
-
-        if (questao.getInstituicaoId() != null) {
-            sql += " and q.instituicao_id = '" + questao.getInstituicaoId() + "' ";
-        }
-
-        sql += """
-                    GROUP BY 
-                        q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, 
-                        a.id, a.descricao, a.correta, a.letra, 
-                        c.nome, d.nome, i.nome, a2.nome, b.nome                
-                """;
-
-        if (isAluno)
-            sql += ", r.acerto, r.alternativa_id ";
-
-        sql += " ORDER BY q.id limit " + limit + " offset " + offset;
-
-        Map<UUID, QuestaoResponse> questaoMap = new HashMap<UUID, QuestaoResponse>();
-        List<QuestaoResponse> result = new ArrayList<QuestaoResponse>();
-
-        this.jdbcTemplate.query(sql, rs -> {
-
-            UUID questaoId = UUID.fromString(rs.getString("qid"));
-            QuestaoResponse qr = questaoMap.get(questaoId);
-
-            if (qr == null) {
-                qr = new QuestaoResponse();
-                qr.setId(questaoId);
-                qr.setEnunciado(rs.getString("enunciado"));
-                qr.setBanca(rs.getString("banca"));
-                qr.setAno(rs.getInt("ano"));
-                qr.setInstituicao(rs.getString("instituicao"));
-                qr.setDisciplina(rs.getString("disciplina"));
-                qr.setCargo(rs.getString("cargo"));
-                qr.setAssunto(rs.getString("assunto"));
-                if (isAluno) {
-                    String acerto = rs.getObject("acerto")
-                            != null ? (rs.getBoolean("acerto") ? "true" : "false") : null;
-                    qr.setAcerto(acerto);
-                }
-                qr.setComentarios(rs.getInt("comentario_count"));
-                if (isAluno) {
-                    qr.setAlternativaSelecionadaId(
-                            rs.getString("alternativaSelecionadaId") != null ?
-                                    UUID.fromString(rs.getString("alternativaSelecionadaId")) :
-                                    null);
-                }
-                qr.setAlternativas(new ArrayList<>());
-
-                questaoMap.put(questaoId, qr);
-            }
-
-            AlternativaResponse alternativa = new AlternativaResponse();
-            alternativa.setId(UUID.fromString(rs.getString("aid")));
-            alternativa.setLetra(rs.getString("letra"));
-
-            alternativa.setCorreta(isAluno && qr.getAcerto() != null || !isAluno ? rs.getBoolean("correta") : false);
-            alternativa.setDescricao(rs.getString("descricao"));
-
-            qr.getAlternativas().add(alternativa);
-
-        });
-
-        result.addAll(questaoMap.values());
-        return result;
-    }
-
     public int getRecordCount(FiltroQuestao questao) {
         String sql = """
                     select count(q.id) from questoes q where q.status = 'ATIVO' 
@@ -484,8 +447,8 @@ public class QuestaoService {
         sql += """
                     where q.status = 'ATIVO' and q.id = ? 
                     group by q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, 
-                    a.id, a.descricao, a.correta, a.letra, a2.id,
-                    c.id, c.nome, d.id, d.nome, i.id, i.nome, a2.nome, b.id, b.nome 
+                    a.id, a.descricao, a.correta, a.letra, 
+                    c.nome, d.nome, i.nome, a2.nome, b.nome 
                 """;
 
         if (isAluno)
@@ -514,7 +477,7 @@ public class QuestaoService {
                     String cargoId = rs.getString("cid");
                     String comentarios = rs.getString("comentario_count");
 
-                    qr.setComentarios(comentarios != null ? Integer.valueOf(comentarios) : 0 );
+                    qr.setComentarios(comentarios != null ? Integer.valueOf(comentarios) : 0);
                     qr.setUf(uf != null && !uf.trim().isEmpty() ? uf : null);
                     qr.setCidade(cidade != null && !cidade.trim().isEmpty() ? cidade : null);
                     qr.setInstituicaoId(instituicaoId != null && !instituicaoId.trim().isEmpty() ? UUID.fromString(instituicaoId) : null);
@@ -555,5 +518,26 @@ public class QuestaoService {
         }
 
         return sb.substring(0, sb.length() - 1);
+    }
+
+    public ResultadoResponse isAlternativaCorreta(UUID questaoId, UUID alternativaId) {
+
+        String queryIdCorreta = """
+                select a.id
+                from questoes q
+                         inner join alternativas a on q.id = a.questao_id
+                where q.id = ?
+                  and  a.correta = true
+                     """;
+
+        ResultadoResponse resultadoResponse = new ResultadoResponse();
+
+        jdbcTemplate.query(queryIdCorreta, rs -> {
+            resultadoResponse.setAlternativaCorreta(UUID.fromString(rs.getString("id")));
+            resultadoResponse.setCorreta(UUID.fromString(rs.getString("id")).equals(alternativaId));
+        }, questaoId);
+
+        return resultadoResponse;
+
     }
 }
