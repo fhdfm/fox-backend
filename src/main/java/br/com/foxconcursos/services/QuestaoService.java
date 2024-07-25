@@ -6,10 +6,12 @@ import br.com.foxconcursos.repositories.AlternativaRepository;
 import br.com.foxconcursos.repositories.QuestaoRepository;
 import br.com.foxconcursos.util.SecurityUtil;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
+@Service
 public class QuestaoService {
     private final QuestaoRepository questaoRepository;
     private final AlternativaRepository alternativaRepository;
@@ -119,14 +121,19 @@ public class QuestaoService {
                     SELECT 
                         pq.qid, pq.enunciado, pq.ano, pq.uf, pq.escolaridade, pq.cidade,
                         pq.cargo, pq.disciplina, pq.instituicao, pq.assunto, pq.banca,
-                        pq.acerto, pq.comentario_count, a.id as aid, a.descricao, a.correta, a.letra
+                        pq.comentario_count, a.id as aid, a.descricao, a.correta, a.letra
+                """;
+
+        if (isAluno)
+            sql += ", pq.acerto";
+
+        sql += """
                     FROM PagedQuestions pq
                     LEFT JOIN alternativas a ON a.questao_id = pq.qid
                     WHERE pq.row_num BETWEEN ? AND ?
                     ORDER BY pq.qid, a.id
                 """;
 
-        // Calcule os limites da página
         int startRow = offset + 1;
         int endRow = offset + limit;
 
@@ -447,7 +454,7 @@ public class QuestaoService {
         sql += """
                     where q.status = 'ATIVO' and q.id = ? 
                     group by q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, 
-                    a.id, a.descricao, a.correta, a.letra, 
+                    a.id, a.descricao, a.correta, a.letra, b.id, i.id, c.id, a2.id, d.id, 
                     c.nome, d.nome, i.nome, a2.nome, b.nome 
                 """;
 
