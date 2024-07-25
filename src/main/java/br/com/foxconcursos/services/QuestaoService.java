@@ -7,20 +7,11 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import br.com.foxconcursos.domain.Alternativa;
 import br.com.foxconcursos.domain.FiltroQuestao;
-import br.com.foxconcursos.domain.Questao;
-import br.com.foxconcursos.domain.Status;
 import br.com.foxconcursos.domain.UsuarioLogado;
-import br.com.foxconcursos.dto.AlternativaRequest;
 import br.com.foxconcursos.dto.AlternativaResponse;
-import br.com.foxconcursos.dto.QuestaoRequest;
 import br.com.foxconcursos.dto.QuestaoResponse;
-import br.com.foxconcursos.repositories.AlternativaRepository;
-import br.com.foxconcursos.repositories.QuestaoRepository;
 import br.com.foxconcursos.util.SecurityUtil;
     
     public class QuestaoService {
@@ -139,7 +130,7 @@ import br.com.foxconcursos.util.SecurityUtil;
             Map<UUID, QuestaoResponse> questaoMap = new HashMap<UUID, QuestaoResponse>();
             List<QuestaoResponse> result = new ArrayList<QuestaoResponse>();
     
-            this.jdbcTemplate.query(sql, new Object[]{startRow, endRow}, rs -> {
+            this.jdbcTemplate.query(sql, rs -> {
                 UUID questaoId = UUID.fromString(rs.getString("qid"));
                 QuestaoResponse qr = questaoMap.get(questaoId);
     
@@ -169,14 +160,10 @@ import br.com.foxconcursos.util.SecurityUtil;
                 alternativa.setDescricao(rs.getString("descricao"));
     
                 qr.getAlternativas().add(alternativa);
-            });
+            }, startRow, endRow);
     
             result.addAll(questaoMap.values());
             return result;
-        }
-    
-        private String listToString(List<String> list) {
-            return String.join(",", list);
         }
     
     // public List<QuestaoResponse> findAll(FiltroQuestao questao,
