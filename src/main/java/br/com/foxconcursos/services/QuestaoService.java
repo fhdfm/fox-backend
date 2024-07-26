@@ -1,319 +1,360 @@
 package br.com.foxconcursos.services;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import org.springframework.jdbc.core.JdbcTemplate;
-
-import br.com.foxconcursos.domain.FiltroQuestao;
-import br.com.foxconcursos.domain.UsuarioLogado;
-import br.com.foxconcursos.dto.AlternativaResponse;
-import br.com.foxconcursos.dto.QuestaoResponse;
+import br.com.foxconcursos.domain.*;
+import br.com.foxconcursos.dto.*;
+import br.com.foxconcursos.repositories.AlternativaRepository;
+import br.com.foxconcursos.repositories.QuestaoRepository;
 import br.com.foxconcursos.util.SecurityUtil;
-    
-    public class QuestaoService {
-    
-        private JdbcTemplate jdbcTemplate;
-    
-        public QuestaoService(JdbcTemplate jdbcTemplate) {
-            this.jdbcTemplate = jdbcTemplate;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
+
+@Service
+public class QuestaoService {
+    private final QuestaoRepository questaoRepository;
+    private final AlternativaRepository alternativaRepository;
+    private JdbcTemplate jdbcTemplate;
+
+    public QuestaoService(QuestaoRepository questaoRepository,
+                          AlternativaRepository alternativaRepository,
+                          JdbcTemplate jdbcTemplate) {
+
+        this.questaoRepository = questaoRepository;
+        this.alternativaRepository = alternativaRepository;
+        this.jdbcTemplate = jdbcTemplate;
+
+    }
+
+    public List<QuestaoResponse> findAll(FiltroQuestao questao, int limit, int offset) {
+        UsuarioLogado user = SecurityUtil.obterUsuarioLogado();
+        boolean isAluno = user.isAluno();
+
+        String sql = """
+                    WITH PagedQuestions AS (
+                        SELECT 
+                            q.id as qid,
+                            q.enunciado,
+                            q.ano,
+                            q.uf,
+                            q.escolaridade,
+                            q.cidade,
+                            c.nome as cargo,
+                            d.nome as disciplina,
+                            i.nome as instituicao,
+                            a2.nome as assunto,
+                            b.nome as banca,
+                """;
+
+        if (isAluno)
+            sql += " r.acerto as acerto, ";
+
+        sql += """
+                            COUNT(cm.id) as comentario_count,
+                            ROW_NUMBER() OVER (ORDER BY q.id) as row_num
+                        FROM questoes q
+                            LEFT JOIN bancas b ON q.banca_id = b.id
+                            LEFT JOIN instituicao i ON q.instituicao_id = i.id
+                            LEFT JOIN cargo c ON q.cargo_id = c.id
+                            LEFT JOIN assunto a2 ON q.assunto_id = a2.id
+                            LEFT JOIN disciplinas d ON q.disciplina_id = d.id 
+                            LEFT JOIN comentarios cm ON cm.questao_id = q.id
+                """;
+
+        if (isAluno)
+            sql += " LEFT JOIN respostas r ON r.questao_id = q.id AND r.usuario_id = '" + user.getId() + "'";
+
+        sql += " WHERE q.status = 'ATIVO'";
+
+        if (questao.getAssuntoId() != null && !questao.getAssuntoId().isEmpty()) {
+            sql += " AND q.assunto_id IN (" + listToString(questao.getAssuntoId()) + ") ";
         }
-    
-        public List<QuestaoResponse> findAll(QuestaoFiltro questao, int limit, int offset) {
-            UsuarioLogado user = SecurityUtil.obterUsuarioLogado();
-            boolean isAluno = user.isAluno();
-    
-            String sql = """
-                WITH PagedQuestions AS (
+
+        if (questao.getAno() != null) {
+            sql += " AND q.ano = " + questao.getAno();
+        }
+
+        if (questao.getBancaId() != null) {
+            sql += " AND q.banca_id = '" + questao.getBancaId() + "' ";
+        }
+
+        if (questao.getCidade() != null) {
+            sql += " AND q.cidade = '" + questao.getCidade() + "' ";
+        }
+
+        if (questao.getUf() != null) {
+            sql += " AND q.uf = '" + questao.getUf() + "' ";
+        }
+
+        if (questao.getEscolaridade() != null) {
+            sql += " AND q.escolaridade = '" + questao.getEscolaridade() + "' ";
+        }
+
+        if (questao.getEnunciado() != null && !questao.getEnunciado().trim().isEmpty()) {
+            sql += " AND q.enunciado LIKE '%" + questao.getEnunciado() + "%' ";
+        }
+
+        if (questao.getCargoId() != null) {
+            sql += " AND q.cargo_id = '" + questao.getCargoId() + "' ";
+        }
+
+        if (questao.getDisciplinaId() != null && !questao.getDisciplinaId().isEmpty()) {
+            sql += " AND q.disciplina_id IN (" + listToString(questao.getDisciplinaId()) + ") ";
+        }
+
+        if (questao.getInstituicaoId() != null) {
+            sql += " AND q.instituicao_id = '" + questao.getInstituicaoId() + "' ";
+        }
+
+        sql += """
+                        GROUP BY 
+                            q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, 
+                            c.nome, d.nome, i.nome, a2.nome, b.nome
+                """;
+
+        if (isAluno)
+            sql += ", r.acerto";
+
+        sql += """
+                    )
                     SELECT 
-                        q.id as qid,
-                        q.enunciado,
-                        q.ano,
-                        q.uf,
-                        q.escolaridade,
-                        q.cidade,
-                        c.nome as cargo,
-                        d.nome as disciplina,
-                        i.nome as instituicao,
-                        a2.nome as assunto,
-                        b.nome as banca,
-            """;
-    
-            if (isAluno)
-                sql += " r.acerto as acerto, ";
-    
-            sql += """
-                        COUNT(cm.id) as comentario_count,
-                        ROW_NUMBER() OVER (ORDER BY q.id) as row_num
-                    FROM questoes q
-                        LEFT JOIN bancas b ON q.banca_id = b.id
-                        LEFT JOIN instituicao i ON q.instituicao_id = i.id
-                        LEFT JOIN cargo c ON q.cargo_id = c.id
-                        LEFT JOIN assunto a2 ON q.assunto_id = a2.id
-                        LEFT JOIN disciplinas d ON q.disciplina_id = d.id 
-                        LEFT JOIN comentarios cm ON cm.questao_id = q.id
-            """;
-    
-            if (isAluno)
-                sql += " LEFT JOIN respostas r ON r.questao_id = q.id AND r.usuario_id = '" + user.getId() + "'";
-    
-            sql += " WHERE q.status = 'ATIVO'";
-    
-            if (questao.getAssuntoId() != null && !questao.getAssuntoId().isEmpty()) {
-                sql += " AND q.assunto_id IN (" + listToString(questao.getAssuntoId()) + ") ";
-            }
-    
-            if (questao.getAno() != null) {
-                sql += " AND q.ano = " + questao.getAno();
-            }
-    
-            if (questao.getBancaId() != null) {
-                sql += " AND q.banca_id = '" + questao.getBancaId() + "' ";
-            }
-    
-            if (questao.getCidade() != null) {
-                sql += " AND q.cidade = '" + questao.getCidade() + "' ";
-            }
-    
-            if (questao.getUf() != null) {
-                sql += " AND q.uf = '" + questao.getUf() + "' ";
-            }
-    
-            if (questao.getEscolaridade() != null) {
-                sql += " AND q.escolaridade = '" + questao.getEscolaridade() + "' ";
-            }
-    
-            if (questao.getEnunciado() != null && !questao.getEnunciado().trim().isEmpty()) {
-                sql += " AND q.enunciado LIKE '%" + questao.getEnunciado() + "%' ";
-            }
-    
-            if (questao.getCargoId() != null) {
-                sql += " AND q.cargo_id = '" + questao.getCargoId() + "' ";
-            }
-    
-            if (questao.getDisciplinaId() != null && !questao.getDisciplinaId().isEmpty()) {
-                sql += " AND q.disciplina_id IN (" + listToString(questao.getDisciplinaId()) + ") ";
-            }
-    
-            if (questao.getInstituicaoId() != null) {
-                sql += " AND q.instituicao_id = '" + questao.getInstituicaoId() + "' ";
-            }
-    
-            sql += """
-                    GROUP BY 
-                        q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, 
-                        c.nome, d.nome, i.nome, a2.nome, b.nome
-            """;
-    
-            if (isAluno)
-                sql += ", r.acerto";
-    
-            sql += """
-                )
-                SELECT 
-                    pq.qid, pq.enunciado, pq.ano, pq.uf, pq.escolaridade, pq.cidade,
-                    pq.cargo, pq.disciplina, pq.instituicao, pq.assunto, pq.banca,
-                    pq.acerto, pq.comentario_count, a.id as aid, a.descricao, a.correta, a.letra
-                FROM PagedQuestions pq
-                LEFT JOIN alternativas a ON a.questao_id = pq.qid
-                WHERE pq.row_num BETWEEN ? AND ?
-                ORDER BY pq.qid, a.id
-            """;
-    
-            // Calcule os limites da página
-            int startRow = offset + 1;
-            int endRow = offset + limit;
-    
-            Map<UUID, QuestaoResponse> questaoMap = new HashMap<UUID, QuestaoResponse>();
-            List<QuestaoResponse> result = new ArrayList<QuestaoResponse>();
-    
-            this.jdbcTemplate.query(sql, rs -> {
-                UUID questaoId = UUID.fromString(rs.getString("qid"));
-                QuestaoResponse qr = questaoMap.get(questaoId);
-    
-                if (qr == null) {
-                    qr = new QuestaoResponse();
-                    qr.setId(questaoId);
-                    qr.setEnunciado(rs.getString("enunciado"));
-                    qr.setBanca(rs.getString("banca"));
-                    qr.setAno(rs.getInt("ano"));
-                    qr.setInstituicao(rs.getString("instituicao"));
-                    qr.setDisciplina(rs.getString("disciplina"));
-                    qr.setCargo(rs.getString("cargo"));
-                    qr.setAssunto(rs.getString("assunto"));
-                    if (isAluno) {
-                        String acerto = rs.getObject("acerto") != null ? (rs.getBoolean("acerto") ? "true" : "false") : null;
-                        qr.setAcerto(acerto);
-                    }
-                    qr.setComentarios(rs.getInt("comentario_count"));
-                    qr.setAlternativas(new ArrayList<>());
-                    questaoMap.put(questaoId, qr);
+                        pq.qid, pq.enunciado, pq.ano, pq.uf, pq.escolaridade, pq.cidade,
+                        pq.cargo, pq.disciplina, pq.instituicao, pq.assunto, pq.banca,
+                        pq.comentario_count, a.id as aid, a.descricao, a.correta, a.letra
+                """;
+
+        if (isAluno)
+            sql += ", pq.acerto";
+
+        sql += """
+                    FROM PagedQuestions pq
+                    LEFT JOIN alternativas a ON a.questao_id = pq.qid
+                    WHERE pq.row_num BETWEEN ? AND ?
+                    ORDER BY pq.qid, a.id
+                """;
+
+        int startRow = offset + 1;
+        int endRow = offset + limit;
+
+        Map<UUID, QuestaoResponse> questaoMap = new HashMap<UUID, QuestaoResponse>();
+        List<QuestaoResponse> result = new ArrayList<QuestaoResponse>();
+
+        this.jdbcTemplate.query(sql, rs -> {
+            UUID questaoId = UUID.fromString(rs.getString("qid"));
+            QuestaoResponse qr = questaoMap.get(questaoId);
+
+            if (qr == null) {
+                qr = new QuestaoResponse();
+                qr.setId(questaoId);
+                qr.setEnunciado(rs.getString("enunciado"));
+                qr.setBanca(rs.getString("banca"));
+                qr.setAno(rs.getInt("ano"));
+                qr.setInstituicao(rs.getString("instituicao"));
+                qr.setDisciplina(rs.getString("disciplina"));
+                qr.setCargo(rs.getString("cargo"));
+                qr.setAssunto(rs.getString("assunto"));
+                if (isAluno) {
+                    String acerto = rs.getObject("acerto") != null ? (rs.getBoolean("acerto") ? "true" : "false") : null;
+                    qr.setAcerto(acerto);
                 }
-    
-                AlternativaResponse alternativa = new AlternativaResponse();
-                alternativa.setId(UUID.fromString(rs.getString("aid")));
-                alternativa.setLetra(rs.getString("letra"));
-                alternativa.setCorreta(isAluno && qr.getAcerto() != null || !isAluno ? rs.getBoolean("correta") : false);
-                alternativa.setDescricao(rs.getString("descricao"));
-    
-                qr.getAlternativas().add(alternativa);
-            }, startRow, endRow);
-    
-            result.addAll(questaoMap.values());
-            return result;
+                qr.setComentarios(rs.getInt("comentario_count"));
+                qr.setAlternativas(new ArrayList<>());
+                questaoMap.put(questaoId, qr);
+            }
+
+            AlternativaResponse alternativa = new AlternativaResponse();
+            alternativa.setId(UUID.fromString(rs.getString("aid")));
+            alternativa.setLetra(rs.getString("letra"));
+            alternativa.setCorreta(isAluno && qr.getAcerto() != null || !isAluno ? rs.getBoolean("correta") : false);
+            alternativa.setDescricao(rs.getString("descricao"));
+
+            qr.getAlternativas().add(alternativa);
+        }, startRow, endRow);
+
+        result.addAll(questaoMap.values());
+        return result;
+    }
+
+    @Transactional
+    public UUID create(QuestaoRequest request) {
+
+        validate(request);
+
+        Questao questao = new Questao(request);
+        questao = this.questaoRepository.save(questao);
+
+        UUID questaoId = questao.getId();
+
+        List<AlternativaRequest> alternativas = request.getAlternativas();
+        for (AlternativaRequest ar : alternativas) {
+            Alternativa alternativa = new Alternativa(ar, questaoId);
+            this.alternativaRepository.save(alternativa);
         }
-    
-    // public List<QuestaoResponse> findAll(FiltroQuestao questao,
-    //                                      Integer limit, Integer offset) {
 
-    //     UsuarioLogado user = SecurityUtil.obterUsuarioLogado();
-    //     boolean isAluno = user.isAluno();
+        return questaoId;
+    }
 
-    //     String sql = """
-    //                select q.id as qid,
-    //                       q.enunciado,
-    //                       q.ano,
-    //                       q.uf,
-    //                       q.escolaridade,
-    //                       q.cidade,
-    //                       a.id as aid,
-    //                       a.descricao,
-    //                       a.correta,
-    //                       a.letra,
-    //                       c.nome as cargo,
-    //                       d.nome as disciplina,
-    //                       i.nome as instituicao,
-    //                       a2.nome as assunto,
-    //                       b.nome as banca,
-    //             """;
+    @Transactional
+    public UUID update(QuestaoRequest request, UUID id) {
 
-    //     if (isAluno)
-    //         sql += " r.acerto as acerto, ";
+        validate(request);
+
+        Questao questao = this.questaoRepository.findByIdAndStatus(id, Status.ATIVO)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Questão não encontrada com o id: " + id));
+
+        questao.setEnunciado(request.getEnunciado());
+        questao.setDisciplinaId(request.getDisciplinaId());
+        questao.setAssuntoId(request.getAssuntoId());
+        questao.setBancaId(request.getBancaId());
+        questao.setInstituicaoId(request.getInstituicaoId());
+        questao.setCargoId(request.getCargoId());
+        questao.setAno(request.getAno());
+        questao.setUf(request.getUf());
+        questao.setCidade(request.getCidade());
+        questao.setEscolaridade(request.getEscolaridade());
+
+        this.questaoRepository.save(questao);
+
+        List<AlternativaRequest> alternativas = request.getAlternativas();
+        for (AlternativaRequest ar : alternativas) {
+
+            Alternativa alternativa =
+                    this.alternativaRepository.findById(ar.getId()).orElse(null);
+
+            if (alternativa != null) {
+                alternativa.setLetra(ar.getOrdem());
+                alternativa.setDescricao(ar.getDescricao());
+                alternativa.setCorreta(ar.getCorreta());
+                this.alternativaRepository.save(alternativa);
+            }
+
+        }
+
+        return id;
+    }
 
 
-    //     sql += """
-    //                    count(cm.id) as comentario_count 
-    //                    from questoes q
-    //                             inner join alternativas a
-    //                                        on a.questao_id = q.id
-    //                             left join bancas b
-    //                                       on q.banca_id = b.id
-    //                             left join instituicao i
-    //                                       on q.instituicao_id = i.id
-    //                             left join cargo c
-    //                                       on q.cargo_id = c.id
-    //                             left join assunto a2
-    //                                       on q.assunto_id = a2.id
-    //                             left join disciplinas d
-    //                                       on q.disciplina_id = d.id 
-    //                             left join comentarios cm
-    //                                       on cm.questao_id = q.id
-    //             """;
+    private void validate(QuestaoRequest request) {
 
-    //     if (isAluno)
-    //         sql += " left join respostas r on r.questao_id = q.id and r.usuario_id = '" + user.getId() + "'";
+        if (request.getEnunciado() == null || request.getEnunciado().trim().isEmpty()) {
+            throw new IllegalArgumentException("Enunciado é obrigatória.");
+        }
 
-    //     sql += " where q.status = 'ATIVO'";
+        if (request.getDisciplinaId() == null) {
+            throw new IllegalArgumentException("Disciplina é obrigatória.");
+        }
 
-    //     if (questao.getAssuntoId() != null && !questao.getAssuntoId().isEmpty()) {
-    //         sql += " and q.assunto_id in ("
-    //                 + listToString(questao.getAssuntoId()) + ") ";
-    //     }
+        if (request.getAssuntoId() == null) {
+            throw new IllegalArgumentException("Assunto é obrigatório.");
+        }
 
-    //     if (questao.getAno() != null) {
-    //         sql += " and q.ano = " + questao.getAno();
-    //     }
+        if (request.getBancaId() == null) {
+            throw new IllegalArgumentException("Banca é obrigatória.");
+        }
 
-    //     if (questao.getBancaId() != null) {
-    //         sql += " and q.banca_id = '" + questao.getBancaId() + "' ";
-    //     }
+        if (request.getAno() == null) {
+            throw new IllegalArgumentException("Ano é obrigatório.");
+        }
 
-    //     if (questao.getCidade() != null) {
-    //         sql += " and q.cidade = '" + questao.getCidade() + "' ";
-    //     }
+        if (request.getEscolaridade() == null) {
+            throw new IllegalArgumentException("Escolaridade é obrigatória.");
+        }
 
-    //     if (questao.getUf() != null) {
-    //         sql += " and q.uf = '" + questao.getUf() + "' ";
-    //     }
+        if (request.getAlternativas() == null || request.getAlternativas().isEmpty()) {
+            throw new IllegalArgumentException("Alternativas são obrigatórias.");
+        }
 
-    //     if (questao.getEscolaridade() != null) {
-    //         sql += " and q.escolaridade = '" + questao.getEscolaridade() + "' ";
-    //     }
+        List<AlternativaRequest> alternativas = request.getAlternativas();
+        for (AlternativaRequest ar : alternativas) {
+            if (ar.getOrdem() == null || ar.getOrdem().trim().isEmpty()) {
+                throw new IllegalArgumentException("Ordem da alternativa é obrigatório.");
+            }
 
-    //     if (questao.getEnunciado() != null && !questao.getEnunciado().trim().isEmpty()) {
-    //         sql += " and q.enunciado like '%" + questao.getEnunciado() + "%' ";
-    //     }
+            if (ar.getDescricao() == null || ar.getDescricao().trim().isEmpty()) {
+                throw new IllegalArgumentException("Descrição da alternativa é obrigatório.");
+            }
 
-    //     if (questao.getCargoId() != null) {
-    //         sql += " and q.cargo_id = '" + questao.getCargoId() + "' ";
-    //     }
+            if (ar.getCorreta() == null) {
+                throw new IllegalArgumentException("Indicador de correta é obrigatório.");
+            }
+        }
 
-    //     if (questao.getDisciplinaId() != null && !questao.getDisciplinaId().isEmpty()) {
-    //         sql += " and q.disciplina_id in ("
-    //                 + listToString(questao.getDisciplinaId()) + ") ";
-    //     }
+    }
 
-    //     if (questao.getInstituicaoId() != null) {
-    //         sql += " and q.instituicao_id = '" + questao.getInstituicaoId() + "' ";
-    //     }
+    public void delete(UUID id) {
+        Questao questao = this.questaoRepository.findByIdAndStatus(id, Status.ATIVO)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Questão não encontrada com o id: " + id));
+        questao.setStatus(Status.INATIVO);
+        this.questaoRepository.save(questao);
+    }
 
-    //     sql += """
-    //                 GROUP BY 
-    //                     q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, 
-    //                     a.id, a.descricao, a.correta, a.letra, 
-    //                     c.nome, d.nome, i.nome, a2.nome, b.nome                
-    //             """;
+    public Map<String, String> getFiltroCorrente(FiltroQuestao questao) {
 
-    //     if (isAluno)
-    //         sql += ", r.acerto ";
+        Map<String, String> filtros = new HashMap<String, String>();
 
-    //     sql += " ORDER BY q.id limit " + limit + " offset " + offset;
+        if (questao.getAssuntoId() != null
+                && !questao.getAssuntoId().isEmpty()) {
 
-    //     Map<UUID, QuestaoResponse> questaoMap = new HashMap<UUID, QuestaoResponse>();
-    //     List<QuestaoResponse> result = new ArrayList<QuestaoResponse>();
+            StringBuilder sb = new StringBuilder();
 
-    //     this.jdbcTemplate.query(sql, rs -> {
+            for (UUID assunto : questao.getAssuntoId()) {
+                sb.append(obterDescricaoPorPK(
+                        "" + assunto, "assunto", "nome")).append(", ");
+            }
 
-    //         UUID questaoId = UUID.fromString(rs.getString("qid"));
-    //         QuestaoResponse qr = questaoMap.get(questaoId);
+            filtros.put("Assunto(s): ",
+                    sb.toString().substring(
+                            0, sb.toString().length() - 1));
+        }
 
-    //         if (qr == null) {
-    //             qr = new QuestaoResponse();
-    //             qr.setId(questaoId);
-    //             qr.setEnunciado(rs.getString("enunciado"));
-    //             qr.setBanca(rs.getString("banca"));
-    //             qr.setAno(rs.getInt("ano"));
-    //             qr.setInstituicao(rs.getString("instituicao"));
-    //             qr.setDisciplina(rs.getString("disciplina"));
-    //             qr.setCargo(rs.getString("cargo"));
-    //             qr.setAssunto(rs.getString("assunto"));
-    //             if (isAluno) {
-    //                 String acerto = rs.getObject("acerto")
-    //                         != null ? (rs.getBoolean("acerto") ? "true" : "false") : null;
-    //                 qr.setAcerto(acerto);
-    //             }
-    //             qr.setComentarios(rs.getInt("comentario_count"));
-    //             qr.setAlternativas(new ArrayList<>());
-    //             questaoMap.put(questaoId, qr);
-    //         }
+        if (questao.getDisciplinaId() != null && !questao.getDisciplinaId().isEmpty()) {
 
-    //         AlternativaResponse alternativa = new AlternativaResponse();
-    //         alternativa.setId(UUID.fromString(rs.getString("aid")));
-    //         alternativa.setLetra(rs.getString("letra"));
+            StringBuilder sb = new StringBuilder();
 
-    //         alternativa.setCorreta(isAluno && qr.getAcerto() != null || !isAluno ? rs.getBoolean("correta") : false);
-    //         alternativa.setDescricao(rs.getString("descricao"));
+            for (int i = 0; i < questao.getDisciplinaId().size(); i++) {
+                sb.append(obterDescricaoPorPK(
+                        "" + questao.getDisciplinaId().get(i), "disciplinas", "nome")).append(", ");
+            }
 
-    //         qr.getAlternativas().add(alternativa);
+            filtros.put("Disciplina(s): ",
+                    sb.toString().substring(0, sb.toString().length() - 1));
+        }
 
-    //     });
+        if (questao.getInstituicaoId() != null)
+            filtros.put("Instituição: ", obterDescricaoPorPK(
+                    "" + questao.getInstituicaoId(), "instituicao", "nome"));
 
-    //     result.addAll(questaoMap.values());
-    //     return result;
-    // }
+        if (questao.getCargoId() != null)
+            filtros.put("Cargo: ", obterDescricaoPorPK(
+                    "" + questao.getCargoId(), "cargo", "nome"));
+
+        if (questao.getAno() != null)
+            filtros.put("Ano: ", questao.getAno().toString());
+
+        if (questao.getBancaId() != null)
+            filtros.put("Banca: ", obterDescricaoPorPK(
+                    "" + questao.getBancaId(), "bancas", "nome"));
+
+        if (questao.getCidade() != null)
+            filtros.put("Cidade:", questao.getCidade());
+
+        if (questao.getUf() != null)
+            filtros.put("UF: ", questao.getUf());
+
+        if (questao.getEscolaridade() != null)
+            filtros.put("Escolaridade: ", questao.getEscolaridade().toString());
+
+        return filtros;
+    }
+
+    private String obterDescricaoPorPK(String id, String tabela, String campo) {
+        return this.jdbcTemplate.queryForObject(
+                "select " + campo + " from " + tabela + " where id = ?",
+                String.class, UUID.fromString(id));
+    }
 
     public int getRecordCount(FiltroQuestao questao) {
         String sql = """
@@ -413,7 +454,7 @@ import br.com.foxconcursos.util.SecurityUtil;
         sql += """
                     where q.status = 'ATIVO' and q.id = ? 
                     group by q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, 
-                    a.id, a.descricao, a.correta, a.letra, 
+                    a.id, a.descricao, a.correta, a.letra, b.id, i.id, c.id, a2.id, d.id, 
                     c.nome, d.nome, i.nome, a2.nome, b.nome 
                 """;
 
@@ -431,21 +472,30 @@ import br.com.foxconcursos.util.SecurityUtil;
                     qr.setId(UUID.fromString(rs.getString("qid")));
                     qr.setEnunciado(rs.getString("enunciado"));
                     qr.setEscolaridade(rs.getString("escolaridade"));
-                    qr.setUf(rs.getString("uf"));
-                    qr.setCidade(rs.getString("cidade"));
                     qr.setAno(rs.getInt("ano"));
                     qr.setBancaId(UUID.fromString(rs.getString("bid")));
                     qr.setDisciplinaId(UUID.fromString(rs.getString("did")));
-                    qr.setInstituicaoId(UUID.fromString(rs.getString("iid")));
-                    qr.setCargoId(UUID.fromString(rs.getString("cid")));
                     qr.setAssuntoId(UUID.fromString(rs.getString("a2id")));
+                    qr.setAlternativas(new ArrayList<>());
+
+                    String uf = rs.getString("uf");
+                    String cidade = rs.getString("cidade");
+                    String instituicaoId = rs.getString("iid");
+                    String cargoId = rs.getString("cid");
+                    String comentarios = rs.getString("comentario_count");
+
+                    qr.setComentarios(comentarios != null ? Integer.valueOf(comentarios) : 0);
+                    qr.setUf(uf != null && !uf.trim().isEmpty() ? uf : null);
+                    qr.setCidade(cidade != null && !cidade.trim().isEmpty() ? cidade : null);
+                    qr.setInstituicaoId(instituicaoId != null && !instituicaoId.trim().isEmpty() ? UUID.fromString(instituicaoId) : null);
+                    qr.setCargoId(cargoId != null && !cargoId.trim().isEmpty() ? UUID.fromString(cargoId) : null);
+
+
                     if (isAluno) {
                         String acerto = rs.getObject("acerto")
                                 != null ? (rs.getBoolean("acerto") ? "true" : "false") : null;
                         qr.setAcerto(acerto);
                     }
-                    qr.setComentarios(rs.getInt("comentario_count"));
-                    qr.setAlternativas(new ArrayList<>());
                 }
 
                 AlternativaResponse alternativa = new AlternativaResponse();
@@ -475,5 +525,26 @@ import br.com.foxconcursos.util.SecurityUtil;
         }
 
         return sb.substring(0, sb.length() - 1);
+    }
+
+    public ResultadoResponse isAlternativaCorreta(UUID questaoId, UUID alternativaId) {
+
+        String queryIdCorreta = """
+                select a.id
+                from questoes q
+                         inner join alternativas a on q.id = a.questao_id
+                where q.id = ?
+                  and  a.correta = true
+                     """;
+
+        ResultadoResponse resultadoResponse = new ResultadoResponse();
+
+        jdbcTemplate.query(queryIdCorreta, rs -> {
+            resultadoResponse.setAlternativaCorreta(UUID.fromString(rs.getString("id")));
+            resultadoResponse.setCorreta(UUID.fromString(rs.getString("id")).equals(alternativaId));
+        }, questaoId);
+
+        return resultadoResponse;
+
     }
 }

@@ -110,8 +110,11 @@ public class DisciplinaController {
         return ResponseEntity.ok(assuntoService.findByDisciplinaId(disciplinaId, filter));
     }
 
-    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
-    @PostMapping(value = "/api/admin/disciplinas/assuntos")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN') or hasAuthority('SCOPE_ROLE_ALUNO') ")
+    @PostMapping({
+            "/api/admin/disciplinas/assuntos",
+            "/api/aluno/disciplinas/assuntos"
+    })
     public ResponseEntity<List<AssuntoResponse>> buscarAssuntosPorDisciplinas(
             @RequestBody List<String> disciplinas
     ) {
