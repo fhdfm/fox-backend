@@ -101,8 +101,14 @@ public class UsuarioController {
         return ResponseEntity.ok(produtoService.obterProdutosNaoMatriculados(id));
     }
 
-    @GetMapping(value = "/api/aluno/usuarios/{id}/produtos-matriculados")
-    @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO') or hasAuthority('SCOPE_ROLE_EXTERNO')")
+    @GetMapping({
+            "/api/aluno/usuarios/{id}/produtos-matriculados",
+            "/api/admin/usuarios/{id}/produtos-matriculados",
+    })
+    @PreAuthorize("" +
+            "hasAuthority('SCOPE_ROLE_ADMIN') or " +
+            "hasAuthority('SCOPE_ROLE_ALUNO') or " +
+            "hasAuthority('SCOPE_ROLE_EXTERNO')")
     public ResponseEntity<List<ProdutoResponse>> obterProdutosMatriculados(@PathVariable UUID id) {
         return ResponseEntity.ok(produtoService.obterProdutosMatriculados(id));
     }    
