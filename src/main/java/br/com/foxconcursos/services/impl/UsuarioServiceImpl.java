@@ -186,9 +186,14 @@ public class UsuarioServiceImpl implements UserDetailsService {
             return this.findAllAtivos(pageable);
 
         Usuario usuario = FoxUtils.criarObjetoDinamico(filter, Usuario.class);
-        //usuario.setStatus(StatusUsuario.ATIVO);
+        //usuario.setStatus(StatusUsuario.ATIVO)
         ExampleMatcher matcher = ExampleMatcher.matching()
-            .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING) // Correspondência parcial
+            .withMatcher("status", ExampleMatcher.GenericPropertyMatchers.exact()) // Correspondência igual
+            .withMatcher("perfil", ExampleMatcher.GenericPropertyMatchers.exact()) // Correspondência parcial
+            .withMatcher("nome", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+            .withMatcher("email", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+            .withMatcher("cpf", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+            .withMatcher("telefone", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
             .withIgnoreCase() // Ignorar case
             .withIgnoreNullValues(); // Ignorar valores nulos            
 
