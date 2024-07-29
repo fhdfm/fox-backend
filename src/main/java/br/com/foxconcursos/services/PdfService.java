@@ -234,7 +234,8 @@ public class PdfService {
             Path.of(getClass().getClassLoader().getResource(
                 "templates/simulado/cabecalho.html").toURI())));
         
-        cabecalhoHtml = cabecalhoHtml.replace("${titulo}", gabarito.getTitulo());
+        String titulo = gabarito.getTitulo() != null ? gabarito.getTitulo() : "";                
+        cabecalhoHtml = cabecalhoHtml.replace("${titulo}", titulo);
         cabecalhoHtml = cabecalhoHtml.replace("${modelo}", "Gabarito");
         
         StringBuilder container = new StringBuilder("""
