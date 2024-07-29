@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import br.com.foxconcursos.domain.UsuarioLogado;
-import br.com.foxconcursos.util.SecurityUtil;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 

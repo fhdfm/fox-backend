@@ -52,7 +52,6 @@ public class SimuladoController {
         this.questaoSimuladoService = questaoSimuladoService;
         this.respostaSimuladoService = respostaSimuladoService;
         this.pdfService = pdfService;
-
     }
 
     // @PostMapping(value = "/simulados/{simuladoId}/data-inicio", 

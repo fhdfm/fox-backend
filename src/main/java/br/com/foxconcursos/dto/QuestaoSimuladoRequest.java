@@ -9,6 +9,7 @@ public class QuestaoSimuladoRequest {
     private String enunciado;
     private UUID disciplinaId;
     private List<ItemQuestaoSimuladoRequest> alternativas;
+    private boolean recalcular = false;
 
     public QuestaoSimuladoRequest() {
     }
@@ -43,5 +44,13 @@ public class QuestaoSimuladoRequest {
 
     public void setAlternativas(List<ItemQuestaoSimuladoRequest> alternativas) {
         this.alternativas = alternativas;
+    }
+
+    public void setRecalcular(boolean recalcular) {
+        this.recalcular = recalcular;
+    }
+
+    public boolean isRecalcular() {
+        return this.recalcular;
     }
 }

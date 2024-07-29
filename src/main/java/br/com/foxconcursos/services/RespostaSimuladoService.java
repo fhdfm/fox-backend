@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.event.EventListener;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,7 @@ import br.com.foxconcursos.dto.RankingSimuladoResponse;
 import br.com.foxconcursos.dto.RespostaSimuladoRequest;
 import br.com.foxconcursos.dto.ResultadoSimuladoResponse;
 import br.com.foxconcursos.dto.SimuladoCompletoResponse;
+import br.com.foxconcursos.events.RecalcularEvent;
 import br.com.foxconcursos.repositories.RespostaQuestaoSimuladoRepository;
 import br.com.foxconcursos.repositories.RespostaSimuladoRepository;
 import br.com.foxconcursos.util.FoxUtils;
@@ -356,6 +358,24 @@ public class RespostaSimuladoService {
                 UUID.fromString(rs.getString("usuario_id")));
             return null;
         });
+    }
+
+    @EventListener
+    private void handleContabilizarEvent(RecalcularEvent event) {
+        
+        String sql = """
+            select simulado_id, usuario_id from respostas_simulado 
+            where status = 'FINALIZADO' and simulado_id = ?
+            """;
+
+        jdbcTemplate.query(sql, (rs, rowNum) -> {
+            
+            UUID usuarioId = UUID.fromString(rs.getString("usuario_id"));
+            contabilizar(event.getSimuladoId(), usuarioId);
+            
+            return null;
+
+        }, event.getSimuladoId());
     }
 
     private void contabilizar(UUID simuladoId, UUID usuarioId) {

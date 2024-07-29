@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,7 @@ import br.com.foxconcursos.dto.DisciplinaQuestoesResponse;
 import br.com.foxconcursos.dto.QuestaoSimuladoRequest;
 import br.com.foxconcursos.dto.QuestaoSimuladoResponse;
 import br.com.foxconcursos.dto.QuestoesSimuladoDisciplinaResponse;
+import br.com.foxconcursos.events.RecalcularEvent;
 import br.com.foxconcursos.repositories.QuestaoSimuladoRepository;
 
 @Service
@@ -24,15 +26,18 @@ public class QuestaoSimuladoService {
     private final ItemQuestaoSimuladoService itemQuestaoSimuladoService;
     private final DisciplinaService disciplinaService;
     private final JdbcTemplate jdbcTemplate;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     public QuestaoSimuladoService(
         QuestaoSimuladoRepository questaoSimuladoRepository, 
         ItemQuestaoSimuladoService itemQuestaoSimuladoService,
-        DisciplinaService disciplinaService, JdbcTemplate jdbcTemplate) {
+        DisciplinaService disciplinaService, 
+        JdbcTemplate jdbcTemplate, ApplicationEventPublisher applicationEventPublisher) {
         this.questaoSimuladoRepository = questaoSimuladoRepository;
         this.itemQuestaoSimuladoService = itemQuestaoSimuladoService;
         this.disciplinaService = disciplinaService;
         this.jdbcTemplate = jdbcTemplate;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     public QuestaoSimuladoResponse findById(UUID id) {
@@ -116,6 +121,9 @@ public class QuestaoSimuladoService {
             
             itemQuestaoSimuladoService.save(itemQuestaoSimulado);
         });
+
+        if (request.isRecalcular())
+            applicationEventPublisher.publishEvent(RecalcularEvent.of(simuladoId));
 
         return findById(questaoId);
     }
