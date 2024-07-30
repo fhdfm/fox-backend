@@ -361,7 +361,7 @@ public class RespostaSimuladoService {
     }
 
     @EventListener
-    private void handleContabilizarEvent(RecalcularEvent event) {
+    void handleContabilizarEvent(RecalcularEvent event) {
         
         String sql = """
             select simulado_id, usuario_id from respostas_simulado 
