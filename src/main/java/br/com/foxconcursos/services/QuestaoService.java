@@ -151,6 +151,8 @@ public class QuestaoService {
                 qr.setBanca(rs.getString("banca"));
                 qr.setAno(rs.getInt("ano"));
                 qr.setInstituicao(rs.getString("instituicao"));
+                qr.setCidade(rs.getString("cidade"));
+                qr.setUf(rs.getString("uf"));
                 qr.setDisciplina(rs.getString("disciplina"));
                 qr.setCargo(rs.getString("cargo"));
                 qr.setAssunto(rs.getString("assunto"));
