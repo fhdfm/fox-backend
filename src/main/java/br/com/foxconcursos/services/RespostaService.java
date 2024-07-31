@@ -43,12 +43,21 @@ public class RespostaService {
 
         UsuarioLogado usuarioLogado = SecurityUtil.obterUsuarioLogado();
 
-        Resposta resposta = new Resposta();
-        resposta.setQuestaoId(questaoId);
-        resposta.setAlternativaId(request.getAlternativaId());
-        resposta.setAcerto(resultado.getCorreta());
-        resposta.setData(hoje);
-        resposta.setUsuarioId(usuarioLogado.getId());
+        Resposta resposta = respostaRepository.findByQuestaoIdAndUsuarioId(questaoId, usuarioLogado.getId());
+
+        if (resposta != null) {
+            resposta.setAlternativaId(request.getAlternativaId());
+            resposta.setAcerto(resultado.getCorreta());
+            resposta.setData(hoje);
+        } else {
+            resposta = new Resposta();
+
+            resposta.setQuestaoId(questaoId);
+            resposta.setAlternativaId(request.getAlternativaId());
+            resposta.setAcerto(resultado.getCorreta());
+            resposta.setData(hoje);
+            resposta.setUsuarioId(usuarioLogado.getId());
+        }
 
         respostaRepository.save(resposta);
 

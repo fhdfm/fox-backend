@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import br.com.foxconcursos.dto.SimuladoResponse;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -111,6 +112,7 @@ public class ProdutoService {
             JOIN bancas b ON c.banca_id = b.id
             LEFT JOIN simulados s ON s.curso_id = c.id
             WHERE m.usuario_id = ? AND m.status = 'ATIVO'
+              AND DATE(c.data_termino) >= CURRENT_DATE
         """;
 
         jdbcTemplate.query(queryCursosMatriculados, (rs, rowNum) -> {
@@ -159,8 +161,10 @@ public class ProdutoService {
         String querySimuladosMatriculados = """
             SELECT s.*
             FROM matriculas m
-            JOIN simulados s ON m.produto_id = s.id AND m.tipo_produto = 'SIMULADO'
+            JOIN simulados s ON m.produto_id = s.id AND m.tipo_produto = 'SIMULADO'            
+            LEFT JOIN cursos c ON s.curso_id = c.id
             WHERE m.usuario_id = ? AND m.status = 'ATIVO'
+              AND DATE(c.data_termino) >= CURRENT_DATE
         """;
 
         jdbcTemplate.query(querySimuladosMatriculados, (rs, rowNum) -> {
