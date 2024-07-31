@@ -6,12 +6,12 @@ import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.PagingAndSortingRepository;
 
 import br.com.foxconcursos.domain.Curso;
 import br.com.foxconcursos.domain.Status;
+import br.com.foxconcursos.repositories.custom.CustomCrudRepository;
 
-public interface CursoRepository extends PagingAndSortingRepository<Curso, UUID> {
+public interface CursoRepository extends CustomCrudRepository<Curso, UUID> {
 
     @SuppressWarnings("all")
     Page<Curso> findAllByStatus(Pageable pageable, Status status);
@@ -21,8 +21,6 @@ public interface CursoRepository extends PagingAndSortingRepository<Curso, UUID>
     void deleteById(UUID id);
 
     boolean existsById(UUID id);
-
-    Curso save(Curso curso);
 
     List<Curso> findAllByStatus(Status status);
 

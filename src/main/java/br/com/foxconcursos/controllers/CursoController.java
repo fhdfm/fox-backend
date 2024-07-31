@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.foxconcursos.domain.CursoDisciplina;
@@ -53,9 +54,9 @@ public class CursoController {
         return ResponseEntity.status(HttpStatus.OK).body("Curso deletado com sucesso.");
     }
 
-    @GetMapping(value = "/api/cursos")
-    public ResponseEntity<Page<CursoDTO>> findAll(Pageable pageable) {
-        return ResponseEntity.ok(this.cursoService.findAll(pageable));
+    @GetMapping(value = {"/api/cursos", "/api/admin/cursos"})
+    public ResponseEntity<Page<CursoDTO>> findAll(@RequestParam("filter") String filter, Pageable pageable) throws Exception {
+        return ResponseEntity.ok(this.cursoService.findAll(pageable, filter));
     }
 
     @GetMapping(value = "/api/cursos/{id}")
