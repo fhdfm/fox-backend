@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,7 @@ import br.com.foxconcursos.domain.Status;
 import br.com.foxconcursos.dto.CursoDTO;
 import br.com.foxconcursos.dto.ProdutoCursoResponse;
 import br.com.foxconcursos.repositories.CursoRepository;
+import br.com.foxconcursos.util.FoxUtils;
 
 @Service
 public class CursoService {
@@ -112,11 +115,32 @@ public class CursoService {
         return result;
     }
 
-    public Page<CursoDTO> findAll(Pageable pageable) {
+    public Page<CursoDTO> findAll(Pageable pageable, String filter) throws Exception {
 
         Map<UUID, String> bancas = this.bancaService.findAllAsMap();
 
-        Page<Curso> cursos = this.cursoRepository.findAllByStatus(pageable, Status.ATIVO);
+        Page<Curso> cursos = null;
+
+        if (filter != null) {
+            Curso curso = FoxUtils.criarObjetoDinamico(filter, Curso.class);
+            curso.setStatus(Status.ATIVO);
+
+            ExampleMatcher matcher = ExampleMatcher.matching()
+                // .withMatcher("status", ExampleMatcher.GenericPropertyMatchers.exact()) // Correspondência igual
+                // .withMatcher("perfil", ExampleMatcher.GenericPropertyMatchers.exact()) // Correspondência parcial
+                // .withMatcher("nome", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+                // .withMatcher("email", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+                // .withMatcher("cpf", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+                // .withMatcher("telefone", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+                .withIgnoreCase() // Ignorar case
+                .withIgnoreNullValues(); // Ignorar valores nulos            
+
+            Example<Curso> example = Example.of(curso, matcher);
+            cursos = this.cursoRepository.findAll(example, pageable);            
+        } else {
+            cursos = this.cursoRepository.findAllByStatus(pageable, Status.ATIVO);
+        }
+        
         Page<CursoDTO> result = cursos.map(new Function<Curso, CursoDTO>() {
             public CursoDTO apply(Curso curso) {
                 String banca = bancas.get(curso.getBancaId());
