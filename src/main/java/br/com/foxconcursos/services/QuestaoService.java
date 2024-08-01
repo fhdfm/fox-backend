@@ -137,8 +137,8 @@ public class QuestaoService {
         int startRow = offset + 1;
         int endRow = offset + limit;
 
-        Map<UUID, QuestaoResponse> questaoMap = new HashMap<UUID, QuestaoResponse>();
-        List<QuestaoResponse> result = new ArrayList<QuestaoResponse>();
+        Map<UUID, QuestaoResponse> questaoMap = new HashMap<>();
+        List<QuestaoResponse> result = new ArrayList<>();
 
         this.jdbcTemplate.query(sql, rs -> {
             UUID questaoId = UUID.fromString(rs.getString("qid"));
@@ -168,7 +168,7 @@ public class QuestaoService {
             AlternativaResponse alternativa = new AlternativaResponse();
             alternativa.setId(UUID.fromString(rs.getString("aid")));
             alternativa.setLetra(rs.getString("letra"));
-            alternativa.setCorreta(isAluno && qr.getAcerto() != null && qr.getAcerto().equals("true") || !isAluno ? rs.getBoolean("correta") : false);
+            alternativa.setCorreta(!isAluno && rs.getBoolean("correta"));
             alternativa.setDescricao(rs.getString("descricao"));
 
             qr.getAlternativas().add(alternativa);
@@ -544,12 +544,8 @@ public class QuestaoService {
         jdbcTemplate.query(queryIdCorreta, rs -> {
             UUID alternativaCorreta = UUID.fromString(rs.getString("id"));
 
-            if (alternativaCorreta.equals(alternativaId)) {
-                resultadoResponse.setAlternativaCorreta(alternativaCorreta);
-                resultadoResponse.setCorreta(Boolean.TRUE);
-            } else {
-                resultadoResponse.setCorreta(Boolean.FALSE);
-            }
+            resultadoResponse.setAlternativaCorreta(alternativaCorreta);
+            resultadoResponse.setCorreta(alternativaCorreta.equals(alternativaId));
         }, questaoId);
 
         return resultadoResponse;

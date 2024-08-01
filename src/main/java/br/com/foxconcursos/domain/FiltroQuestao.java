@@ -12,7 +12,7 @@ public class FiltroQuestao {
     private UUID bancaId;
     private UUID instituicaoId;
     private UUID cargoId;
-    private Integer ano;
+    private String ano;
     private String uf;
     private String cidade;
     private Escolaridade escolaridade;
@@ -68,11 +68,11 @@ public class FiltroQuestao {
         return this.cargoId;
     }
 
-    public void setAno(Integer ano) {
+    public void setAno(String ano) {
         this.ano = ano;
     }
 
-    public Integer getAno() {
+    public String getAno() {
         return this.ano;
     }
 
