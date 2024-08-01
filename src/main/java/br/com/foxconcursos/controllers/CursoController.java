@@ -55,7 +55,7 @@ public class CursoController {
     }
 
     @GetMapping(value = {"/api/cursos", "/api/admin/cursos"})
-    public ResponseEntity<Page<CursoDTO>> findAll(@RequestParam("filter") String filter, Pageable pageable) throws Exception {
+    public ResponseEntity<Page<CursoDTO>> findAll(@RequestParam(required = false) String filter, Pageable pageable) throws Exception {
         return ResponseEntity.ok(this.cursoService.findAll(pageable, filter));
     }
 
