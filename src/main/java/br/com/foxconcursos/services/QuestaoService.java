@@ -1,15 +1,28 @@
 package br.com.foxconcursos.services;
 
-import br.com.foxconcursos.domain.*;
-import br.com.foxconcursos.dto.*;
-import br.com.foxconcursos.repositories.AlternativaRepository;
-import br.com.foxconcursos.repositories.QuestaoRepository;
-import br.com.foxconcursos.util.SecurityUtil;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import br.com.foxconcursos.domain.Alternativa;
+import br.com.foxconcursos.domain.FiltroQuestao;
+import br.com.foxconcursos.domain.Questao;
+import br.com.foxconcursos.domain.Status;
+import br.com.foxconcursos.domain.UsuarioLogado;
+import br.com.foxconcursos.dto.AlternativaRequest;
+import br.com.foxconcursos.dto.AlternativaResponse;
+import br.com.foxconcursos.dto.QuestaoRequest;
+import br.com.foxconcursos.dto.QuestaoResponse;
+import br.com.foxconcursos.dto.ResultadoResponse;
+import br.com.foxconcursos.repositories.AlternativaRepository;
+import br.com.foxconcursos.repositories.QuestaoRepository;
+import br.com.foxconcursos.util.SecurityUtil;
 
 @Service
 public class QuestaoService {
@@ -30,7 +43,7 @@ public class QuestaoService {
     public List<QuestaoResponse> findAll(FiltroQuestao questao, int limit, int offset) {
         UsuarioLogado user = SecurityUtil.obterUsuarioLogado();
         boolean isAluno = user.isAluno();
-
+    
         String sql = """
                     WITH PagedQuestions AS (
                         SELECT 
@@ -46,13 +59,13 @@ public class QuestaoService {
                             a2.nome as assunto,
                             b.nome as banca,
                 """;
-
+    
         if (isAluno)
             sql += " r.acerto as acerto, ";
-
+    
         sql += """
                             COUNT(cm.id) as comentario_count,
-                            ROW_NUMBER() OVER (ORDER BY q.id) as row_num
+                            ROW_NUMBER() OVER (ORDER BY q.ano DESC) as row_num
                         FROM questoes q
                             LEFT JOIN bancas b ON q.banca_id = b.id
                             LEFT JOIN instituicao i ON q.instituicao_id = i.id
@@ -61,61 +74,61 @@ public class QuestaoService {
                             LEFT JOIN disciplinas d ON q.disciplina_id = d.id 
                             LEFT JOIN comentarios cm ON cm.questao_id = q.id
                 """;
-
+    
         if (isAluno)
             sql += " LEFT JOIN respostas r ON r.questao_id = q.id AND r.usuario_id = '" + user.getId() + "'";
-
+    
         sql += " WHERE q.status = 'ATIVO'";
-
+    
         if (questao.getAssuntoId() != null && !questao.getAssuntoId().isEmpty()) {
             sql += " AND q.assunto_id IN (" + listToString(questao.getAssuntoId()) + ") ";
         }
-
+    
         if (questao.getAno() != null) {
             sql += " AND q.ano = " + questao.getAno();
         }
-
+    
         if (questao.getBancaId() != null) {
             sql += " AND q.banca_id = '" + questao.getBancaId() + "' ";
         }
-
+    
         if (questao.getCidade() != null) {
             sql += " AND q.cidade = '" + questao.getCidade() + "' ";
         }
-
+    
         if (questao.getUf() != null) {
             sql += " AND q.uf = '" + questao.getUf() + "' ";
         }
-
+    
         if (questao.getEscolaridade() != null) {
             sql += " AND q.escolaridade = '" + questao.getEscolaridade() + "' ";
         }
-
+    
         if (questao.getEnunciado() != null && !questao.getEnunciado().trim().isEmpty()) {
             sql += " AND q.enunciado LIKE '%" + questao.getEnunciado() + "%' ";
         }
-
+    
         if (questao.getCargoId() != null) {
             sql += " AND q.cargo_id = '" + questao.getCargoId() + "' ";
         }
-
+    
         if (questao.getDisciplinaId() != null && !questao.getDisciplinaId().isEmpty()) {
             sql += " AND q.disciplina_id IN (" + listToString(questao.getDisciplinaId()) + ") ";
         }
-
+    
         if (questao.getInstituicaoId() != null) {
             sql += " AND q.instituicao_id = '" + questao.getInstituicaoId() + "' ";
         }
-
+    
         sql += """
                         GROUP BY 
                             q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, 
                             c.nome, d.nome, i.nome, a2.nome, b.nome
                 """;
-
+    
         if (isAluno)
             sql += ", r.acerto";
-
+    
         sql += """
                     )
                     SELECT 
@@ -123,27 +136,27 @@ public class QuestaoService {
                         pq.cargo, pq.disciplina, pq.instituicao, pq.assunto, pq.banca,
                         pq.comentario_count, a.id as aid, a.descricao, a.correta, a.letra
                 """;
-
+    
         if (isAluno)
             sql += ", pq.acerto";
-
+    
         sql += """
                     FROM PagedQuestions pq
                     LEFT JOIN alternativas a ON a.questao_id = pq.qid
                     WHERE pq.row_num BETWEEN ? AND ?
-                    ORDER BY pq.qid, a.id
+                    ORDER BY pq.ano DESC, pq.qid, a.id
                 """;
-
+    
         int startRow = offset + 1;
         int endRow = offset + limit;
-
+    
         Map<UUID, QuestaoResponse> questaoMap = new HashMap<>();
         List<QuestaoResponse> result = new ArrayList<>();
-
+    
         this.jdbcTemplate.query(sql, rs -> {
             UUID questaoId = UUID.fromString(rs.getString("qid"));
             QuestaoResponse qr = questaoMap.get(questaoId);
-
+    
             if (qr == null) {
                 qr = new QuestaoResponse();
                 qr.setId(questaoId);
@@ -164,19 +177,19 @@ public class QuestaoService {
                 qr.setAlternativas(new ArrayList<>());
                 questaoMap.put(questaoId, qr);
             }
-
+    
             AlternativaResponse alternativa = new AlternativaResponse();
             alternativa.setId(UUID.fromString(rs.getString("aid")));
             alternativa.setLetra(rs.getString("letra"));
             alternativa.setCorreta(!isAluno && rs.getBoolean("correta"));
             alternativa.setDescricao(rs.getString("descricao"));
-
+    
             qr.getAlternativas().add(alternativa);
         }, startRow, endRow);
-
+    
         result.addAll(questaoMap.values());
         return result;
-    }
+    }    
 
     @Transactional
     public UUID create(QuestaoRequest request) {
