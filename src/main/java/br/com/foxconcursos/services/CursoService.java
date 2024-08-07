@@ -6,6 +6,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 
+import br.com.foxconcursos.domain.Simulado;
+import br.com.foxconcursos.repositories.SimuladoRepository;
+import br.com.foxconcursos.util.SecurityUtil;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
@@ -28,12 +31,15 @@ public class CursoService {
     private final CursoRepository cursoRepository;
     private final BancaService bancaService;
     private final DisciplinaService disciplinaService;
+    private final SimuladoRepository simuladoRepository;
 
     public CursoService(CursoRepository cursoRepository, BancaService bancaService, 
-        DisciplinaService disciplinaService) {
+        DisciplinaService disciplinaService,
+                        SimuladoRepository simuladoRepository) {
         this.cursoRepository = cursoRepository;
         this.bancaService = bancaService;
         this.disciplinaService = disciplinaService;
+        this.simuladoRepository = simuladoRepository;
     }
 
     public ProdutoCursoResponse getMatriculaCursoResponse(UUID id) {
@@ -113,6 +119,10 @@ public class CursoService {
         result.setNomeBanca(banca.getNome());
 
         return result;
+    }
+
+    public List<Simulado> findSimuladoByCursoId(UUID cursoId){
+        return simuladoRepository.findSimuladoNaoMatriculadosByCursoId(cursoId, SecurityUtil.obterUsuarioLogado().getId() );
     }
 
     public Page<CursoDTO> findAll(Pageable pageable, String filter) throws Exception {

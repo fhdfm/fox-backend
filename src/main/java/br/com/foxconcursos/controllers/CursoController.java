@@ -3,6 +3,7 @@ package br.com.foxconcursos.controllers;
 import java.util.List;
 import java.util.UUID;
 
+import br.com.foxconcursos.domain.Simulado;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -62,6 +63,12 @@ public class CursoController {
     @GetMapping(value = "/api/cursos/{id}")
     public ResponseEntity<CursoDTO> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(this.cursoService.findById(id));
+    }
+
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
+    @GetMapping(value = "/api/admin/cursos/{id}/simulados")
+    public ResponseEntity<List<Simulado>> findSimuladoByCursoId(@PathVariable UUID id) {
+        return ResponseEntity.ok(this.cursoService.findSimuladoByCursoId(id));
     }
 
     @GetMapping(value = "/api/cursos/{cursoId}/disciplinas")
