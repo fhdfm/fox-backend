@@ -140,6 +140,22 @@ public class FoxUtils {
         return cpfUtil.format(cpf);
     }
 
+    public static String removeInvalidXMLCharacters(String input) {
+        StringBuilder out = new StringBuilder();
+        int codePoint;
+        int i = 0;
+        while (i < input.length()) {
+            codePoint = input.codePointAt(i);
+            if ((codePoint == 0x9) || (codePoint == 0xA) || (codePoint == 0xD) ||
+                    ((codePoint >= 0x20) && (codePoint <= 0xD7FF)) ||
+                    ((codePoint >= 0xE000) && (codePoint <= 0xFFFD)) ||
+                    ((codePoint >= 0x10000) && (codePoint <= 0x10FFFF))) {
+                out.append(Character.toChars(codePoint));
+            }
+            i += Character.charCount(codePoint);
+        }
+        return out.toString();
+    }
     public static String removerTagsP(String texto) {
         texto = texto.replaceAll("^<p[^>]*?>", "");
         texto = texto.replaceAll("</p>$", "");
@@ -147,7 +163,7 @@ public class FoxUtils {
     }
 
     public static char obterLetra(int numero) {
-        char[] letras = {'a', 'b', 'c', 'd', 'e'};
+        char[] letras = {'A', 'B', 'C', 'D', 'E'};
         if (numero >= 1 && numero <= letras.length) {
             return letras[numero - 1];
         } else {

@@ -217,6 +217,6 @@ public class UsuarioServiceImpl implements UserDetailsService {
 
     public Usuario findByEmail(String email) {
         return this.usuarioRepository.findByEmailAndStatus(email, StatusUsuario.ATIVO)
-            .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+            .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado. Verifique se digitou corretamente."));
     }
 }

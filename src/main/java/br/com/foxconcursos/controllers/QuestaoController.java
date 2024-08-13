@@ -128,7 +128,7 @@ public class QuestaoController {
     }
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
-    @GetMapping("/api/admin/questoes/download")
+    @GetMapping(value = "/api/admin/questoes/download", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> download(@RequestParam(required = false) String filter,
                                            @RequestParam(required = true, defaultValue = "25") Integer limit,
                                            @RequestParam(required = false, defaultValue = "0") Integer offset) throws Exception {
