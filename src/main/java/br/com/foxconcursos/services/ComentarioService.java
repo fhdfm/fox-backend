@@ -64,7 +64,7 @@ public class ComentarioService {
     public List<ComentarioResponse> findByQuestaoId(UUID questaoId) {
 
         String sql = """
-                select u.usuario_id, u.nome, c.data, c.descricao from comentarios c
+                select u.id as usuarioId, u.nome, c.id as comentarioId, c.data, c.descricao from comentarios c
                 inner join usuarios u on u.id = c.usuario_id and c.questao_id = ?
                 order by c.data desc
             """;
@@ -72,7 +72,9 @@ public class ComentarioService {
         return this.jdbcTemplate.query(sql, (rs, rowNum) -> {
             ComentarioResponse response = new ComentarioResponse();
             response.setUsuarioId(
-                UUID.fromString(rs.getString("usuario_id")));
+                UUID.fromString(rs.getString("usuarioId")));
+            response.setComentarioId(
+                UUID.fromString(rs.getString("comentarioId")));
             response.setUsuario(rs.getString("nome"));
             response.setDescricao(rs.getString("descricao"));
             response.setData(FoxUtils.convertLocalDateTimeToDate(

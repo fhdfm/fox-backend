@@ -119,6 +119,7 @@ public class PdfService {
                     correta = FoxUtils.obterLetra(Integer.parseInt(alternativa.getLetra())) + "";
                 }
             }
+            htmlContent.append("</hr>");
 
             htmlContent
                     .append("<small>Alternativa correta: ")

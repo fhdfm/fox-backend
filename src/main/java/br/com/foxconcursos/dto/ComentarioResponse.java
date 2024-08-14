@@ -5,6 +5,7 @@ import java.util.UUID;
 public class ComentarioResponse {
     
     private UUID usuarioId;
+    private UUID comentarioId;
     private String usuario;
     private String descricao;
     private Date data;
@@ -43,4 +44,11 @@ public class ComentarioResponse {
         return this.data;
     }
 
+    public UUID getComentarioId() {
+        return comentarioId;
+    }
+
+    public void setComentarioId(UUID comentarioId) {
+        this.comentarioId = comentarioId;
+    }
 }
