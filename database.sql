@@ -30,7 +30,8 @@ CREATE TABLE cursos (
     escolaridade VARCHAR(100) NOT NULL,
     estado VARCHAR(100) NOT NULL,
     cidade VARCHAR(100) NULL,
-    valor NUMERIC(10,2) NOT NULL
+    valor NUMERIC(10,2) NOT NULL,
+    imagem TEXT NULL  -- Nova coluna imagem
 );
 
 CREATE TABLE simulados (
@@ -79,7 +80,7 @@ CREATE TABLE itens_questao_simulado (
 );
 
 CREATE TABLE respostas_simulado (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
     simulado_id UUID NOT NULL,
     usuario_id UUID NOT NULL,
     data_inicio TIMESTAMP NOT NULL,
@@ -89,8 +90,10 @@ CREATE TABLE respostas_simulado (
     status VARCHAR(20) NOT NULL,
     version INT DEFAULT 0,
     FOREIGN KEY (simulado_id) REFERENCES simulados(id),
-    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+    UNIQUE (simulado_id, usuario_id)  -- Restrição de unicidade composta
 );
+
 
 CREATE TABLE respostas_simulado_questao (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL UNIQUE,

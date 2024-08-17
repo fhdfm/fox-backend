@@ -22,4 +22,6 @@ COPY --from=build /target/*.jar app.jar
 
 ENV SPRING_PROFILES_ACTIVE=prod
 
-ENTRYPOINT ["java", "-javaagent:/usr/local/newrelic/newrelic.jar", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-XX:-UseSharedSpaces", "-javaagent:/usr/local/newrelic/newrelic.jar", "-jar", "app.jar"]
+
+#ENTRYPOINT ["java", "-javaagent:/usr/local/newrelic/newrelic.jar", "-jar", "app.jar"]

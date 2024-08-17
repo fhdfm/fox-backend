@@ -27,6 +27,7 @@ public class CursoDTO implements Serializable {
     private String estado;
     private String cidade;
     private BigDecimal valor;
+    private String imagem;
 
     private boolean possuiDisciplinas;
 
@@ -38,21 +39,27 @@ public class CursoDTO implements Serializable {
         this.titulo = curso.getTitulo();
         this.descricao = curso.getDescricao();
         this.dataInicio = curso.getDataInicio();
+        
         if (curso.getDataInicio() != null) {
             this.dataInicioView = 
                 FoxUtils.convertLocalDateToDate(this.dataInicio);
         }
+
         this.dataTermino = curso.getDataTermino();
+        
         if (curso.getDataTermino() != null) {
             this.dataTerminoView =
                 FoxUtils.convertLocalDateToDate(this.dataTermino);
         }
+        
         this.bancaId = curso.getBancaId();
         this.status = curso.getStatus();
         this.escolaridade = curso.getEscolaridade();
         this.estado = curso.getEstado();
         this.cidade = curso.getCidade();
         this.valor = curso.getValor();
+
+        this.imagem = curso.getImagem();
 
         this.possuiDisciplinas = false;
     }
@@ -167,5 +174,13 @@ public class CursoDTO implements Serializable {
 
     public void setPossuiDisciplinas(boolean possuiDisciplinas) {
         this.possuiDisciplinas = possuiDisciplinas;
+    }
+
+    public void setImagem(String imagem) {
+        this.imagem = imagem;
+    }
+
+    public String getImagem() {
+        return this.imagem;
     }
 }

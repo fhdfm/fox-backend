@@ -2,6 +2,7 @@ package br.com.foxconcursos.dto;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 import br.com.foxconcursos.domain.Curso;
 import br.com.foxconcursos.domain.Escolaridade;
@@ -18,6 +19,7 @@ public class ProdutoCursoResponse extends ProdutoResponse {
     private Date dataTermino;
     private Status status;
     private BigDecimal valor;
+    private List<ProdutoSimuladoResponse> simulados;
 
     public ProdutoCursoResponse() {
     }
@@ -92,4 +94,11 @@ public class ProdutoCursoResponse extends ProdutoResponse {
         this.valor = valor;
     }
 
+    public void setSimulados(List<ProdutoSimuladoResponse> simulados) {
+        this.simulados = simulados;
+    }
+
+    public List<ProdutoSimuladoResponse> getSimulados() {
+        return this.simulados;
+    }
 }

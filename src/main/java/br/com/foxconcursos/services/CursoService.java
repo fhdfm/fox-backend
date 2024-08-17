@@ -6,9 +6,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 
-import br.com.foxconcursos.domain.Simulado;
-import br.com.foxconcursos.repositories.SimuladoRepository;
-import br.com.foxconcursos.util.SecurityUtil;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
@@ -17,11 +14,14 @@ import org.springframework.stereotype.Service;
 
 import br.com.foxconcursos.domain.Banca;
 import br.com.foxconcursos.domain.Curso;
+import br.com.foxconcursos.domain.Simulado;
 import br.com.foxconcursos.domain.Status;
 import br.com.foxconcursos.dto.CursoDTO;
 import br.com.foxconcursos.dto.ProdutoCursoResponse;
 import br.com.foxconcursos.repositories.CursoRepository;
+import br.com.foxconcursos.repositories.SimuladoRepository;
 import br.com.foxconcursos.util.FoxUtils;
+import br.com.foxconcursos.util.SecurityUtil;
 
 @Service
 public class CursoService {
@@ -53,12 +53,6 @@ public class CursoService {
     }
 
     public UUID save(CursoDTO cursoDTO) {
-        
-        // byte[] imageBytes = cursoDTO.getImageBytes();
-        // if (imageBytes != null) {
-        //     String imageUrl = storageService.upload(imageBytes);
-        //     cursoDTO.setImage(imageUrl);
-        // }
 
         validarEntrada(cursoDTO);
 
