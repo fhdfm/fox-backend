@@ -1,5 +1,6 @@
 package br.com.foxconcursos.services;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
@@ -8,7 +9,7 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
-import org.springframework.core.io.ClassPathResource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
@@ -28,7 +29,9 @@ public class GoogleDriveService {
     private static final String APPLICATION_NAME = "fox-backend";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final List<String> SCOPES = Collections.singletonList(DriveScopes.DRIVE_FILE);
-    private static final String CREDENTIALS_FILE_PATH = "/fox-credentials.json";
+
+    @Value("${storage.credentials}")
+    private String credentialsPath;
 
     private Drive driveService;
 
@@ -42,8 +45,9 @@ public class GoogleDriveService {
     }
 
     private GoogleCredentials getCredentials() throws IOException, GeneralSecurityException {
-        InputStream in = new ClassPathResource(CREDENTIALS_FILE_PATH).getInputStream();
-        return GoogleCredentials.fromStream(in).createScoped(SCOPES);
+        // Carregando o arquivo de credenciais a partir do caminho especificado
+        InputStream credentialsStream = new FileInputStream(credentialsPath);
+        return GoogleCredentials.fromStream(credentialsStream).createScoped(SCOPES);
     }
 
     public String uploadFile(java.io.File file, String mimeType, String folderId) throws IOException {
