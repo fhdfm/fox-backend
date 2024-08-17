@@ -24,6 +24,7 @@ public class Curso {
     private String estado;
     private String cidade;
     private BigDecimal valor;
+    private String imagem;
 
     public Curso() {
     }
@@ -40,6 +41,7 @@ public class Curso {
         this.estado = cursoDTO.getEstado();
         this.cidade = cursoDTO.getCidade();
         this.valor = cursoDTO.getValor();
+        this.imagem = cursoDTO.getImagem();
     }
 
     public UUID getId() {
@@ -128,5 +130,13 @@ public class Curso {
 
     public void setValor(BigDecimal valor) {
         this.valor = valor;
+    }
+
+    public void setImagem(String imagem) {
+        this.imagem = imagem;
+    }
+
+    public String getImagem() {
+        return this.imagem;
     }
 }

@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -69,14 +70,28 @@ public class RespostaSimuladoService {
         if (respostaDB.isPresent())
             return respostaDB.get().getId();
 
-        RespostaSimulado resposta = new RespostaSimulado();
-        resposta.setUsuarioId(usuarioId);
-        resposta.setSimuladoId(simuladoId);
-        resposta.setDataInicio(LocalDateTime.now());
-        resposta.setStatus(StatusSimulado.EM_ANDAMENTO);
-        resposta = this.respostaSimuladoRepository.save(resposta);
+        try {
+            
+            RespostaSimulado resposta = new RespostaSimulado();
+            resposta.setUsuarioId(usuarioId);
+            resposta.setSimuladoId(simuladoId);
+            resposta.setDataInicio(LocalDateTime.now());
+            resposta.setStatus(StatusSimulado.EM_ANDAMENTO);
+            resposta = this.respostaSimuladoRepository.save(resposta);
 
-        return resposta.getId();
+            return resposta.getId();
+        
+        } catch (DataIntegrityViolationException e) {
+            
+            respostaDB = this.respostaSimuladoRepository
+                .findBySimuladoIdAndUsuarioId(simuladoId, usuarioId);
+            
+            if (respostaDB.isPresent())
+                return respostaDB.get().getId();
+
+            throw new IllegalStateException("Erro ao iniciar o simulado: " 
+                + e.getMessage(), e);
+        }
     }
 
     @Transactional
