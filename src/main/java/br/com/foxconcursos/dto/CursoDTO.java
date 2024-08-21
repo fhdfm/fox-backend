@@ -22,7 +22,7 @@ public class CursoDTO implements Serializable {
     private Date dataTerminoView;
     private Status status;
     private UUID bancaId;
-    private String nomeBanca;
+    private String banca;
     private Escolaridade escolaridade;
     private String estado;
     private String cidade;
@@ -120,12 +120,12 @@ public class CursoDTO implements Serializable {
         this.bancaId = bancaId;
     }
 
-    public String getNomeBanca() {
-        return nomeBanca;
+    public String getBanca() {
+        return banca;
     }
 
-    public void setNomeBanca(String nomeBanca) {
-        this.nomeBanca = nomeBanca;
+    public void setBanca(String banca) {
+        this.banca = banca;
     }
 
     public Escolaridade getEscolaridade() {

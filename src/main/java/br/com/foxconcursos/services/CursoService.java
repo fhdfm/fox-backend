@@ -110,13 +110,20 @@ public class CursoService {
 
         CursoDTO result = new CursoDTO(curso);
         result.setPossuiDisciplinas(disciplinaService.existsByCursoId(id));
-        result.setNomeBanca(banca.getNome());
+        result.setBanca(banca.getNome());
 
         return result;
     }
 
-    public List<Simulado> findSimuladoByCursoId(UUID cursoId){
-        return simuladoRepository.findSimuladoNaoMatriculadosByCursoId(cursoId, SecurityUtil.obterUsuarioLogado().getId() );
+    public List<Simulado> findSimuladosNaoMatriculadosByCursoId(UUID cursoId){
+        return simuladoRepository.findSimuladosNaoMatriculadosByCursoId(cursoId, SecurityUtil.obterUsuarioLogado().getId() );
+    }
+
+    public List<Simulado> findSimuladosByCursoIdAndUsuarioId(UUID cursoId){
+        return simuladoRepository.findSimuladosByCursoIdAndUsuarioId(cursoId, SecurityUtil.obterUsuarioLogado().getId() );
+    }
+    public List<Simulado> findSimuladosByCursoId(UUID cursoId){
+        return simuladoRepository.findByCursoId(cursoId);
     }
 
     public Page<CursoDTO> findAll(Pageable pageable, String filter) throws Exception {
@@ -149,7 +156,7 @@ public class CursoService {
             public CursoDTO apply(Curso curso) {
                 String banca = bancas.get(curso.getBancaId());
                 CursoDTO cursoDTO = new CursoDTO(curso);
-                cursoDTO.setNomeBanca(banca);
+                cursoDTO.setBanca(banca);
                 cursoDTO.setPossuiDisciplinas(disciplinaService.existsByCursoId(curso.getId()));
                 return cursoDTO;
             }
@@ -168,7 +175,7 @@ public class CursoService {
         for (Curso curso : cursos) {
             String banca = bancas.get(curso.getBancaId());
             CursoDTO cursoDTO = new CursoDTO(curso);
-            cursoDTO.setNomeBanca(banca);
+            cursoDTO.setBanca(banca);
             result.put(curso.getId(), cursoDTO);
         }
 

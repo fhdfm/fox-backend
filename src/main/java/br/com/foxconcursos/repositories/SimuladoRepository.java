@@ -17,7 +17,13 @@ public interface SimuladoRepository extends CustomCrudRepository<Simulado, UUID>
             "WHERE s.curso_id = :cursoId " +
             "  AND s.id NOT IN (SELECT m.produto_id FROM matriculas m where usuario_id = :usuarioId) " +
             "ORDER BY s.titulo asc")
-    List<Simulado> findSimuladoNaoMatriculadosByCursoId(UUID cursoId,UUID usuarioId ) ;
+    List<Simulado> findSimuladosNaoMatriculadosByCursoId(UUID cursoId, UUID usuarioId ) ;
+    @Query("SELECT s.* " +
+            "FROM simulados s " +
+            "WHERE s.curso_id = :cursoId " +
+            "  AND s.id IN (SELECT m.produto_id FROM matriculas m where usuario_id = :usuarioId) " +
+            "ORDER BY s.titulo asc")
+    List<Simulado> findSimuladosByCursoIdAndUsuarioId(UUID cursoId, UUID usuarioId ) ;
 
     Boolean existsByCursoId(UUID cursoId);
 

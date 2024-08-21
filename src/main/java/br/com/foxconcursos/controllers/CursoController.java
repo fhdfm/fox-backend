@@ -1,30 +1,22 @@
 package br.com.foxconcursos.controllers;
 
-import java.util.List;
-import java.util.UUID;
-
+import br.com.foxconcursos.domain.CursoDisciplina;
+import br.com.foxconcursos.domain.Disciplina;
 import br.com.foxconcursos.domain.Simulado;
+import br.com.foxconcursos.dto.AddDisciplinaRequest;
+import br.com.foxconcursos.dto.CursoDTO;
+import br.com.foxconcursos.services.CursoService;
+import br.com.foxconcursos.services.DisciplinaService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import br.com.foxconcursos.domain.CursoDisciplina;
-import br.com.foxconcursos.domain.Disciplina;
-import br.com.foxconcursos.dto.AddDisciplinaRequest;
-import br.com.foxconcursos.dto.CursoDTO;
-import br.com.foxconcursos.services.CursoService;
-import br.com.foxconcursos.services.DisciplinaService;
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -34,7 +26,7 @@ public class CursoController {
     private final DisciplinaService disciplinaService;
 
     public CursoController(CursoService cursoService,
-        DisciplinaService disciplinaService) {
+                           DisciplinaService disciplinaService) {
         this.cursoService = cursoService;
         this.disciplinaService = disciplinaService;
     }
@@ -44,7 +36,7 @@ public class CursoController {
     public ResponseEntity<UUID> save(@RequestBody CursoDTO courseDTO) {
 
         UUID newCurso = this.cursoService.save(courseDTO);
-        
+
         return ResponseEntity.status(HttpStatus.CREATED).body(newCurso);
     }
 
@@ -66,9 +58,20 @@ public class CursoController {
     }
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
-    @GetMapping(value = "/api/admin/cursos/{id}/simulados")
-    public ResponseEntity<List<Simulado>> findSimuladoByCursoId(@PathVariable UUID id) {
-        return ResponseEntity.ok(this.cursoService.findSimuladoByCursoId(id));
+    @GetMapping(value = "/api/admin/cursos/{id}/simulados-nao-matriculados")
+    public ResponseEntity<List<Simulado>> findSimuladosNaoMatriculadosByCursoId(@PathVariable UUID id) {
+        return ResponseEntity.ok(this.cursoService.findSimuladosNaoMatriculadosByCursoId(id));
+    }
+
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO')")
+    @GetMapping("/api/aluno/cursos/{id}/simulados")
+    public ResponseEntity<List<Simulado>> findSimuladosByCursoIdAndUsuarioId(@PathVariable UUID id) {
+        return ResponseEntity.ok(this.cursoService.findSimuladosByCursoIdAndUsuarioId(id));
+    }
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
+    @GetMapping("/api/admin/cursos/{id}/simulados")
+    public ResponseEntity<List<Simulado>> findSimuladosByCursoId(@PathVariable UUID id) {
+        return ResponseEntity.ok(this.cursoService.findSimuladosByCursoId(id));
     }
 
     @GetMapping(value = "/api/cursos/{cursoId}/disciplinas")
@@ -78,8 +81,8 @@ public class CursoController {
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @PostMapping(value = "/api/admin/cursos/{cursoId}/disciplinas", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> adicionarDisciplinas(@PathVariable UUID cursoId, 
-        @RequestBody AddDisciplinaRequest disciplinas) {
+    public ResponseEntity<String> adicionarDisciplinas(@PathVariable UUID cursoId,
+                                                       @RequestBody AddDisciplinaRequest disciplinas) {
         this.disciplinaService.adicionarDisciplinas(cursoId, disciplinas.getIds());
         return ResponseEntity.status(HttpStatus.OK).body("Disciplina adicionada com sucesso.");
     }
