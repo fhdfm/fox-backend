@@ -90,11 +90,6 @@
 			<groupId>org.ehcache</groupId>
 			<artifactId>ehcache</artifactId>
 		</dependency>
-		<!-- Google -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
         <!-- Google API Client -->
         <dependency>
             <groupId>com.google.api-client</groupId>

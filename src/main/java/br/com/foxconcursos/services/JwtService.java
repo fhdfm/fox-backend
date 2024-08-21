@@ -1,13 +1,18 @@
 package br.com.foxconcursos.services;
 
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
 
 import br.com.foxconcursos.domain.UsuarioLogado;
@@ -16,9 +21,11 @@ import br.com.foxconcursos.domain.UsuarioLogado;
 public class JwtService {
 
     private final JwtEncoder encoder;
+    private final JwtDecoder decoder;
 
-    public JwtService(JwtEncoder jwtEncoder) {
+    public JwtService(JwtEncoder jwtEncoder, JwtDecoder decoder) {
         this.encoder = jwtEncoder;
+        this.decoder = decoder;
     }
 
     public String generatePasswordToken(String email, Instant now, long expiresAt) {
@@ -36,7 +43,8 @@ public class JwtService {
                     .getTokenValue();
     }
 
-    public String generateToken(Authentication authentication) {
+    public Map<String, String> generateToken(Authentication authentication) {
+        
         Instant now = Instant.now();
                 
         String scopes = authentication.getAuthorities().stream()
@@ -56,9 +64,33 @@ public class JwtService {
             .claim("cpf", usuario.getCpf())
             .build();
 
-        return this.encoder.encode
-                (JwtEncoderParameters.from(claims))
-                    .getTokenValue();
+        String accesToken = this.encoder.encode(
+            JwtEncoderParameters.from(claims)).getTokenValue();
+
+        var refreshTokenClaims = JwtClaimsSet.builder()
+            .issuer("portal-fox")
+            .issuedAt(now)
+            .expiresAt(now.plusSeconds(2592000))
+            .subject(authentication.getName())
+            .claim("scope", "refresh_token")
+            .build();
+        
+        String refreshToken = this.encoder.encode(
+            JwtEncoderParameters.from(refreshTokenClaims)).getTokenValue();
+        
+        Map<String, String> tokens = new HashMap<>();
+        tokens.put("access_token", accesToken);
+        tokens.put("refresh_token", refreshToken);
+
+        return tokens;
+    }
+
+    public Jwt decodeToken(String token) {
+        try {
+            return decoder.decode(token);
+        } catch (JwtException e) {
+            throw new RuntimeException("Token inválido.", e);
+        }
     }
 
 }
