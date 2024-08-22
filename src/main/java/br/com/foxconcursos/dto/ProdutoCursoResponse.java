@@ -19,7 +19,8 @@ public class ProdutoCursoResponse extends ProdutoResponse {
     private Date dataTermino;
     private Status status;
     private BigDecimal valor;
-    private List<ProdutoSimuladoResponse> simulados;
+    private List<ProdutoSimuladoResponse> simulados; 
+    private ProdutoBancoQuestaoResponse bancoQuestao;
 
     public ProdutoCursoResponse() {
     }
@@ -100,5 +101,13 @@ public class ProdutoCursoResponse extends ProdutoResponse {
 
     public List<ProdutoSimuladoResponse> getSimulados() {
         return this.simulados;
+    }
+
+    public ProdutoBancoQuestaoResponse getBancoQuestao() {
+        return this.bancoQuestao;
+    }
+
+    public void setBancoQuestao(ProdutoBancoQuestaoResponse bq) {
+        this.bancoQuestao = bq;
     }
 }

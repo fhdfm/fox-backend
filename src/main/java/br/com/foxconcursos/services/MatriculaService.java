@@ -1,9 +1,11 @@
 package br.com.foxconcursos.services;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +18,7 @@ import br.com.foxconcursos.domain.Transacao;
 import br.com.foxconcursos.dto.MatriculaRequest;
 import br.com.foxconcursos.dto.SimuladoCompletoResponse;
 import br.com.foxconcursos.dto.UsuarioResponse;
+import br.com.foxconcursos.events.MatriculaBancoQuestaoEvent;
 import br.com.foxconcursos.repositories.MatriculaRepository;
 import br.com.foxconcursos.services.impl.UsuarioServiceImpl;
 
@@ -27,15 +30,19 @@ public class MatriculaService {
     private final SimuladoService simuladoService;
     private final CursoService cursoService;
     private final UsuarioServiceImpl usuarioService;
+    private final ApplicationEventPublisher publisher;
 
     public MatriculaService(MatriculaRepository matriculaRepository, 
         TransacaoService transacaoService, SimuladoService simuladoService, 
-        CursoService cursoService, UsuarioServiceImpl usuarioService) {
+        CursoService cursoService, UsuarioServiceImpl usuarioService, 
+        ApplicationEventPublisher publisher) {
+        
         this.matriculaRepository = matriculaRepository;
         this.transacaoService = transacaoService;
         this.simuladoService = simuladoService;
         this.cursoService = cursoService;
         this.usuarioService = usuarioService;
+        this.publisher = publisher;
     }
 
     @Transactional
@@ -48,6 +55,60 @@ public class MatriculaService {
             
         if (matricula.getProdutoId() == null)
             throw new IllegalArgumentException("Produto (curso/simulado) não informado");
+
+        if (matricula.isBancoQuestao())
+            return matricularBancoQuestao(usuario, matricula);
+        else
+            return matricularCursoSimulado(usuario, matricula);        
+    }
+
+    @Transactional
+    private UUID matricularBancoQuestao(UsuarioResponse usuario, MatriculaRequest matricula) {
+
+        LocalDateTime hoje = LocalDateTime.now();
+
+        if (matricula.getValor() == null) {
+            throw new IllegalArgumentException("Valor é obrigatório.");
+        }
+
+        if (matricula.getDataFim() == null) {
+            throw new IllegalArgumentException("Data fim é obrigatória.");
+        }
+
+        if (hoje.isAfter(matricula.getDataFim())) {
+            throw new IllegalArgumentException("Data Inicio não pode ser maior que Data Fim.");
+        }
+
+        Transacao transacao = new Transacao();
+        transacao.setData(LocalDate.now());
+
+        transacao.setDescricao("Matrícula em: Banco de Questões");
+        transacao.setValor(matricula.getValor());
+
+        Matricula novaMatricula = new Matricula();
+        novaMatricula.setUsuarioId(usuario.getId());
+        novaMatricula.setProdutoId(matricula.getProdutoId());
+        novaMatricula.setTipoProduto(TipoProduto.QUESTOES);
+
+        transacao = transacaoService.criarTransacao(transacao);
+
+        novaMatricula.setStatus(transacao.getStatus() 
+            == StatusPagamento.PAGO ? Status.ATIVO : Status.INATIVO);
+        novaMatricula.setTransacaoId(transacao.getId());
+        novaMatricula.setUsuarioId(usuario.getId());
+        
+        UUID matriculaId = matriculaRepository.save(novaMatricula).getId();
+
+        MatriculaBancoQuestaoEvent event = 
+            new MatriculaBancoQuestaoEvent(matriculaId, hoje, matricula.getDataFim());
+
+        publisher.publishEvent(event);
+
+        return matriculaId;
+    }
+
+    @Transactional
+    private UUID matricularCursoSimulado(UsuarioResponse usuario, MatriculaRequest matricula) {
         
         Object produto = this.cursoService.obterPorId(matricula.getProdutoId());
         if (produto == null) {
@@ -83,6 +144,7 @@ public class MatriculaService {
         novaMatricula.setUsuarioId(usuario.getId());
         
         return matriculaRepository.save(novaMatricula).getId();
+
     }
 
     @Transactional

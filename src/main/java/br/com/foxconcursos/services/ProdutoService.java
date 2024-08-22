@@ -3,6 +3,7 @@ package br.com.foxconcursos.services;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -10,15 +11,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.springframework.context.event.EventListener;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import br.com.foxconcursos.domain.Escolaridade;
 import br.com.foxconcursos.domain.Status;
 import br.com.foxconcursos.domain.TipoProduto;
+import br.com.foxconcursos.dto.ProdutoBancoQuestaoResponse;
 import br.com.foxconcursos.dto.ProdutoCursoResponse;
 import br.com.foxconcursos.dto.ProdutoResponse;
 import br.com.foxconcursos.dto.ProdutoSimuladoResponse;
+import br.com.foxconcursos.events.MatriculaBancoQuestaoEvent;
 import br.com.foxconcursos.util.FoxUtils;
 
 @Service
@@ -149,10 +153,46 @@ public class ProdutoService {
                 curso.getSimulados().add(simulado); // Adiciona o simulado à lista de simulados do curso
                 simuladosAdicionados.add(simuladoId);
             }
+
         }, usuarioId);
 
         // Adicionar os cursos ao produto final
         produtos.addAll(cursosMap.values());
+
+        if (!produtos.isEmpty()) {
+            // adiciona o banco de questões
+
+            ProdutoResponse curso = produtos.get(0);
+
+            Date expiraEm = ((ProdutoCursoResponse) curso).getDataTermino();
+
+            ProdutoBancoQuestaoResponse bqReponse = 
+                new ProdutoBancoQuestaoResponse(expiraEm);
+            bqReponse.setId(usuarioId);
+            bqReponse.setTipoProduto(TipoProduto.QUESTOES);
+
+            ((ProdutoCursoResponse) curso).setBancoQuestao(bqReponse);
+
+        } else {
+
+            String sql = "SELECT * FROM banco_questao_matricula bqm " +
+                        "JOIN matriculas m ON bqm.matricula_id = m.id " +
+                        "WHERE m.usuario_id = ? AND bqm.fim >= CURRENT_DATE";
+
+            jdbcTemplate.query(sql, (rs) -> {
+
+                ProdutoResponse response = 
+                    new ProdutoBancoQuestaoResponse(
+                        FoxUtils.convertLocalDateTimeToDate(rs.getObject(
+                            "data_inicio", java.time.LocalDateTime.class)));
+                response.setTipoProduto(TipoProduto.QUESTOES);
+                
+                produtos.add(response);
+
+            }, usuarioId);
+
+
+        }
 
         // Query para obter simulados diretamente matriculados
         String querySimuladosMatriculados = """
@@ -178,6 +218,12 @@ public class ProdutoService {
         }, usuarioId);
 
         return produtos;
+    }
+
+    @EventListener
+    public void handleMatricularBancoQuestoesEvent(MatriculaBancoQuestaoEvent event) {
+        String sql = "INSERT INTO banco_questao_matricula (matricula_id, inicio, fim) VALUES (?, ?, ?)";
+        jdbcTemplate.update(sql, event.getMatriculaId(), event.getInicio(), event.getFim());
     }
 
     

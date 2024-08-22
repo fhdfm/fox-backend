@@ -3,7 +3,9 @@ package br.com.foxconcursos.domain;
 public enum TipoProduto {
     
     CURSO("CURSO"),
-    SIMULADO("SIMULADO");
+    SIMULADO("SIMULADO"),
+    QUESTOES("QUESTOES"),
+    APOSTILA("APOSTILA");
 
     private String tipo;
 

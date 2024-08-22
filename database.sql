@@ -172,6 +172,15 @@ CREATE TABLE matriculas (
     FOREIGN KEY (transacao_id) REFERENCES transacoes(id)
 );
 
+CREATE TABLE banco_questao_matricula (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+    matricula_id UUID NOT NULL,
+    inicio TIMESTAMP NOT NULL,
+    fim TIMESTAMP NOT NULL,
+    version INTEGER NOT NULL,
+    CONSTRAINT fk_matricula_id FOREIGN KEY (matricula_id) REFERENCES matriculas(id)
+);
+
 CREATE TABLE recuperar_password (
     token TEXT NOT NULL PRIMARY KEY,
     usuario_id UUID NOT NULL,
