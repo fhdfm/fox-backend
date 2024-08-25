@@ -177,7 +177,7 @@ CREATE TABLE banco_questao_matricula (
     matricula_id UUID NOT NULL,
     inicio TIMESTAMP NOT NULL,
     fim TIMESTAMP NOT NULL,
-    version INTEGER NOT NULL,
+    version INTEGER NOT NULL DEFAULT 0,
     CONSTRAINT fk_matricula_id FOREIGN KEY (matricula_id) REFERENCES matriculas(id)
 );
 
