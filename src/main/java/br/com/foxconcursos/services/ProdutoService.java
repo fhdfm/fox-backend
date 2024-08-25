@@ -184,7 +184,7 @@ public class ProdutoService {
                 ProdutoResponse response = 
                     new ProdutoBancoQuestaoResponse(
                         FoxUtils.convertLocalDateTimeToDate(rs.getObject(
-                            "data_inicio", java.time.LocalDateTime.class)));
+                            "inicio", java.time.LocalDateTime.class)));
                 response.setTipoProduto(TipoProduto.QUESTOES);
                 
                 produtos.add(response);

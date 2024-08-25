@@ -1,68 +1,69 @@
 package br.com.foxconcursos.controllers;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
+import br.com.foxconcursos.domain.UsuarioLogado;
+import br.com.foxconcursos.services.AuthenticationService;
+import br.com.foxconcursos.services.impl.UsuarioServiceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtException;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.foxconcursos.services.AuthenticationService;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
-    private final AuthenticationManager authenticationManager;
+    private final UsuarioServiceImpl usuarioService;
 
-    public AuthenticationController(AuthenticationService authenticationService, 
-        AuthenticationManager authenticationManager) {
-        
+    public AuthenticationController(
+            AuthenticationService authenticationService,
+            UsuarioServiceImpl usuarioService
+    ) {
         this.authenticationService = authenticationService;
-        this.authenticationManager = authenticationManager;
+        this.usuarioService = usuarioService;
     }
 
     @PostMapping(value = "/api/signin", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, String>> authenticate(Authentication authentication) {
         return ResponseEntity.status(HttpStatus.CREATED)
-            .body(this.authenticationService.authenticate(authentication));
+                .body(this.authenticationService.authenticate(authentication));
     }
 
     @PostMapping(value = "/api/token/refresh", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, String>> refreshToken(
-        @RequestBody Map<String, String> tokenRequest) {
+            @RequestBody Map<String, String> tokenRequest) {
 
         String refreshToken = tokenRequest.get("refresh_token");
 
         try {
-
             Jwt jwt = this.authenticationService.decodeToken(refreshToken);
             String username = jwt.getSubject();
 
             // Extraindo o escopo do JWT (geralmente como uma string)
             String scope = (String) jwt.getClaims().get("scope");
 
-            // Convertendo o escopo em authorities
-            List<SimpleGrantedAuthority> authorities = Arrays.stream(scope.split(" "))
-                .map(role -> new SimpleGrantedAuthority("SCOPE_" + role)) // Prefixando com "SCOPE_"
-                .collect(Collectors.toList());
+            if (!"refresh_token".equals(scope)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("error", "Invalid scope"));
+            }
 
-            Authentication auth = this.authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(username, null, authorities)
-            );
+            UsuarioLogado usuarioLogado = usuarioService.loadUserByUsername(username);
+
+            Authentication auth = new PreAuthenticatedAuthenticationToken(usuarioLogado, null, usuarioLogado.getAuthorities());
 
             Map<String, String> tokens = this.authenticationService.authenticate(auth);
             return ResponseEntity.ok(tokens);
