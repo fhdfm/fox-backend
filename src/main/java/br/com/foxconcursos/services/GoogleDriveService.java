@@ -11,6 +11,7 @@ import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.FileContent;
@@ -19,6 +20,7 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.File;
+import com.google.api.services.drive.model.FileList;
 import com.google.api.services.drive.model.Permission;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -50,6 +52,7 @@ public class GoogleDriveService {
         return GoogleCredentials.fromStream(credentialsStream).createScoped(SCOPES);
     }
 
+    @Transactional
     public String uploadFile(java.io.File file, String mimeType, String folderId) throws IOException {
         File fileMetadata = new File();
         fileMetadata.setName(file.getName());
@@ -79,4 +82,62 @@ public class GoogleDriveService {
 
         return file.getWebViewLink();
     }
+
+    public void deleteEmptyFolder(String folderId) throws IOException {
+        FileList files = driveService.files().list()
+                .setQ("'" + folderId + "' in parents and trashed = false")
+                .setFields("files(id, name)")
+                .execute();
+
+        if (files.getFiles().isEmpty()) {
+            driveService.files().delete(folderId).execute();
+        }
+    }
+
+    // Método para criar uma pasta
+    public String createFolder(String folderName, String parentFolderId) throws IOException {
+        File fileMetadata = new File();
+        fileMetadata.setName(folderName);
+        fileMetadata.setMimeType("application/vnd.google-apps.folder");
+
+        if (parentFolderId != null) {
+            fileMetadata.setParents(Collections.singletonList(parentFolderId));
+        }
+
+        File folder = driveService.files().create(fileMetadata)
+                .setFields("id")
+                .execute();
+
+        return folder.getId();
+    }
+
+    // Método para listar arquivos de uma pasta
+    public List<File> listFilesInFolder(String folderId) throws IOException {
+        FileList result = driveService.files().list()
+                .setQ("'" + folderId + "' in parents and mimeType != 'application/vnd.google-apps.folder' and trashed = false")
+                .setFields("files(id, name)")
+                .execute();
+
+        return result.getFiles();
+    }
+
+    // Método para listar subpastas de uma pasta
+    public List<File> listFoldersInFolder(String folderId) throws IOException {
+        FileList result = driveService.files().list()
+                .setQ("'" + folderId + "' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false")
+                .setFields("files(id, name)")
+                .execute();
+
+        return result.getFiles();
+    }
+
+    // Método para listar tudo de uma pasta (arquivos e subpastas)
+    public List<File> listAllInFolder(String folderId) throws IOException {
+        FileList result = driveService.files().list()
+                .setQ("'" + folderId + "' in parents and trashed = false")
+                .setFields("files(id, name, mimeType)")
+                .execute();
+
+        return result.getFiles();
+    }    
 }
