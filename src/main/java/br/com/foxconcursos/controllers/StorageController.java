@@ -51,14 +51,13 @@ public class StorageController {
         if (folderId == null) {
             folderId = this.ROOT;
         }
-        return null;
-//        if ("FILES".equalsIgnoreCase(content))
-//            return ResponseEntity.ok(this.googleDriveService.listFilesInFolder(folderId));
-//
-//        if ("FOLDERS".equalsIgnoreCase(content))
-//            ResponseEntity.ok(this.googleDriveService.listFoldersInFolder(folderId));
-//
-//        return ResponseEntity.ok(this.googleDriveService.listAllInFolder(folderId));
+        if ("FILES".equalsIgnoreCase(content))
+            return ResponseEntity.ok(this.googleDriveService.listFilesInFolder(folderId));
+
+        if ("FOLDERS".equalsIgnoreCase(content))
+            ResponseEntity.ok(this.googleDriveService.listFoldersInFolder(folderId));
+
+        return ResponseEntity.ok(this.googleDriveService.listAllInFolder(folderId));
     }
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
@@ -69,7 +68,7 @@ public class StorageController {
             throw new IllegalArgumentException("Não é possível apagar a pasta raiz.");
 
         try {
-//            this.googleDriveService.deleteEmptyFolder(folderId);
+            this.googleDriveService.deleteEmptyFolder(folderId);
             return ResponseEntity.ok("Pasta: " + folderId + " deletada com sucesso.");
         } catch (Exception e) {
             return ResponseEntity.ok("Erro ao deletar pasta: " + folderId + " | Exc: " + e.getMessage());
@@ -88,9 +87,8 @@ public class StorageController {
             parentFolder = this.ROOT;
 
         try {
-            return null;
-//            String id = this.googleDriveService.createFolder(folderName, parentFolder);
-//            return ResponseEntity.ok("Pasta: " + folderName + " (" + id + ") criada com sucesso.");
+            String id = this.googleDriveService.createFolder(folderName, parentFolder);
+            return ResponseEntity.ok("Pasta: " + folderName + " (" + id + ") criada com sucesso.");
         } catch (Exception e) {
             return ResponseEntity.ok("Erro ao criar pasta: " + folderName + " | Exc: " + e.getMessage());
         }
