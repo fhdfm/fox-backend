@@ -283,6 +283,7 @@ CREATE TABLE respostas (
 CREATE TABLE performance (
     id UUID PRIMARY key DEFAULT uuid_generate_v4() UNIQUE NOT NULL,
     usuario_id UUID NOT NULL,
+    disciplina_id UUID NULL,
     mes INT NOT NULL,
     ano INT NOT NULL,
     acertos INT NOT NULL,
@@ -290,7 +291,10 @@ CREATE TABLE performance (
     version INT NOT NULL,
     CONSTRAINT fk_usuario
         FOREIGN KEY(usuario_id) 
-        REFERENCES usuarios(id)
+        REFERENCES usuarios(id),
+    CONSTRAINT fk_disciplina
+        FOREIGN KEY(disciplina_id)
+        REFERENCES disciplinas(id)
 );
 
 -- indices

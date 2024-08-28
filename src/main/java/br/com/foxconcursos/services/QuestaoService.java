@@ -1,15 +1,29 @@
 package br.com.foxconcursos.services;
 
-import br.com.foxconcursos.domain.*;
-import br.com.foxconcursos.dto.*;
-import br.com.foxconcursos.repositories.AlternativaRepository;
-import br.com.foxconcursos.repositories.QuestaoRepository;
-import br.com.foxconcursos.util.SecurityUtil;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import br.com.foxconcursos.domain.Alternativa;
+import br.com.foxconcursos.domain.FiltroQuestao;
+import br.com.foxconcursos.domain.Questao;
+import br.com.foxconcursos.domain.Status;
+import br.com.foxconcursos.domain.UsuarioLogado;
+import br.com.foxconcursos.dto.AlternativaRequest;
+import br.com.foxconcursos.dto.AlternativaResponse;
+import br.com.foxconcursos.dto.QuestaoRequest;
+import br.com.foxconcursos.dto.QuestaoResponse;
+import br.com.foxconcursos.dto.ResultadoResponse;
+import br.com.foxconcursos.repositories.AlternativaRepository;
+import br.com.foxconcursos.repositories.QuestaoRepository;
+import br.com.foxconcursos.util.SecurityUtil;
 
 @Service
 public class QuestaoService {
@@ -557,6 +571,16 @@ public class QuestaoService {
         }, questaoId);
 
         return resultadoResponse;
+
+    }
+
+    public UUID findDisciplinaIdByQuestaoId(UUID questaoId) {
+
+        String sql = "select disciplina_id from questoes where id = ?";
+
+        return jdbcTemplate.query(sql,  (rs) -> {
+            return UUID.fromString(rs.getString("disciplina_id"));
+        }, questaoId);
 
     }
 }

@@ -12,6 +12,7 @@ public class Performance {
     @Id
     private UUID id;
     private UUID usuarioId;
+    private UUID disciplinaId;
     private int mes;
     private int ano;
     private int acertos;
@@ -22,12 +23,14 @@ public class Performance {
     public Performance() {
     }
 
-    public Performance(UUID usuarioId, int mes, int ano, int acertos, int erros) {
+    public Performance(UUID usuarioId, UUID disciplinaId, int mes, 
+        int ano, int acertos, int erros) {
         this.usuarioId = usuarioId;
         this.mes = mes;
         this.ano = ano;
         this.acertos = acertos;
         this.erros = erros;
+        this.disciplinaId = disciplinaId;
     }
 
     public UUID getId() {
@@ -76,5 +79,13 @@ public class Performance {
 
     public void setErros(int erros) {
         this.erros = erros;
+    }
+
+    public void setDisciplinaId(UUID disciplinaId) {
+        this.disciplinaId = disciplinaId;
+    }
+
+    public UUID getDisciplinaId() {
+        return this.disciplinaId;
     }
 }

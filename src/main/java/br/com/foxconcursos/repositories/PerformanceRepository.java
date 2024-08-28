@@ -10,6 +10,6 @@ import br.com.foxconcursos.repositories.custom.CustomCrudRepository;
 @Repository
 public interface PerformanceRepository extends CustomCrudRepository<Performance, UUID> {
     
-    Performance findByUsuarioIdAndMesAndAno(UUID usuarioId, int mes, int ano);
+    Performance findByUsuarioIdAndMesAndAnoAndDisciplinaId(UUID usuarioId, int mes, int ano, UUID disciplinaId);
 
 }

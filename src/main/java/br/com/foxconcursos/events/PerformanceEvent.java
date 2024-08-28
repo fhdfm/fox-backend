@@ -8,11 +8,16 @@ public class PerformanceEvent {
     private boolean acertou;
     private LocalDateTime dataResposta;
     private UUID usuarioId;
+    private UUID disciplinaId;
 
-    public PerformanceEvent(boolean acertou, LocalDateTime dataResposta, UUID usuarioId) {
+    public PerformanceEvent(boolean acertou, LocalDateTime dataResposta, UUID usuarioId, 
+        UUID disciplinaId) {
+        
         this.acertou = acertou;
         this.dataResposta = dataResposta;
         this.usuarioId = usuarioId;
+        this.disciplinaId = disciplinaId;
+
     }
 
     public boolean isRepostaCorreta() {
@@ -29,6 +34,10 @@ public class PerformanceEvent {
 
     public UUID getUsuarioId() {
         return usuarioId;
+    }
+
+    public UUID getDisciplinaId() {
+        return this.disciplinaId;
     }
 
 }
