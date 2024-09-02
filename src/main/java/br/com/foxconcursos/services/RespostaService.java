@@ -1,5 +1,12 @@
 package br.com.foxconcursos.services;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import br.com.foxconcursos.domain.Resposta;
 import br.com.foxconcursos.domain.UsuarioLogado;
 import br.com.foxconcursos.dto.RespostaRequest;
@@ -7,12 +14,6 @@ import br.com.foxconcursos.dto.ResultadoResponse;
 import br.com.foxconcursos.events.PerformanceEvent;
 import br.com.foxconcursos.repositories.RespostaRepository;
 import br.com.foxconcursos.util.SecurityUtil;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Service
 public class RespostaService {
@@ -61,8 +62,10 @@ public class RespostaService {
 
         respostaRepository.save(resposta);
 
+        UUID disciplinaId = this.questaoService.findDisciplinaIdByQuestaoId(questaoId);
+
         PerformanceEvent event = new PerformanceEvent(
-                resultado.getCorreta(), hoje, usuarioLogado.getId());
+                resultado.getCorreta(), hoje, usuarioLogado.getId(), disciplinaId);
         applicationEventPublisher.publishEvent(event);
 
         return resultado;

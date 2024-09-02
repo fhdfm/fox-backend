@@ -1,5 +1,9 @@
 package br.com.foxconcursos.services;
 
+import org.springframework.context.event.EventListener;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+
 import br.com.foxconcursos.domain.Performance;
 import br.com.foxconcursos.domain.UsuarioLogado;
 import br.com.foxconcursos.dto.DashboardResponse;
@@ -7,9 +11,6 @@ import br.com.foxconcursos.dto.PerformanceResponse;
 import br.com.foxconcursos.events.PerformanceEvent;
 import br.com.foxconcursos.repositories.PerformanceRepository;
 import br.com.foxconcursos.util.SecurityUtil;
-import org.springframework.context.event.EventListener;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Service;
 
 @Service
 public class PerformanceService {
@@ -93,14 +94,15 @@ public class PerformanceService {
     public void handlePerformanceEvent(PerformanceEvent event) {
 
         Performance performance =
-                this.performanceRepository.findByUsuarioIdAndMesAndAno(
-                        event.getUsuarioId(), event.getMes(), event.getAno());
+                this.performanceRepository.findByUsuarioIdAndMesAndAnoAndDisciplinaId(
+                        event.getUsuarioId(), event.getMes(), event.getAno(), event.getDisciplinaId());
 
         if (performance == null) {
             performance = new Performance();
             performance.setUsuarioId(event.getUsuarioId());
             performance.setMes(event.getMes());
             performance.setAno(event.getAno());
+            performance.setDisciplinaId(event.getDisciplinaId());
 
             if (event.isRepostaCorreta())
                 performance.setAcertos(performance.getAcertos() + 1);
