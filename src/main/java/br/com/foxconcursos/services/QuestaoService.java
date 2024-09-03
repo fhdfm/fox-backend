@@ -575,12 +575,14 @@ public class QuestaoService {
     }
 
     public UUID findDisciplinaIdByQuestaoId(UUID questaoId) {
-
         String sql = "select disciplina_id from questoes where id = ?";
 
-        return jdbcTemplate.query(sql,  (rs) -> {
-            return UUID.fromString(rs.getString("disciplina_id"));
+        return jdbcTemplate.query(sql, (rs) -> {
+            if (rs.next()) {
+                return UUID.fromString(rs.getString("disciplina_id"));
+            } else {
+                return null;
+            }
         }, questaoId);
-
     }
 }
