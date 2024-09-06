@@ -1,17 +1,22 @@
 package br.com.foxconcursos.controllers;
 
-import br.com.foxconcursos.services.GoogleDriveService;
-import jakarta.websocket.server.PathParam;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import br.com.foxconcursos.services.GoogleDriveService;
+import jakarta.websocket.server.PathParam;
 
 @RestController
 public class StorageController {
@@ -51,14 +56,14 @@ public class StorageController {
         if (folderId == null) {
             folderId = this.ROOT;
         }
-        return null;
-//        if ("FILES".equalsIgnoreCase(content))
-//            return ResponseEntity.ok(this.googleDriveService.listFilesInFolder(folderId));
-//
-//        if ("FOLDERS".equalsIgnoreCase(content))
-//            ResponseEntity.ok(this.googleDriveService.listFoldersInFolder(folderId));
-//
-//        return ResponseEntity.ok(this.googleDriveService.listAllInFolder(folderId));
+        
+       if ("FILES".equalsIgnoreCase(content))
+           return ResponseEntity.ok(this.googleDriveService.listFilesInFolder(folderId));
+
+       if ("FOLDERS".equalsIgnoreCase(content))
+           ResponseEntity.ok(this.googleDriveService.listFoldersInFolder(folderId));
+
+       return ResponseEntity.ok(this.googleDriveService.listAllInFolder(folderId));
     }
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
