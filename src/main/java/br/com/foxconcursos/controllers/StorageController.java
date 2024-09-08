@@ -1,7 +1,5 @@
 package br.com.foxconcursos.controllers;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
@@ -10,11 +8,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
+import br.com.foxconcursos.dto.StorageRequest;
 import br.com.foxconcursos.services.GoogleDriveService;
 import jakarta.websocket.server.PathParam;
 
@@ -30,19 +29,16 @@ public class StorageController {
         this.googleDriveService = googleDriveService;
     }
 
+    // @RequestParam("file") MultipartFile file,
+    // @RequestParam("folderId") String folderId
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @PostMapping("/api/admin/storage/upload")
-    public ResponseEntity<String> uploadVideo(@RequestParam("file") MultipartFile file,
-                                              @RequestParam("folderId") String folderId) throws Exception {
+    public ResponseEntity<String> uploadVideo(@ModelAttribute StorageRequest storageRequest) throws Exception {
 
-        File convFile = new File(System.getProperty("java.io.tmpdir")
-                + File.separator + file.getOriginalFilename());
-        FileOutputStream fos = new FileOutputStream(convFile);
-        fos.write(file.getBytes());
-        fos.close();
+        // String fileId = this.googleDriveService.uploadFile(
+        //         convFile, file.getContentType(), request);
 
-        String fileId = this.googleDriveService.uploadFile(
-                convFile, file.getContentType(), folderId);
+        String fileId = this.googleDriveService.uploadFile(storageRequest);
 
         return ResponseEntity.status(HttpStatus.OK).body(fileId);
     }
@@ -74,7 +70,7 @@ public class StorageController {
             throw new IllegalArgumentException("Não é possível apagar a pasta raiz.");
 
         try {
-//            this.googleDriveService.deleteEmptyFolder(folderId);
+            this.googleDriveService.deleteEmptyFolder(folderId);
             return ResponseEntity.ok("Pasta: " + folderId + " deletada com sucesso.");
         } catch (Exception e) {
             return ResponseEntity.ok("Erro ao deletar pasta: " + folderId + " | Exc: " + e.getMessage());
@@ -93,9 +89,8 @@ public class StorageController {
             parentFolder = this.ROOT;
 
         try {
-            return null;
-//            String id = this.googleDriveService.createFolder(folderName, parentFolder);
-//            return ResponseEntity.ok("Pasta: " + folderName + " (" + id + ") criada com sucesso.");
+            String id = this.googleDriveService.createFolder(folderName, parentFolder);
+            return ResponseEntity.ok("Pasta: " + folderName + " (" + id + ") criada com sucesso.");
         } catch (Exception e) {
             return ResponseEntity.ok("Erro ao criar pasta: " + folderName + " | Exc: " + e.getMessage());
         }

@@ -1,17 +1,20 @@
 package br.com.foxconcursos.services;
 
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.FileContent;
@@ -21,9 +24,13 @@ import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
-import com.google.api.services.drive.model.Permission;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
+
+import br.com.foxconcursos.domain.Storage;
+import br.com.foxconcursos.domain.TipoArquivo;
+import br.com.foxconcursos.dto.StorageRequest;
+import br.com.foxconcursos.repositories.StorageRepository;
 
 @Service
 public class GoogleDriveService {
@@ -32,10 +39,16 @@ public class GoogleDriveService {
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final List<String> SCOPES = Collections.singletonList(DriveScopes.DRIVE_FILE);
 
+    private final StorageRepository repository;
+
     @Value("${storage.credentials}")
     private String credentialsPath;
 
     private Drive driveService;
+
+    public GoogleDriveService(StorageRepository repository) {
+        this.repository = repository;
+    }
 
     @PostConstruct
     public void init() throws GeneralSecurityException, IOException {
@@ -52,36 +65,88 @@ public class GoogleDriveService {
         return GoogleCredentials.fromStream(credentialsStream).createScoped(SCOPES);
     }
 
+
+    private void validateRequest(StorageRequest request) {
+        
+        MultipartFile file = request.getFile();
+        if (file == null || file.isEmpty())
+            throw new IllegalArgumentException("Campo file é requerido.");
+
+        String folderId = request.getFolderId();
+        if (folderId == null || folderId.isEmpty())
+            throw new IllegalArgumentException("Campo folderId é requerido.");
+        
+        TipoArquivo tipoArquivo = request.getTipo();
+        if (tipoArquivo == null)
+            throw new IllegalArgumentException("Campo tipo é requerido.");
+
+        UUID disciplinaId = request.getDisciplinaId();
+        if (disciplinaId == null)
+            throw new IllegalArgumentException("Campo disciplinaId é requerido.");
+
+        UUID assuntoId = request.getAssuntoId();
+        if (assuntoId == null)
+            throw new IllegalArgumentException("Campo assuntoId é requerido.");
+    }
+
     @Transactional
-    public String uploadFile(java.io.File file, String mimeType, String folderId) throws IOException {
+    public String uploadFile(StorageRequest request) throws IOException {
+    
+        this.validateRequest(request);
+
+        // Pegando o arquivo do StorageRequest
+        MultipartFile multipartFile = request.getFile();
+        String folderId = request.getFolderId();
+    
+        // Convertendo MultipartFile para java.io.File
+        java.io.File convFile = new java.io.File(System.getProperty("java.io.tmpdir")
+                + java.io.File.separator + multipartFile.getOriginalFilename());
+        
+        FileOutputStream fos = new FileOutputStream(convFile);
+        fos.write(multipartFile.getBytes());
+        fos.close();
+    
+        // Criando o metadata do arquivo para Google Drive
         File fileMetadata = new File();
-        fileMetadata.setName(file.getName());
-
-        if (folderId != null) {
-            fileMetadata.setParents(Collections.singletonList(folderId));
-        }
-
-        FileContent mediaContent = new FileContent(mimeType, file);
+        fileMetadata.setName(multipartFile.getOriginalFilename()); // Nome do arquivo no Google Drive
+        fileMetadata.setParents(Collections.singletonList(folderId)); // Pasta no Google Drive
+    
+        // Preparando o conteúdo do arquivo
+        FileContent mediaContent = new FileContent(multipartFile.getContentType(), convFile);
+        
+        // Fazendo o upload do arquivo no Google Drive
         File uploadedFile = this.driveService.files().create(fileMetadata, mediaContent)
-                .setFields("id")
+                .setFields("id, webViewLink")
                 .execute();
+    
+        // Retornando o link do arquivo no Google 
+        String link = uploadedFile.getWebViewLink();
 
-        return uploadedFile.getId();
+        // Salva no banco de dados...
+        Storage storage = new Storage();
+        storage.setUrl(link);
+        storage.setAssuntoId(request.getAssuntoId());
+        storage.setDisciplinaId(request.getDisciplinaId());
+        storage.setTipo(request.getTipo());
+
+        this.repository.save(storage);
+
+        return link;
     }
 
-    public String getUrl(String fileId) throws IOException {
-        Permission permission = new Permission()
-                .setType("anyone")
-                .setRole("reader");
+    // public String getUrl(String fileId) throws IOException {
+    //     Permission permission = new Permission()
+    //             .setType("anyone")
+    //             .setRole("reader");
 
-        this.driveService.permissions().create(fileId, permission).execute();
+    //     this.driveService.permissions().create(fileId, permission).execute();
 
-        File file = this.driveService.files().get(fileId)
-                .setFields("webViewLink, webContentLink")
-                .execute();
+    //     File file = this.driveService.files().get(fileId)
+    //             .setFields("webViewLink, webContentLink")
+    //             .execute();
 
-        return file.getWebViewLink();
-    }
+    //     return file.getWebViewLink();
+    // }
 
     public void deleteEmptyFolder(String folderId) throws IOException {
         FileList files = driveService.files().list()

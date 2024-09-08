@@ -102,6 +102,17 @@ public class PdfService {
         int i = 1;
 
         for (QuestaoResponse questao : questoes) {
+            htmlContent.append("<div style='padding: 5px 10px; border: 1px solid #dadada'>");
+            htmlContent.append("<small><strong>Ano:</strong> ")
+                    .append(questao.getAno()).append(" | ")
+                    .append("<strong>Banca:</strong> ")
+                    .append(questao.getBanca()).append(" | ")
+                    .append("<strong>Cidade:</strong> ")
+                    .append(questao.getCidade()).append(" | ")
+                    .append("<strong>Assunto:</strong> ")
+                    .append(questao.getAssunto()).append("</small>");
+            htmlContent.append("</div>");
+
             htmlContent.append("<div style='margin-bottom: 0.5cm'>")
                     .append("<h5 style='font-size: 13px; margin: 0'>")
                     .append(i).append(") ")

@@ -297,6 +297,21 @@ CREATE TABLE performance (
         REFERENCES disciplinas(id)
 );
 
+CREATE TABLE storage (
+    id UUID PRIMARY key DEFAULT uuid_generate_v4() UNIQUE NOT NULL,  -- Chave primária, auto-incremental
+    url VARCHAR NOT NULL,  -- Coluna do tipo string
+    tipo VARCHAR(10) NOT NULL,  -- String com tamanho máximo de 10 caracteres
+    disciplina_id UUID NOT NULL,  -- UUID, chave estrangeira
+    assunto_id UUID NOT NULL,  -- UUID, chave estrangeira
+    version INT NOT NULL DEFAULT 0,  -- Inteiro com valor padrão 0
+    CONSTRAINT fk_disciplina
+        FOREIGN KEY (disciplina_id) REFERENCES disciplinas(id),  -- Chave estrangeira referenciando tabela 'disciplinas'
+    CONSTRAINT fk_assunto
+        FOREIGN KEY (assunto_id) REFERENCES assunto(id),  -- Chave estrangeira referenciando tabela 'assunto'
+    UNIQUE (id)  -- Garante que 'id' seja único
+);
+
+
 -- indices
 CREATE INDEX idx_respostas_questao_id ON respostas(questao_id);
 CREATE INDEX idx_respostas_usuario_id ON respostas(usuario_id);
