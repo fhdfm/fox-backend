@@ -3,15 +3,21 @@ package br.com.foxconcursos.controllers;
 import java.io.IOException;
 import java.util.List;
 
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.google.api.services.drive.model.File;
 
 import br.com.foxconcursos.dto.StorageRequest;
 import br.com.foxconcursos.services.StorageService;
@@ -88,5 +94,19 @@ public class StorageController {
         } catch (Exception e) {
             return ResponseEntity.ok("Erro ao criar pasta: " + folderName + " | Exc: " + e.getMessage());
         }
+    }
+
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO')")
+    @GetMapping("/api/alunos/stream/{fileId}")
+    public ResponseEntity<InputStreamResource> streamVideo(@PathVariable String fileId) throws IOException {
+
+        File file = this.service.getFile(fileId);
+
+         InputStreamResource resource = this.service.retrieveMedia(fileId);
+         
+         return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + file.getName() + "\"")
+                .contentType(MediaType.parseMediaType(file.getMimeType()))
+                .body(resource);
     }
 }

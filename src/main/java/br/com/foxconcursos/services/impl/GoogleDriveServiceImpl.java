@@ -12,6 +12,7 @@ import java.util.UUID;
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -121,7 +122,7 @@ public class GoogleDriveServiceImpl implements StorageService {
                 .execute();
     
         // Retornando o link do arquivo no Google 
-        String link = uploadedFile.getWebViewLink();
+        String id = uploadedFile.getId();
 
         String fullFolderPath = getFullFolderPath(folderId);
 
@@ -129,7 +130,7 @@ public class GoogleDriveServiceImpl implements StorageService {
 
         // Salva no banco de dados...
         Storage storage = new Storage();
-        storage.setUrl(link);
+        storage.setUrl(id);
         storage.setAssuntoId(request.getAssuntoId());
         storage.setDisciplinaId(request.getDisciplinaId());
         storage.setTipo(request.getTipo());
@@ -138,7 +139,7 @@ public class GoogleDriveServiceImpl implements StorageService {
 
         this.repository.save(storage);
 
-        return link;
+        return id;
     }
 
     private String getFullFolderPath(String folderId) throws IOException {
@@ -179,6 +180,21 @@ public class GoogleDriveServiceImpl implements StorageService {
 
     //     return file.getWebViewLink();
     // }
+
+    public InputStreamResource retrieveMedia(String fileId) throws IOException {
+
+        InputStream inputStream = driveService.files().get(fileId).executeMediaAsInputStream();
+
+        return new InputStreamResource(inputStream);
+
+    }
+
+    public File getFile(String fileId) throws IOException {
+        File file = driveService.files().get(fileId)
+        .setFields("id, name, mimeType")
+        .execute();
+        return file;
+    }
 
     public void deleteEmptyFolder(String folderId) throws IOException {
         FileList files = driveService.files().list()
