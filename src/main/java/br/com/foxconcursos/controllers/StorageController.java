@@ -52,14 +52,8 @@ public class StorageController {
         if (folderId == null) {
             folderId = this.ROOT;
         }
-        
-       if ("FILES".equalsIgnoreCase(content))
-           return ResponseEntity.ok(this.googleDriveService.listFilesInFolder(folderId));
 
-       if ("FOLDERS".equalsIgnoreCase(content))
-           ResponseEntity.ok(this.googleDriveService.listFoldersInFolder(folderId));
-
-       return ResponseEntity.ok(this.googleDriveService.listAllInFolder(folderId));
+        return ResponseEntity.ok(this.googleDriveService.list(content, folderId));
     }
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")

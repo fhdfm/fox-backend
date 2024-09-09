@@ -116,11 +116,15 @@ public class GoogleDriveService {
         
         // Fazendo o upload do arquivo no Google Drive
         File uploadedFile = this.driveService.files().create(fileMetadata, mediaContent)
-                .setFields("id, webViewLink")
+                .setFields("id, webViewLink, thumbnailLink")
                 .execute();
     
         // Retornando o link do arquivo no Google 
         String link = uploadedFile.getWebViewLink();
+
+        String fullFolderPath = getFullFolderPath(folderId);
+
+        String thumbnailLink = uploadedFile.getThumbnailLink();
 
         // Salva no banco de dados...
         Storage storage = new Storage();
@@ -128,11 +132,38 @@ public class GoogleDriveService {
         storage.setAssuntoId(request.getAssuntoId());
         storage.setDisciplinaId(request.getDisciplinaId());
         storage.setTipo(request.getTipo());
+        storage.setFolder(fullFolderPath);
+        storage.setThumbnail(thumbnailLink);
 
         this.repository.save(storage);
 
         return link;
     }
+
+    private String getFullFolderPath(String folderId) throws IOException {
+        StringBuilder path = new StringBuilder();
+        String currentFolderId = folderId;
+    
+        while (currentFolderId != null && !currentFolderId.equals("root")) {
+            // Recupera os metadados da pasta pelo ID
+            File folder = this.driveService.files().get(currentFolderId)
+                    .setFields("id, name, parents")
+                    .execute();
+            
+            // Prepend o nome da pasta ao caminho
+            path.insert(0, "/" + folder.getName());
+            
+            // Atualiza o ID para subir na hierarquia
+            if (folder.getParents() != null && !folder.getParents().isEmpty()) {
+                currentFolderId = folder.getParents().get(0);
+            } else {
+                currentFolderId = null; // Chegou ao topo (raiz)
+            }
+        }
+    
+        return path.toString(); // Caminho completo da pasta
+    }
+    
 
     // public String getUrl(String fileId) throws IOException {
     //     Permission permission = new Permission()
@@ -176,8 +207,23 @@ public class GoogleDriveService {
         return folder.getId();
     }
 
+    public List<File> list(String type, String folderId) throws IOException {
+        
+        if ("FOLDERS".equalsIgnoreCase(type))
+            return this.listFoldersInFolder(folderId);
+        
+        if ("FILES".equalsIgnoreCase(type))
+            return this.listFilesInFolder(folderId);
+
+        return this.list(folderId);
+    }
+
+    public List<File> list(String folderId) throws IOException {
+        return this.listAllInFolder(folderId);
+    }
+
     // Método para listar arquivos de uma pasta
-    public List<File> listFilesInFolder(String folderId) throws IOException {
+    private List<File> listFilesInFolder(String folderId) throws IOException {
         FileList result = driveService.files().list()
                 .setQ("'" + folderId + "' in parents and mimeType != 'application/vnd.google-apps.folder' and trashed = false")
                 .setFields("files(id, name)")
@@ -187,7 +233,7 @@ public class GoogleDriveService {
     }
 
     // Método para listar subpastas de uma pasta
-    public List<File> listFoldersInFolder(String folderId) throws IOException {
+    private List<File> listFoldersInFolder(String folderId) throws IOException {
         FileList result = driveService.files().list()
                 .setQ("'" + folderId + "' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false")
                 .setFields("files(id, name)")
@@ -197,7 +243,7 @@ public class GoogleDriveService {
     }
 
     // Método para listar tudo de uma pasta (arquivos e subpastas)
-    public List<File> listAllInFolder(String folderId) throws IOException {
+    private List<File> listAllInFolder(String folderId) throws IOException {
         FileList result = driveService.files().list()
                 .setQ("'" + folderId + "' in parents and trashed = false")
                 .setFields("files(id, name, mimeType)")

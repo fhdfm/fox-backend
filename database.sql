@@ -303,6 +303,8 @@ CREATE TABLE storage (
     tipo VARCHAR(10) NOT NULL,  -- String com tamanho máximo de 10 caracteres
     disciplina_id UUID NOT NULL,  -- UUID, chave estrangeira
     assunto_id UUID NOT NULL,  -- UUID, chave estrangeira
+    folder VARCHAR NOT NULL,
+    thumbnail VARCHAR NULL,
     version INT NOT NULL DEFAULT 0,  -- Inteiro com valor padrão 0
     CONSTRAINT fk_disciplina
         FOREIGN KEY (disciplina_id) REFERENCES disciplinas(id),  -- Chave estrangeira referenciando tabela 'disciplinas'
@@ -310,7 +312,6 @@ CREATE TABLE storage (
         FOREIGN KEY (assunto_id) REFERENCES assunto(id),  -- Chave estrangeira referenciando tabela 'assunto'
     UNIQUE (id)  -- Garante que 'id' seja único
 );
-
 
 -- indices
 CREATE INDEX idx_respostas_questao_id ON respostas(questao_id);
