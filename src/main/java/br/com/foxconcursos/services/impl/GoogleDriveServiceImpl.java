@@ -1,4 +1,4 @@
-package br.com.foxconcursos.services;
+package br.com.foxconcursos.services.impl;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -31,9 +31,10 @@ import br.com.foxconcursos.domain.Storage;
 import br.com.foxconcursos.domain.TipoArquivo;
 import br.com.foxconcursos.dto.StorageRequest;
 import br.com.foxconcursos.repositories.StorageRepository;
+import br.com.foxconcursos.services.StorageService;
 
 @Service
-public class GoogleDriveService {
+public class GoogleDriveServiceImpl implements StorageService {
 
     private static final String APPLICATION_NAME = "fox-backend";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
@@ -46,7 +47,7 @@ public class GoogleDriveService {
 
     private Drive driveService;
 
-    public GoogleDriveService(StorageRepository repository) {
+    public GoogleDriveServiceImpl(StorageRepository repository) {
         this.repository = repository;
     }
 

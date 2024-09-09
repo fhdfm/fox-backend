@@ -14,19 +14,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.foxconcursos.dto.StorageRequest;
-import br.com.foxconcursos.services.GoogleDriveService;
+import br.com.foxconcursos.services.StorageService;
 import jakarta.websocket.server.PathParam;
 
 @RestController
 public class StorageController {
 
-    private final GoogleDriveService googleDriveService;
+    private final StorageService service;
 
     // pasta raiz, depois injetar
     private final String ROOT = "1d79_3bhvJcfFl32S3PJQ-gKjHftfpyG4";
 
-    public StorageController(GoogleDriveService googleDriveService) {
-        this.googleDriveService = googleDriveService;
+    public StorageController(StorageService service) {
+        this.service = service;
     }
 
     // @RequestParam("file") MultipartFile file,
@@ -38,7 +38,7 @@ public class StorageController {
         // String fileId = this.googleDriveService.uploadFile(
         //         convFile, file.getContentType(), request);
 
-        String fileId = this.googleDriveService.uploadFile(storageRequest);
+        String fileId = this.service.uploadFile(storageRequest);
 
         return ResponseEntity.status(HttpStatus.OK).body(fileId);
     }
@@ -53,7 +53,7 @@ public class StorageController {
             folderId = this.ROOT;
         }
 
-        return ResponseEntity.ok(this.googleDriveService.list(content, folderId));
+        return ResponseEntity.ok(this.service.list(content, folderId));
     }
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
@@ -64,7 +64,7 @@ public class StorageController {
             throw new IllegalArgumentException("Não é possível apagar a pasta raiz.");
 
         try {
-            this.googleDriveService.deleteEmptyFolder(folderId);
+            this.service.deleteEmptyFolder(folderId);
             return ResponseEntity.ok("Pasta: " + folderId + " deletada com sucesso.");
         } catch (Exception e) {
             return ResponseEntity.ok("Erro ao deletar pasta: " + folderId + " | Exc: " + e.getMessage());
@@ -83,7 +83,7 @@ public class StorageController {
             parentFolder = this.ROOT;
 
         try {
-            String id = this.googleDriveService.createFolder(folderName, parentFolder);
+            String id = this.service.createFolder(folderName, parentFolder);
             return ResponseEntity.ok("Pasta: " + folderName + " (" + id + ") criada com sucesso.");
         } catch (Exception e) {
             return ResponseEntity.ok("Erro ao criar pasta: " + folderName + " | Exc: " + e.getMessage());

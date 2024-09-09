@@ -15,6 +15,8 @@ public class Storage {
     private TipoArquivo tipo;  // Tipo (máximo 10 caracteres)
     private UUID disciplinaId;  // FK com a tabela disciplinas
     private UUID assuntoId;  // FK com a tabela assunto
+    private String folder;
+    private String thumbnail;
     @Version
     private int version;  // Versão, valor padrão 0
 
@@ -23,12 +25,15 @@ public class Storage {
     }
 
     // Construtor com argumentos
-    public Storage(UUID id, String url, TipoArquivo tipo, UUID disciplinaId, UUID assuntoId) {
+    public Storage(UUID id, String url, TipoArquivo tipo, 
+        UUID disciplinaId, UUID assuntoId, String folder, String thumbnail) {
         this.id = id;
         this.url = url;
         this.tipo = tipo;
         this.disciplinaId = disciplinaId;
         this.assuntoId = assuntoId;
+        this.folder = folder;
+        this.thumbnail = thumbnail;
     }
 
     // Getters e Setters
@@ -76,16 +81,19 @@ public class Storage {
         return version;
     }
 
-    // toString para representação da classe
-    @Override
-    public String toString() {
-        return "Storage{" +
-                "id=" + id +
-                ", url='" + url + '\'' +
-                ", tipo='" + tipo + '\'' +
-                ", disciplinaId=" + disciplinaId +
-                ", assuntoId=" + assuntoId +
-                ", version=" + version +
-                '}';
+    public String getFolder() {
+        return this.folder;
+    }
+
+    public void setFolder(String folder) {
+        this.folder = folder;
+    }
+
+    public String getThumbnail() {
+        return this.thumbnail;
+    }
+
+    public void setThumbnail(String thumbnail) {
+        this.thumbnail = thumbnail;
     }
 }
