@@ -12,7 +12,7 @@ import br.com.foxconcursos.repositories.custom.CustomCrudRepository;
 
 public interface RespostaSimuladoRepository extends CustomCrudRepository<RespostaSimulado, UUID> {
 
-    @Query("SELECT * FROM resposta_simulado WHERE simulado_id = :simuladoId AND usuario_id = :usuarioId LIMIT 1")
+    @Query("SELECT * FROM respostas_simulado WHERE simulado_id = :simuladoId AND usuario_id = :usuarioId LIMIT 1")
     Optional<RespostaSimulado> findBySimuladoIdAndUsuarioId(UUID simuladoId, UUID usuarioId);
     
     RespostaSimulado findBySimuladoIdAndUsuarioIdAndStatus(UUID simuladoId, UUID usuarioId, StatusSimulado status);

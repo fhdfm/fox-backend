@@ -58,7 +58,7 @@ public class RespostaSimuladoService {
 
     @Transactional
     public UUID iniciar(UUID simuladoId) {
-        
+
         UsuarioLogado usuarioLogado = SecurityUtil.obterUsuarioLogado();
 
         UUID usuarioId = usuarioLogado.getId();
@@ -100,17 +100,17 @@ public class RespostaSimuladoService {
         UsuarioLogado usuarioLogado = SecurityUtil.obterUsuarioLogado();
         UUID usuarioId = usuarioLogado.getId();
 
-        Optional<RespostaSimulado> respostaSimulado = 
-            this.respostaSimuladoRepository.findBySimuladoIdAndUsuarioId(
-                simuladoId, usuarioId);
-        
-        if (this.simuladoService.isExpirado(simuladoId))
+        if (this.simuladoService.isExpirado(simuladoId)) {
             return StatusSimulado.FINALIZADO;
+        } else {
+            Optional<RespostaSimulado> respostaSimulado =
+                    this.respostaSimuladoRepository.findBySimuladoIdAndUsuarioId(
+                            simuladoId, usuarioId);
 
-        if (respostaSimulado.isEmpty())
-            return StatusSimulado.NAO_INICIADO;
-        
-        return respostaSimulado.get().getStatus();
+            if (respostaSimulado.isEmpty())
+                return StatusSimulado.NAO_INICIADO;
+            return respostaSimulado.get().getStatus();
+        }
     }
 
     @Transactional
@@ -316,7 +316,7 @@ public class RespostaSimuladoService {
 
     @Transactional
     public SimuladoCompletoResponse obterRespostas(SimuladoCompletoResponse simulado) {
-        
+
         UsuarioLogado usuarioLogado = SecurityUtil.obterUsuarioLogado();
         UUID usuarioId = usuarioLogado.getId();
 
