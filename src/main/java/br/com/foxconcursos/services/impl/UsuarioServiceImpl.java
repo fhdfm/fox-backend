@@ -45,12 +45,10 @@ public class UsuarioServiceImpl implements UserDetailsService {
 
     @Override
     public UsuarioLogado loadUserByUsername(String email) throws UsernameNotFoundException {
+        
         UsuarioLogado user = this.usuarioRepository.findByEmail(email)
                     .map(UsuarioLogado::new)
                         .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado."));
-        
-        if (!user.isEnabled())
-            throw new IllegalArgumentException("Usuário inativo.");
         
         return user;
     }
