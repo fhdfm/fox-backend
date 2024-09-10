@@ -45,7 +45,7 @@ public class UsuarioServiceImpl implements UserDetailsService {
 
     @Override
     public UsuarioLogado loadUserByUsername(String email) throws UsernameNotFoundException {
-        UsuarioLogado user = this.usuarioRepository.findByEmailAndStatus(email, StatusUsuario.ATIVO)
+        UsuarioLogado user = this.usuarioRepository.findByEmail(email)
                     .map(UsuarioLogado::new)
                         .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado."));
         

@@ -102,9 +102,9 @@ public class StorageController {
 
         File file = this.service.getFile(fileId);
 
-         InputStreamResource resource = this.service.retrieveMedia(fileId);
+        InputStreamResource resource = this.service.retrieveMedia(fileId);
          
-         return ResponseEntity.ok()
+        return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + file.getName() + "\"")
                 .contentType(MediaType.parseMediaType(file.getMimeType()))
                 .body(resource);

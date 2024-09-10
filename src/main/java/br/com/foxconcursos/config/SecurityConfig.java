@@ -32,9 +32,15 @@ public class SecurityConfig {
     private RSAPublicKey publicKey;
     private RSAPrivateKey privateKey;
 
-    public SecurityConfig(RSAPublicKey publicKey, RSAPrivateKey privateKey) {
+    private final FoxAuthenticationFailureHandler foxAuthenticationFailureHandler;
+
+    public SecurityConfig(RSAPublicKey publicKey, RSAPrivateKey privateKey, 
+        FoxAuthenticationFailureHandler foxAuthenticationFailureHandler) {
+        
         this.publicKey = publicKey;
         this.privateKey = privateKey;
+        this.foxAuthenticationFailureHandler = foxAuthenticationFailureHandler;
+
     }    
 
     @Bean
@@ -44,8 +50,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers("/api/admin/**").hasAuthority("SCOPE_ROLE_ADMIN")
                                 .requestMatchers("/api/aluno/**").hasAnyAuthority("SCOPE_ROLE_EXTERNO", "SCOPE_ROLE_ALUNO", "SCOPE_ROLE_ADMIN")
-                                .anyRequest().permitAll()
-                ).httpBasic(Customizer.withDefaults())
+                                .anyRequest().permitAll())
+                .formLogin(
+                    form -> form.failureHandler(foxAuthenticationFailureHandler))
+                .httpBasic(Customizer.withDefaults())
                 .oauth2ResourceServer(conf -> conf.jwt(Customizer.withDefaults()));
         return http.build();
     }

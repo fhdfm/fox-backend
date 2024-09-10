@@ -14,6 +14,7 @@ import br.com.foxconcursos.repositories.custom.CustomCrudRepository;
 
 public interface UsuarioRepository extends CustomCrudRepository<Usuario, UUID> {
 
+    Optional<Usuario> findByEmail(String email);
     Optional<Usuario> findByEmailAndStatus(String email, StatusUsuario status);
     Optional<Usuario> findByCpfAndStatus(String cpf, StatusUsuario status);
     List<Usuario> findByPerfil(PerfilUsuario nome);
