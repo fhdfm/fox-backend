@@ -8,6 +8,7 @@ import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -49,6 +50,9 @@ public class UsuarioServiceImpl implements UserDetailsService {
         UsuarioLogado user = this.usuarioRepository.findByEmail(email)
                     .map(UsuarioLogado::new)
                         .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado."));
+
+        if (!user.isEnabled())
+            throw new DisabledException("Usuário: " + email + " está desabilitado.");
         
         return user;
     }

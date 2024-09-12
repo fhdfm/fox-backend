@@ -31,30 +31,58 @@ public class SecurityConfig {
 
     private RSAPublicKey publicKey;
     private RSAPrivateKey privateKey;
+    private final FoxBasicAuthenticationEntryPoint entryPoint;
 
-    private final FoxAuthenticationFailureHandler foxAuthenticationFailureHandler;
-
-    public SecurityConfig(RSAPublicKey publicKey, RSAPrivateKey privateKey, 
-        FoxAuthenticationFailureHandler foxAuthenticationFailureHandler) {
+    public SecurityConfig(RSAPublicKey publicKey, RSAPrivateKey privateKey, FoxBasicAuthenticationEntryPoint entryPoint) {
         
         this.publicKey = publicKey;
         this.privateKey = privateKey;
-        this.foxAuthenticationFailureHandler = foxAuthenticationFailureHandler;
+        this.entryPoint = entryPoint;
 
-    }    
+    }
+
+    // @Bean
+    // public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    //     http
+    //         .csrf(csrf -> csrf.disable())
+    //         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+    //         .exceptionHandling(exception -> exception
+    //             .authenticationEntryPoint(new FoxAuthenticationEntryPoint())) // Configura o AuthenticationEntryPoint
+    //         .authorizeHttpRequests(auth ->
+    //             auth.requestMatchers("/api/admin/**").hasAuthority("SCOPE_ROLE_ADMIN")
+    //                 .requestMatchers("/api/aluno/**").hasAnyAuthority("SCOPE_ROLE_EXTERNO", "SCOPE_ROLE_ALUNO", "SCOPE_ROLE_ADMIN")
+    //                 .anyRequest().permitAll())
+    //         .httpBasic(Customizer.withDefaults())
+    //         .oauth2ResourceServer(conf -> conf.jwt(Customizer.withDefaults()));
+
+    //     return http.build();
+    // }
 
     @Bean
-    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/api/admin/**").hasAuthority("SCOPE_ROLE_ADMIN")
-                                .requestMatchers("/api/aluno/**").hasAnyAuthority("SCOPE_ROLE_EXTERNO", "SCOPE_ROLE_ALUNO", "SCOPE_ROLE_ADMIN")
-                                .anyRequest().permitAll())
-                .formLogin(
-                    form -> form.failureHandler(foxAuthenticationFailureHandler))
-                .httpBasic(Customizer.withDefaults())
-                .oauth2ResourceServer(conf -> conf.jwt(Customizer.withDefaults()));
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
+        http
+            // Desabilita o CSRF, comum em APIs REST sem estado
+            .csrf(csrf -> csrf.disable())
+
+            // Configura o gerenciamento de sessão sem estado
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            
+            // Configura as permissões e autorizações por rota
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/admin/**").hasAuthority("SCOPE_ROLE_ADMIN")  // Apenas ROLE_ADMIN
+                .requestMatchers("/api/aluno/**").hasAnyAuthority("SCOPE_ROLE_EXTERNO", "SCOPE_ROLE_ALUNO", "SCOPE_ROLE_ADMIN")  // Diferentes níveis de acesso
+                .anyRequest().permitAll())  // Permite todas as outras requisições
+                
+            // Configura autenticação HTTP Basic (se necessário)
+            .httpBasic(basic ->
+                basic.authenticationEntryPoint(entryPoint)
+            )
+            
+            // Configura o servidor OAuth2 para usar JWTs
+            .oauth2ResourceServer(oauth2 -> oauth2
+                .jwt(Customizer.withDefaults()));  // JWT é usado para autenticação via OAuth2
+
         return http.build();
     }
 

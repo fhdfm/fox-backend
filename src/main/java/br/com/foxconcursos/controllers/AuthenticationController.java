@@ -1,14 +1,12 @@
 package br.com.foxconcursos.controllers;
 
-import br.com.foxconcursos.domain.UsuarioLogado;
-import br.com.foxconcursos.services.AuthenticationService;
-import br.com.foxconcursos.services.impl.UsuarioServiceImpl;
+import java.util.Collections;
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
@@ -17,11 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import br.com.foxconcursos.domain.UsuarioLogado;
+import br.com.foxconcursos.services.AuthenticationService;
+import br.com.foxconcursos.services.impl.UsuarioServiceImpl;
 
 @RestController
 @RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
