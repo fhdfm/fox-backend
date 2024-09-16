@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.googleapis.media.MediaHttpUploader;
 import com.google.api.client.http.FileContent;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
@@ -102,44 +103,59 @@ public class GoogleDriveServiceImpl implements StorageService {
     
         // Convertendo MultipartFile para java.io.File
         java.io.File convFile = new java.io.File(System.getProperty("java.io.tmpdir")
-                + java.io.File.separator + multipartFile.getOriginalFilename());
+            + java.io.File.separator + multipartFile.getOriginalFilename());
+
+        try {
         
-        FileOutputStream fos = new FileOutputStream(convFile);
-        fos.write(multipartFile.getBytes());
-        fos.close();
-    
-        // Criando o metadata do arquivo para Google Drive
-        File fileMetadata = new File();
-        fileMetadata.setName(multipartFile.getOriginalFilename()); // Nome do arquivo no Google Drive
-        fileMetadata.setParents(Collections.singletonList(folderId)); // Pasta no Google Drive
-    
-        // Preparando o conteúdo do arquivo
-        FileContent mediaContent = new FileContent(multipartFile.getContentType(), convFile);
+            FileOutputStream fos = new FileOutputStream(convFile);
+            fos.write(multipartFile.getBytes());
+            fos.close();
         
-        // Fazendo o upload do arquivo no Google Drive
-        File uploadedFile = this.driveService.files().create(fileMetadata, mediaContent)
-                .setFields("id, webViewLink, thumbnailLink")
-                .execute();
-    
-        // Retornando o link do arquivo no Google 
-        String id = uploadedFile.getId();
+            // Criando o metadata do arquivo para Google Drive
+            File fileMetadata = new File();
+            fileMetadata.setName(multipartFile.getOriginalFilename()); // Nome do arquivo no Google Drive
+            fileMetadata.setParents(Collections.singletonList(folderId)); // Pasta no Google Drive
+        
+            // Preparando o conteúdo do arquivo
+            FileContent mediaContent = new FileContent(multipartFile.getContentType(), convFile);
+            
+            // Fazendo o upload do arquivo no Google Drive
+            // File uploadedFile = this.driveService.files().create(fileMetadata, mediaContent)
+            //         .setFields("id, webViewLink, thumbnailLink")
+            //         .execute();
 
-        String fullFolderPath = getFullFolderPath(folderId);
+            Drive.Files.Create requestStorage = this.driveService.files().create(
+                fileMetadata, mediaContent).setFields("id, webViewLink, thumbnailLink");
 
-        String thumbnailLink = uploadedFile.getThumbnailLink();
+            MediaHttpUploader uploader = requestStorage.getMediaHttpUploader();
+            uploader.setDirectUploadEnabled(false);
+            uploader.setChunkSize(MediaHttpUploader.MINIMUM_CHUNK_SIZE);
 
-        // Salva no banco de dados...
-        Storage storage = new Storage();
-        storage.setUrl(id);
-        storage.setAssuntoId(request.getAssuntoId());
-        storage.setDisciplinaId(request.getDisciplinaId());
-        storage.setTipo(request.getTipo());
-        storage.setFolder(fullFolderPath);
-        storage.setThumbnail(thumbnailLink);
+            File uploadedFile = requestStorage.execute();
+        
+            // Retornando o link do arquivo no Google 
+            String id = uploadedFile.getId();
 
-        this.repository.save(storage);
+            String fullFolderPath = getFullFolderPath(folderId);
 
-        return id;
+            String thumbnailLink = uploadedFile.getThumbnailLink();
+
+            // Salva no banco de dados...
+            Storage storage = new Storage();
+            storage.setUrl(id);
+            storage.setAssuntoId(request.getAssuntoId());
+            storage.setDisciplinaId(request.getDisciplinaId());
+            storage.setTipo(request.getTipo());
+            storage.setFolder(fullFolderPath);
+            storage.setThumbnail(thumbnailLink);
+
+            this.repository.save(storage);
+
+            return id;
+        } finally {
+            if (convFile.exists())
+                convFile.delete();
+        }
     }
 
     private String getFullFolderPath(String folderId) throws IOException {
