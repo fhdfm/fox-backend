@@ -313,6 +313,17 @@ CREATE TABLE storage (
     UNIQUE (id)  -- Garante que 'id' seja único
 );
 
+CREATE TABLE respostas_free (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+    usuario_id UUID NOT NULL,
+    questao_id UUID NOT NULL,
+    alternativa_id UUID NOT NULL,
+    data_resposta DATE NOT NULL,
+    CONSTRAINT fk_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+    CONSTRAINT fk_questao FOREIGN KEY (questao_id) REFERENCES questoes(id) ON DELETE CASCADE,
+    CONSTRAINT fk_alternativa FOREIGN KEY (alternativa_id) REFERENCES alternativas(id) ON DELETE CASCADE
+);
+
 -- indices
 CREATE INDEX idx_respostas_questao_id ON respostas(questao_id);
 CREATE INDEX idx_respostas_usuario_id ON respostas(usuario_id);

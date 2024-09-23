@@ -41,7 +41,7 @@ public class QuestaoService {
 
     }
 
-    public List<QuestaoResponse> findAll(FiltroQuestao questao, int limit, int offset) {
+    private List<QuestaoResponse> findAll(FiltroQuestao questao, int limit, int offset, boolean rand) {
         UsuarioLogado user = SecurityUtil.obterUsuarioLogado();
         boolean isAluno = user.isAluno();
 
@@ -145,8 +145,11 @@ public class QuestaoService {
                     FROM PagedQuestions pq
                     LEFT JOIN alternativas a ON a.questao_id = pq.qid
                     WHERE pq.row_num BETWEEN ? AND ?
-                    ORDER BY pq.ano DESC, pq.qid, a.id
                 """;
+        if (rand)
+            sql += " ORDER BY pq.ano DESC, pq.qid, a.id ";
+        else
+            sql += " ORDER BY RANDOM() ";
 
         int startRow = offset + 1;
         int endRow = offset + limit;
@@ -194,7 +197,15 @@ public class QuestaoService {
 
         result.addAll(questaoMap.values());
         return result;
+    } 
+
+    public List<QuestaoResponse> findAll(FiltroQuestao questao, int limit, int offset) {
+        return this.findAll(questao, limit, offset, false);
     }
+
+    public List<QuestaoResponse> findAllDegustacao(FiltroQuestao questao) {
+        return this.findAll(questao, 10, 0, true);
+    }    
 
     @Transactional
     public UUID create(QuestaoRequest request) {
@@ -431,7 +442,6 @@ public class QuestaoService {
 
         return count;
     }
-
 
     public QuestaoResponse findById(UUID id) {
 
