@@ -112,4 +112,11 @@ public class RespostaService {
 
         return questaoService.isAlternativaCorreta(questaoId, alternativaId);
     }
+
+    public int getQuantidadeQuestoesRespondidasNoDia() {
+        UsuarioLogado usuarioLogado = SecurityUtil.obterUsuarioLogado();
+        UUID usuarioId = usuarioLogado.getId();
+        LocalDate hoje = LocalDate.now();
+        return this.respostaFreeRepository.countByUsuarioIdAndDataResposta(usuarioId, hoje);
+    }
 }

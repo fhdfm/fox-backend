@@ -140,8 +140,11 @@ public class QuestaoController {
 
         int quantidadeRegistros = this.questaoService.getRecordCount(questao);
 
+        int quantidadeQuestoesRespondidasNoDia = this.respostaService.getQuantidadeQuestoesRespondidasNoDia();
+
         BancoQuestaoResponse response = new BancoQuestaoResponse();
         response.setTotalDeRegistros(quantidadeRegistros);
+        response.setRespondidas(quantidadeQuestoesRespondidasNoDia);
 
         List<QuestaoResponse> questoes =
                 this.questaoService.findAll(questao, limit, offset);
