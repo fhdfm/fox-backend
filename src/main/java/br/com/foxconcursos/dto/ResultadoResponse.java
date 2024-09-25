@@ -7,6 +7,7 @@ public class ResultadoResponse {
 
     private UUID alternativaCorreta;
     private Boolean correta;
+    private int qtdRespondidas;
 
     public ResultadoResponse() {}
 
@@ -25,5 +26,13 @@ public class ResultadoResponse {
 
     public void setCorreta(Boolean correta) {
         this.correta = correta;
+    }
+
+    public void setQtdRespondidas(int qtd) {
+        this.qtdRespondidas = qtd;
+    }
+
+    public int getQtdRespondidas() {
+        return this.qtdRespondidas;
     }
 }

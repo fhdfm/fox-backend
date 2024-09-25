@@ -2,6 +2,7 @@ package br.com.foxconcursos.services;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -9,8 +10,10 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import br.com.foxconcursos.domain.Matricula;
 import br.com.foxconcursos.domain.Resposta;
 import br.com.foxconcursos.domain.RespostaFree;
+import br.com.foxconcursos.domain.TipoProduto;
 import br.com.foxconcursos.domain.UsuarioLogado;
 import br.com.foxconcursos.dto.RespostaRequest;
 import br.com.foxconcursos.dto.ResultadoResponse;
@@ -27,20 +30,23 @@ public class RespostaService {
     private final QuestaoService questaoService;
     private final ApplicationEventPublisher applicationEventPublisher;
     private final RespostaFreeRepository respostaFreeRepository;
+    private final MatriculaService matriculaService;
 
     public RespostaService(RespostaRepository respostaRepository, QuestaoService questaoService,
                            ApplicationEventPublisher applicationEventPublisher,
-                           RespostaFreeRepository respostaFreeRepository) {
+                           RespostaFreeRepository respostaFreeRepository, 
+                           MatriculaService matriculaService) {
 
         this.respostaRepository = respostaRepository;
         this.questaoService = questaoService;
         this.applicationEventPublisher = applicationEventPublisher;
         this.respostaFreeRepository = respostaFreeRepository;
+        this.matriculaService = matriculaService;
 
     }
 
     @Transactional
-    public ResultadoResponse save(RespostaRequest request, UUID questaoId) {
+    private ResultadoResponse save(RespostaRequest request, UUID questaoId, UUID usuarioId) {
 
         if (request.getAlternativaId() == null)
             throw new IllegalArgumentException("Alternativa não informada");
@@ -50,9 +56,7 @@ public class RespostaService {
         ResultadoResponse resultado = questaoService.isAlternativaCorreta(
                 questaoId, request.getAlternativaId());
 
-        UsuarioLogado usuarioLogado = SecurityUtil.obterUsuarioLogado();
-
-        Resposta resposta = respostaRepository.findByQuestaoIdAndUsuarioId(questaoId, usuarioLogado.getId());
+        Resposta resposta = respostaRepository.findByQuestaoIdAndUsuarioId(questaoId, usuarioId);
 
         if (resposta != null) {
             resposta.setAlternativaId(request.getAlternativaId());
@@ -65,7 +69,7 @@ public class RespostaService {
             resposta.setAlternativaId(request.getAlternativaId());
             resposta.setAcerto(resultado.getCorreta());
             resposta.setData(hoje);
-            resposta.setUsuarioId(usuarioLogado.getId());
+            resposta.setUsuarioId(usuarioId);
         }
 
         respostaRepository.save(resposta);
@@ -73,31 +77,28 @@ public class RespostaService {
         UUID disciplinaId = this.questaoService.findDisciplinaIdByQuestaoId(questaoId);
 
         PerformanceEvent event = new PerformanceEvent(
-                resultado.getCorreta(), hoje, usuarioLogado.getId(), disciplinaId);
+                resultado.getCorreta(), hoje, usuarioId, disciplinaId);
         applicationEventPublisher.publishEvent(event);
 
         return resultado;
     }
 
-    public ResultadoResponse salvarDegustacao(RespostaRequest request, UUID questaoId) {
+    private ResultadoResponse saveDesgustacao(RespostaRequest request, UUID questaoId, UUID usuarioId) {
         
         UUID alternativaId = request.getAlternativaId();
 
         if (alternativaId == null)
             throw new IllegalArgumentException("Alternativa não informada");
 
-        UsuarioLogado usuarioLogado = SecurityUtil.obterUsuarioLogado();
-        UUID usuarioId = usuarioLogado.getId();
-
         LocalDate hoje = LocalDate.now();
         int count = this.respostaFreeRepository.countByUsuarioIdAndDataResposta(usuarioId, hoje);
         if (count > 10)
-            throw new IllegalStateException("O usuário: " + usuarioLogado.getNome() 
-                + " já respondeu 10 questões em: " + FoxUtils.convertLocalDateToDate(hoje));
+            throw new IllegalStateException("O usuário "  
+                + "já respondeu 10 questões em: " + FoxUtils.convertLocalDateToDate(hoje));
 
         Optional<RespostaFree> respostaDB =
                 this.respostaFreeRepository.findByUsuarioIdAndQuestaoIdAndAlternativaIdAndDataResposta(
-                        usuarioId, questaoId, hoje);
+                        usuarioId, questaoId, alternativaId, hoje);
         
         RespostaFree resposta = null;
 
@@ -106,17 +107,30 @@ public class RespostaService {
             resposta.setAlternativaId(alternativaId);
         } else {
             resposta = new RespostaFree(usuarioId, questaoId, alternativaId, hoje);
+            count++;
         }
 
         this.respostaFreeRepository.save(resposta);
 
-        return questaoService.isAlternativaCorreta(questaoId, alternativaId);
+        ResultadoResponse result = questaoService.isAlternativaCorreta(questaoId, alternativaId);
+        result.setQtdRespondidas(count);
+
+        return result;
     }
 
-    public int getQuantidadeQuestoesRespondidasNoDia() {
-        UsuarioLogado usuarioLogado = SecurityUtil.obterUsuarioLogado();
-        UUID usuarioId = usuarioLogado.getId();
-        LocalDate hoje = LocalDate.now();
-        return this.respostaFreeRepository.countByUsuarioIdAndDataResposta(usuarioId, hoje);
+    public ResultadoResponse create(RespostaRequest request, UUID questaoId) {
+        
+        UsuarioLogado currentUser = SecurityUtil.obterUsuarioLogado();
+        UUID usuarioId = currentUser.getId();
+        List<Matricula> matriculas = this.matriculaService.findByUsuarioId(usuarioId);
+        
+        if (matriculas != null && !matriculas.isEmpty())
+            for (Matricula matricula : matriculas) {
+                if (matricula.getTipoProduto() == TipoProduto.CURSO 
+                    || matricula.getTipoProduto() == TipoProduto.QUESTOES)
+                    return this.save(request, questaoId, usuarioId);
+            }    
+        
+        return this.saveDesgustacao(request, questaoId, usuarioId);
     }
 }

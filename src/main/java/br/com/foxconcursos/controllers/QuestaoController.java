@@ -203,17 +203,9 @@ public class QuestaoController {
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO')")
     @PostMapping("/api/aluno/questoes/{questaoId}/responder")
     public ResponseEntity<ResultadoResponse> responder(@RequestBody RespostaRequest request,
-                                                       @PathVariable UUID questaoId) {
-        ResultadoResponse uuid = respostaService.save(request, questaoId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(uuid);
-    }
-
-    @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO')")
-    @PostMapping("/api/aluno/site/questoes/{questaoId}/responder")
-    public ResponseEntity<ResultadoResponse> responderQuestoesDegustacao(@RequestBody RespostaRequest request,
-                                                       @PathVariable UUID questaoId) {
-        ResultadoResponse uuid = respostaService.salvarDegustacao(request, questaoId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(uuid);
+                                                       @PathVariable UUID questaoId) {                                                 
+        ResultadoResponse resp = respostaService.create(request, questaoId);
+        return ResponseEntity.status(HttpStatus.OK).body(resp);
     }
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO') or hasAuthority('SCOPE_ROLE_ADMIN')")

@@ -13,7 +13,7 @@ import br.com.foxconcursos.repositories.custom.CustomCrudRepository;
 @Repository
 public interface RespostaFreeRepository extends CustomCrudRepository<RespostaFree, UUID> {
     
-    Optional<RespostaFree> findByUsuarioIdAndQuestaoIdAndAlternativaIdAndDataResposta(UUID usuarioId, UUID questaoId, LocalDate data);
+    Optional<RespostaFree> findByUsuarioIdAndQuestaoIdAndAlternativaIdAndDataResposta(UUID usuarioId, UUID questaoId, UUID alternativaId, LocalDate data);
 
     @Query("SELECT COUNT(*) FROM respostas_free WHERE usuario_id = :usuarioId AND data_resposta = :dataResposta")
     int countByUsuarioIdAndDataResposta(UUID usuarioId, LocalDate dataResposta);

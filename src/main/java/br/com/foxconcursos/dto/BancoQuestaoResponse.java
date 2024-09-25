@@ -10,8 +10,6 @@ public class BancoQuestaoResponse {
     private int totalDeRegistros;
     private String perfil;
 
-    private int respondidas;
-
     private List<QuestaoResponse> questoes;
 
     public BancoQuestaoResponse() {
@@ -47,13 +45,5 @@ public class BancoQuestaoResponse {
 
     public String getPerfil() {
         return this.perfil;
-    }
-
-    public void setRespondidas(int respondidas) {
-        this.respondidas = respondidas;
-    }
-
-    public int getRespondidas() {
-        return this.respondidas;
     }
 }
