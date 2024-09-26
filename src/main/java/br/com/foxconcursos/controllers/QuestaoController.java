@@ -1,37 +1,22 @@
 package br.com.foxconcursos.controllers;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import br.com.foxconcursos.domain.FiltroQuestao;
-import br.com.foxconcursos.dto.BancoQuestaoResponse;
-import br.com.foxconcursos.dto.ComentarioRequest;
-import br.com.foxconcursos.dto.ComentarioResponse;
-import br.com.foxconcursos.dto.QuestaoRequest;
-import br.com.foxconcursos.dto.QuestaoResponse;
-import br.com.foxconcursos.dto.RespostaRequest;
-import br.com.foxconcursos.dto.ResultadoResponse;
+import br.com.foxconcursos.dto.*;
 import br.com.foxconcursos.services.ComentarioService;
 import br.com.foxconcursos.services.PdfService;
 import br.com.foxconcursos.services.QuestaoService;
 import br.com.foxconcursos.services.RespostaService;
 import br.com.foxconcursos.util.FoxUtils;
 import br.com.foxconcursos.util.SecurityUtil;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping(
@@ -140,11 +125,8 @@ public class QuestaoController {
 
         int quantidadeRegistros = this.questaoService.getRecordCount(questao);
 
-        int quantidadeQuestoesRespondidasNoDia = this.respostaService.getQuantidadeQuestoesRespondidasNoDia();
-
         BancoQuestaoResponse response = new BancoQuestaoResponse();
         response.setTotalDeRegistros(quantidadeRegistros);
-        response.setRespondidas(quantidadeQuestoesRespondidasNoDia);
 
         List<QuestaoResponse> questoes =
                 this.questaoService.findAll(questao, limit, offset);
@@ -152,6 +134,8 @@ public class QuestaoController {
         response.setQuestoes(questoes);
 
         Map<String, String> filtro = this.questaoService.getFiltroCorrente(questao);
+
+        response.setQtdRespondidas(respostaService.getQuantidadeQuestoesRespondidasNoDia());
 
         response.setFiltros(filtro);
 
@@ -203,7 +187,7 @@ public class QuestaoController {
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO')")
     @PostMapping("/api/aluno/questoes/{questaoId}/responder")
     public ResponseEntity<ResultadoResponse> responder(@RequestBody RespostaRequest request,
-                                                       @PathVariable UUID questaoId) {                                                 
+                                                       @PathVariable UUID questaoId) {
         ResultadoResponse resp = respostaService.create(request, questaoId);
         return ResponseEntity.status(HttpStatus.OK).body(resp);
     }
