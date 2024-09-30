@@ -24,6 +24,8 @@ public class Questao {
     private String cidade;
     private Escolaridade escolaridade;
     private Status status;
+    private TipoQuestao tipo;
+    private String numeroExameOab;
     @Version
     private Integer version;
 
@@ -42,6 +44,8 @@ public class Questao {
         this.cidade = request.getCidade();
         this.escolaridade = request.getEscolaridade();
         this.status = Status.ATIVO;
+        this.numeroExameOab = request.getNumeroExameOab();
+        this.tipo = request.getTipo();
     }
 
     public UUID getId() {
@@ -138,6 +142,22 @@ public class Questao {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public TipoQuestao getTipo() {
+        return this.tipo;
+    }
+
+    public void setTipo(TipoQuestao tipo) {
+        this.tipo = tipo;
+    }
+
+    public String getNumeroExameOab() {
+        return this.numeroExameOab;
+    }
+
+    public void setNumeroExameOab(String numeroExameOab) {
+        this.numeroExameOab = numeroExameOab;
     }
 
 }

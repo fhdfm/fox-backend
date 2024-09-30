@@ -25,6 +25,7 @@ public class QuestaoResponse {
     private List<AlternativaResponse> alternativas;
     private int comentarios;
     private UUID alternativaSelecionadaId;
+    private String numeroExameOab;
 
 
     public QuestaoResponse() {  }
@@ -187,5 +188,13 @@ public class QuestaoResponse {
 
     public void setAlternativaSelecionadaId(UUID alternativaSelecionadaId) {
         this.alternativaSelecionadaId = alternativaSelecionadaId;
+    }
+
+    public String getNumeroExameOab() {
+        return this.numeroExameOab;
+    }
+
+    public void setNumeroExameOab(String numeroExameOab) {
+        this.numeroExameOab = numeroExameOab;
     }
 }

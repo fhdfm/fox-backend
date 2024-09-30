@@ -209,19 +209,21 @@ CREATE TABLE tarefas_agendadas (
 
 CREATE TABLE questoes (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
-    enunciado TEXT NOT NULL,
+    enunciado TEXT NOT NULL,               -- Comum para todos
     alternativa_correta CHAR(1),
-    disciplina_id UUID NOT NULL,
-    assunto_id UUID NOT NULL,
-    banca_id UUID NOT NULL,
-    instituicao_id UUID NOT NULL,
-    cargo_id UUID NOT NULL,
-    ano INT NOT NULL,
-    uf VARCHAR(2) NOT NULL,
-    cidade VARCHAR(255) NOT NULL,
-    escolaridade VARCHAR(50) NOT NULL,
-    status CHAR(1) NOT NULL,
+    disciplina_id UUID NOT NULL,           -- Comum para todos
+    assunto_id UUID NOT NULL,              -- Comum para todos
+    banca_id UUID,                         -- Presente para Concurso e ENEM, mas opcional para OAB
+    instituicao_id UUID,
+    cargo_id UUID,
+    ano INT,                               -- Presente para Concurso e ENEM, mas opcional para OAB
+    uf VARCHAR(2),
+    cidade VARCHAR(255),
+    escolaridade VARCHAR(50),
+    status CHAR(1) NOT NULL,               -- Comum para todos
     version INT NOT NULL DEFAULT 0,
+    tipo INT NOT NULL DEFAULT 1,           -- Define o tipo da questão (1: Concurso, 2: OAB, 3: ENEM)
+    numero_exame_oab VARCHAR(20),                  -- Presente para OAB, mas não para os outros tipos
     CONSTRAINT fk_disciplina
         FOREIGN KEY(disciplina_id) 
         REFERENCES disciplinas(id),
@@ -238,7 +240,6 @@ CREATE TABLE questoes (
         FOREIGN KEY(cargo_id) 
         REFERENCES cargo(id)
 );
-
 
 CREATE TABLE alternativas (
     id UUID PRIMARY key DEFAULT uuid_generate_v4() NOT null UNIQUE,

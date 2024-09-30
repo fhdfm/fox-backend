@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import br.com.foxconcursos.domain.Escolaridade;
+import br.com.foxconcursos.domain.TipoQuestao;
 
 public class QuestaoRequest {
 
@@ -17,6 +18,8 @@ public class QuestaoRequest {
     private String uf;
     private String cidade;
     private Escolaridade escolaridade;
+    private TipoQuestao tipo;
+    private String numeroExameOab;
     private List<AlternativaRequest> alternativas;
 
     public QuestaoRequest() {
@@ -109,6 +112,22 @@ public class QuestaoRequest {
 
     public List<AlternativaRequest> getAlternativas() {
         return alternativas;
+    }
+
+    public TipoQuestao getTipo() {
+        return this.tipo;
+    }
+
+    public void setTipo(TipoQuestao tipo) {
+        this.tipo = tipo;
+    }
+
+    public String getNumeroExameOab() {
+        return this.numeroExameOab;
+    }
+
+    public void setNumeroExameOab(String numeroExameOab) {
+        this.numeroExameOab = numeroExameOab;
     }
 
 }

@@ -16,6 +16,7 @@ public class FiltroQuestao {
     private String uf;
     private String cidade;
     private Escolaridade escolaridade;
+    private String numeroExameOab;
     
     public FiltroQuestao() {
     }
@@ -98,6 +99,14 @@ public class FiltroQuestao {
 
     public void setEscolaridade(Escolaridade escolaridade) {
         this.escolaridade = escolaridade;
-    } 
+    }
+    
+    public String getNumeroExameOab() {
+        return this.numeroExameOab;
+    }
+
+    public void setNumeroExameOab(String numeroExameOab) {
+        this.numeroExameOab = numeroExameOab;
+    }
 
 }

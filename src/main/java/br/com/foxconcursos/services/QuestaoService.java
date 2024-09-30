@@ -15,6 +15,7 @@ import br.com.foxconcursos.domain.Alternativa;
 import br.com.foxconcursos.domain.FiltroQuestao;
 import br.com.foxconcursos.domain.Questao;
 import br.com.foxconcursos.domain.Status;
+import br.com.foxconcursos.domain.TipoQuestao;
 import br.com.foxconcursos.domain.UsuarioLogado;
 import br.com.foxconcursos.dto.AlternativaRequest;
 import br.com.foxconcursos.dto.AlternativaResponse;
@@ -54,6 +55,7 @@ public class QuestaoService {
                             q.uf,
                             q.escolaridade,
                             q.cidade,
+                            q.numero_exame_oab,    -- Adicionando o campo número de exame OAB
                             c.nome as cargo,
                             d.nome as disciplina,
                             i.nome as instituicao,
@@ -121,9 +123,14 @@ public class QuestaoService {
             sql += " AND q.instituicao_id = '" + questao.getInstituicaoId() + "' ";
         }
 
+        if (questao.getNumeroExameOab() != null) {
+            sql += " AND q.numero_exame_oab = '" + questao.getNumeroExameOab() + "'' ";
+        }
+        
+
         sql += """
                         GROUP BY 
-                            q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, 
+                            q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, q.numero_exame_oab, 
                             c.nome, d.nome, i.nome, a2.nome, b.nome
                 """;
 
@@ -179,6 +186,7 @@ public class QuestaoService {
                 }
                 qr.setComentarios(rs.getInt("comentario_count"));
                 qr.setAlternativas(new ArrayList<>());
+                qr.setNumeroExameOab(rs.getString("numero_exame_oab"));
                 questaoMap.put(questaoId, qr);
             }
 
@@ -210,7 +218,7 @@ public class QuestaoService {
     @Transactional
     public UUID create(QuestaoRequest request) {
 
-        validate(request);
+        validar(request);
 
         Questao questao = new Questao(request);
         questao = this.questaoRepository.save(questao);
@@ -229,7 +237,7 @@ public class QuestaoService {
     @Transactional
     public UUID update(QuestaoRequest request, UUID id) {
 
-        validate(request);
+        validar(request);
 
         Questao questao = this.questaoRepository.findByIdAndStatus(id, Status.ATIVO)
                 .orElseThrow(() -> new IllegalArgumentException(
@@ -245,6 +253,8 @@ public class QuestaoService {
         questao.setUf(request.getUf());
         questao.setCidade(request.getCidade());
         questao.setEscolaridade(request.getEscolaridade());
+        questao.setNumeroExameOab(request.getNumeroExameOab());
+        questao.setTipo(request.getTipo());
 
         this.questaoRepository.save(questao);
 
@@ -266,13 +276,8 @@ public class QuestaoService {
         return id;
     }
 
-
-    private void validate(QuestaoRequest request) {
-
-        if (request.getEnunciado() == null || request.getEnunciado().trim().isEmpty()) {
-            throw new IllegalArgumentException("Enunciado é obrigatória.");
-        }
-
+    private void validarConcurso(QuestaoRequest request) {
+        
         if (request.getDisciplinaId() == null) {
             throw new IllegalArgumentException("Disciplina é obrigatória.");
         }
@@ -292,6 +297,60 @@ public class QuestaoService {
         if (request.getEscolaridade() == null) {
             throw new IllegalArgumentException("Escolaridade é obrigatória.");
         }
+    }
+
+    private void validarOab(QuestaoRequest request) {
+        
+        if (request.getNumeroExameOab() == null) {
+            throw new IllegalArgumentException("Número do Exame OAB é obrigatório para questões do tipo OAB.");
+        }
+    
+        if (request.getDisciplinaId() == null) {
+            throw new IllegalArgumentException("Disciplina é obrigatória para questões do tipo OAB.");
+        }
+    
+        if (request.getAssuntoId() == null) {
+            throw new IllegalArgumentException("Assunto é obrigatório para questões do tipo OAB.");
+        }
+
+    }
+
+    private void validarEnem(QuestaoRequest request) {
+        
+        if (request.getAno() == null) {
+            throw new IllegalArgumentException("Ano é obrigatório para questões do tipo ENEM.");
+        }
+
+        if (request.getBancaId() == null) {
+            throw new IllegalArgumentException("Banca é obrigatória para questões do tipo ENEM.");
+        }
+
+        if (request.getDisciplinaId() == null) {
+            throw new IllegalArgumentException("Disciplina é obrigatória para questões do tipo ENEM.");
+        }
+
+        if (request.getAssuntoId() == null) {
+            throw new IllegalArgumentException("Assunto é obrigatório para questões do tipo ENEM.");
+        }
+    }
+
+    private void validar(QuestaoRequest request) {
+        
+        TipoQuestao tipo = request.getTipo();
+        
+        if (tipo == null)
+            throw new IllegalArgumentException("Tipo da Questão é obrigatório.");
+
+        if (tipo.isConcurso())
+            validarConcurso(request);
+        if (tipo.isOAB())
+            validarOab(request);
+        if (tipo.isEnem())
+            validarEnem(request);
+
+        if (request.getEnunciado() == null || request.getEnunciado().trim().isEmpty()) {
+            throw new IllegalArgumentException("Enunciado é obrigatória.");
+        }
 
         if (request.getAlternativas() == null || request.getAlternativas().isEmpty()) {
             throw new IllegalArgumentException("Alternativas são obrigatórias.");
@@ -310,8 +369,7 @@ public class QuestaoService {
             if (ar.getCorreta() == null) {
                 throw new IllegalArgumentException("Indicador de correta é obrigatório.");
             }
-        }
-
+        }            
     }
 
     public void delete(UUID id) {
@@ -382,6 +440,9 @@ public class QuestaoService {
         if (questao.getEscolaridade() != null)
             filtros.put("Escolaridade: ", questao.getEscolaridade().toString());
 
+        if (questao.getNumeroExameOab() != null)
+            filtros.put("Numero Exame da Ordem: ", questao.getNumeroExameOab());
+
         return filtros;
     }
 
@@ -438,6 +499,10 @@ public class QuestaoService {
             sql += " and q.instituicao_id = '" + questao.getInstituicaoId() + "' ";
         }
 
+        if (questao.getNumeroExameOab() != null) {
+            sql += " AND q.numero_exame_oab = '" + questao.getNumeroExameOab() + "'' ";
+        }        
+
         int count = this.jdbcTemplate.queryForObject(sql, Integer.class);
 
         return count;
@@ -455,6 +520,7 @@ public class QuestaoService {
                                q.ano,
                                q.uf,
                                q.cidade,
+                               q.numero_exame_oab,
                                a.id as aid,
                                a.letra,
                                a.correta,
@@ -487,7 +553,7 @@ public class QuestaoService {
 
         sql += """
                     where q.status = 'ATIVO' and q.id = ? 
-                    group by q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, 
+                    group by q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, q.numero_exame_oab,
                     a.id, a.descricao, a.correta, a.letra, b.id, i.id, c.id, a2.id, d.id, 
                     c.nome, d.nome, i.nome, a2.nome, b.nome 
                 """;
@@ -510,6 +576,7 @@ public class QuestaoService {
                     qr.setBancaId(UUID.fromString(rs.getString("bid")));
                     qr.setDisciplinaId(UUID.fromString(rs.getString("did")));
                     qr.setAssuntoId(UUID.fromString(rs.getString("a2id")));
+                    qr.setNumeroExameOab(rs.getString("numero_exame_oab"));
                     qr.setAlternativas(new ArrayList<>());
 
                     String uf = rs.getString("uf");
