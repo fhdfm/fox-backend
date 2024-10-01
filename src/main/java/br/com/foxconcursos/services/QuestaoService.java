@@ -187,9 +187,9 @@ public class QuestaoService {
                 qr.setComentarios(rs.getInt("comentario_count"));
                 qr.setAlternativas(new ArrayList<>());
 
-                if (rs.getObject("numero_exame_oab") != null) {
+                if (rs.getObject("numero_exame_oab") != null)
                     qr.setNumeroExameOab(rs.getString("numero_exame_oab"));
-                    
+
                 questaoMap.put(questaoId, qr);
             }
 
