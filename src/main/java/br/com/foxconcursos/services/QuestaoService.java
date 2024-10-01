@@ -133,7 +133,7 @@ public class QuestaoService {
         sql += """
                     )
                     SELECT 
-                        pq.qid, pq.enunciado, pq.ano, pq.uf, pq.escolaridade, pq.cidade,
+                        pq.qid, pq.enunciado, pq.enunciado, pq.ano, pq.uf, pq.escolaridade, pq.cidade,
                         pq.cargo, pq.disciplina, pq.instituicao, pq.assunto, pq.banca,
                         pq.comentario_count, a.id as aid, a.descricao, a.correta, a.letra
                 """;
@@ -178,6 +178,7 @@ public class QuestaoService {
                     qr.setAcerto(acerto);
                 }
                 qr.setComentarios(rs.getInt("comentario_count"));
+                qr.setNumeroExameOab(rs.getString("numero_exame_oab"));
                 qr.setAlternativas(new ArrayList<>());
                 questaoMap.put(questaoId, qr);
             }
