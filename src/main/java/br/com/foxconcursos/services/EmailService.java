@@ -28,5 +28,18 @@ public class EmailService {
 
         this.mailSender.send(message);
     }
+    public void sendEmailSAC(String remetente, String produto,
+        String textoEmHtml) throws Exception {
+
+        MimeMessage message = this.mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+        helper.setTo("cursofoxportal@gmail.com");
+        helper.setSubject(produto);
+        helper.setText(textoEmHtml, true);
+        helper.setFrom(remetente);
+
+        this.mailSender.send(message);
+    }
 
 }

@@ -3,6 +3,7 @@ package br.com.foxconcursos.controllers;
 import br.com.foxconcursos.domain.Usuario;
 import br.com.foxconcursos.dto.AlterarPasswordRequest;
 import br.com.foxconcursos.dto.ProdutoResponse;
+import br.com.foxconcursos.dto.SACRequest;
 import br.com.foxconcursos.dto.UsuarioResponse;
 import br.com.foxconcursos.services.ProdutoService;
 import br.com.foxconcursos.services.RecuperarPasswordService;
@@ -27,8 +28,8 @@ public class UsuarioController {
     private final RecuperarPasswordService recuperarPasswordService;
 
 
-    public UsuarioController(UsuarioServiceImpl service, 
-        ProdutoService produtoService, RecuperarPasswordService recuperarPasswordService) {
+    public UsuarioController(UsuarioServiceImpl service,
+                             ProdutoService produtoService, RecuperarPasswordService recuperarPasswordService) {
 
 
         this.service = service;
@@ -36,12 +37,12 @@ public class UsuarioController {
         this.recuperarPasswordService = recuperarPasswordService;
 
     }
-    
+
     @PostMapping(value = "/api/signup", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UUID> create(@RequestBody Usuario user) {
-        
+
         Usuario savedUser = this.service.save(user);
-        
+
         return ResponseEntity.status(HttpStatus.CREATED).body(savedUser.getId());
     }
 
@@ -54,37 +55,44 @@ public class UsuarioController {
 
     @PostMapping(value = "/api/forgot-password", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> forgotPassword(@RequestBody String email) {
-        
+
         if (email == null || email.isBlank())
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body("Email não pode ser vazio.");
+                    .body("Email não pode ser vazio.");
 
         Usuario user = this.service.findByEmail(email);
 
         return ResponseEntity.status(HttpStatus.OK)
-            .body(this.recuperarPasswordService.recuperarPassword(user));
+                .body(this.recuperarPasswordService.recuperarPassword(user));
+    }
+
+    @PostMapping(value = "/api/sac", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> sacEmail(@RequestBody SACRequest sac) throws Exception {
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(this.recuperarPasswordService.enviarEmailSAC(sac));
     }
 
     @PostMapping(value = "/api/reset-password", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> resetPassword(@RequestBody AlterarPasswordRequest request) {
-        
+
         if (request.getToken() == null || request.getToken().isBlank())
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body("Token não pode ser vazio.");
+                    .body("Token não pode ser vazio.");
 
         if (request.getNovaSenha() == null || request.getNovaSenha().isBlank())
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body("Senha não pode ser vazia.");
+                    .body("Senha não pode ser vazia.");
 
         return ResponseEntity.status(HttpStatus.OK)
-            .body(this.service.alterarPassowrd(request.getToken(), request.getNovaSenha()));
+                .body(this.service.alterarPassowrd(request.getToken(), request.getNovaSenha()));
     }
 
     @PutMapping(value = {
             "/api/admin/usuarios/{id}",
             "/api/aluno/usuarios/{id}",
     },
-        consumes = MediaType.APPLICATION_JSON_VALUE)
+            consumes = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN') or hasAuthority('SCOPE_ROLE_ALUNO') ")
     public ResponseEntity<UUID> update(@PathVariable UUID id, @RequestBody Usuario user) {
         user.setId(id);
@@ -111,13 +119,13 @@ public class UsuarioController {
             "hasAuthority('SCOPE_ROLE_EXTERNO')")
     public ResponseEntity<List<ProdutoResponse>> obterProdutosMatriculados(@PathVariable UUID id) {
         return ResponseEntity.ok(produtoService.obterProdutosMatriculados(id));
-    }    
+    }
 
     @GetMapping(value = "/api/admin/usuarios")
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     public ResponseEntity<Page<UsuarioResponse>> findAll(Pageable pageable,
-        @RequestParam(required = false) String filter) throws Exception {
-        
+                                                         @RequestParam(required = false) String filter) throws Exception {
+
         return ResponseEntity.ok(service.findAll(pageable, filter));
     }
 
