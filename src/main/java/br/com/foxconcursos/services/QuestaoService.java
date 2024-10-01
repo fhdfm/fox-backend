@@ -55,7 +55,7 @@ public class QuestaoService {
                             q.uf,
                             q.escolaridade,
                             q.cidade,
-                            q.numero_exame_oab,    -- Adicionando o campo número de exame OAB
+                            q.numero_exame_oab,    
                             c.nome as cargo,
                             d.nome as disciplina,
                             i.nome as instituicao,
