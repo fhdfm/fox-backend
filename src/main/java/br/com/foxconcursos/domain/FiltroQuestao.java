@@ -17,6 +17,7 @@ public class FiltroQuestao {
     private String cidade;
     private Escolaridade escolaridade;
     private String numeroExameOab;
+    private TipoQuestao tipo;
     
     public FiltroQuestao() {
     }
@@ -107,6 +108,14 @@ public class FiltroQuestao {
 
     public void setNumeroExameOab(String numeroExameOab) {
         this.numeroExameOab = numeroExameOab;
+    }
+
+    public TipoQuestao getTipo() {
+        return this.tipo;
+    }
+
+    public void setTipo(TipoQuestao tipo) {
+        this.tipo = tipo;
     }
 
 }
