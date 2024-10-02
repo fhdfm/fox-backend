@@ -124,7 +124,7 @@ public class QuestaoService {
 
         sql += """
                         GROUP BY 
-                            q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, q.numero_exame_oab
+                            q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, q.numero_exame_oab, 
                             c.nome, d.nome, i.nome, a2.nome, b.nome
                 """;
 
