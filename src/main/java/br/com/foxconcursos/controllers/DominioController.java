@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.foxconcursos.domain.Escolaridade;
 import br.com.foxconcursos.domain.Status;
+import br.com.foxconcursos.domain.TipoQuestao;
 
 @RestController
 @RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -26,4 +27,8 @@ public class DominioController {
         return ResponseEntity.ok(Arrays.asList(Status.values()));
     }
 
+    @GetMapping(value = "/dominio/tipo-questao")
+    public ResponseEntity<List<TipoQuestao>> listarTipoQuestao() {
+        return ResponseEntity.ok(Arrays.asList(TipoQuestao.values()));
+    }
 }
