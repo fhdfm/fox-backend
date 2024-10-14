@@ -94,8 +94,13 @@
         <dependency>
             <groupId>com.google.api-client</groupId>
             <artifactId>google-api-client</artifactId>
-            <version>1.32.1</version>
+            <version>1.33.0</version>
         </dependency>
+		<dependency>
+			<groupId>com.google.apis</groupId>
+			<artifactId>google-api-services-youtube</artifactId>
+			<version>v3-rev222-1.25.0</version>
+		</dependency>
 
         <!-- Google OAuth Client Jetty -->
         <dependency>
@@ -138,6 +143,11 @@
 			<version>1.4</version>
 		</dependency>
 		<!-- /Upload -->
+		<dependency>
+			<groupId>org.apache.tika</groupId>
+			<artifactId>tika-core</artifactId>
+			<version>2.4.1</version>
+		</dependency>		
  </dependencies>
 
 	<build>

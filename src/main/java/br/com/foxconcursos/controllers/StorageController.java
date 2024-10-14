@@ -2,6 +2,7 @@ package br.com.foxconcursos.controllers;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -35,17 +36,10 @@ public class StorageController {
         this.service = service;
     }
 
-    // @RequestParam("file") MultipartFile file,
-    // @RequestParam("folderId") String folderId
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @PostMapping("/api/admin/storage/upload")
-    public ResponseEntity<String> uploadVideo(@ModelAttribute StorageRequest storageRequest) throws Exception {
-
-        // String fileId = this.googleDriveService.uploadFile(
-        //         convFile, file.getContentType(), request);
-
-        String fileId = this.service.uploadFile(storageRequest);
-
+    public ResponseEntity<UUID> upload(@ModelAttribute StorageRequest storageRequest) throws Exception {
+        UUID fileId = this.service.upload(storageRequest);
         return ResponseEntity.status(HttpStatus.OK).body(fileId);
     }
 

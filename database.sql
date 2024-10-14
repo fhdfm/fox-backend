@@ -325,6 +325,11 @@ CREATE TABLE respostas_free (
     CONSTRAINT fk_alternativa FOREIGN KEY (alternativa_id) REFERENCES alternativas(id) ON DELETE CASCADE
 );
 
+CREATE TABLE youtube_tokens (
+    user_id VARCHAR(255) PRIMARY KEY,
+    refresh_token VARCHAR(255) NOT NULL
+);
+
 -- indices
 CREATE INDEX idx_respostas_questao_id ON respostas(questao_id);
 CREATE INDEX idx_respostas_usuario_id ON respostas(usuario_id);

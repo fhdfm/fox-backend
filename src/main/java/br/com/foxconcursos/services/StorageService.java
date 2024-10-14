@@ -1,7 +1,9 @@
 package br.com.foxconcursos.services;
 
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.core.io.InputStreamResource;
 
@@ -11,7 +13,7 @@ import br.com.foxconcursos.dto.StorageRequest;
 
 public interface StorageService {
 
-    String uploadFile(StorageRequest storageRequest) throws IOException;
+    UUID upload(StorageRequest storageRequest) throws IOException, GeneralSecurityException;
 
     List<File> list(String content, String folderId) throws IOException;
 
