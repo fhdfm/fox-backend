@@ -35,7 +35,7 @@ import br.com.foxconcursos.dto.StorageRequest;
 import br.com.foxconcursos.repositories.StorageRepository;
 
 @Service
-public class GoogleDriveService implements StorageService {
+public class GoogleDriveService {
 
     private static final String APPLICATION_NAME = "fox-backend";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
