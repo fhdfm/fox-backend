@@ -16,8 +16,11 @@ CREATE TABLE usuarios (
 
 CREATE TABLE disciplinas (
     id UUID PRIMARY key DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
-    nome VARCHAR(255) NOT NULL
+    nome VARCHAR(255) NOT NULL,
+    tipo VARCHAR(20) NOT NULL
 );
+
+CREATE INDEX idx_tipo ON disciplinas (tipo);
 
 CREATE TABLE cursos (
     id UUID PRIMARY key DEFAULT uuid_generate_v4() NOT NULL UNIQUE,

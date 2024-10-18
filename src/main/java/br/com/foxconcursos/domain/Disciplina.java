@@ -11,6 +11,7 @@ public class Disciplina {
     @Id
     private UUID id;
     private String nome;
+    private TipoQuestao tipo;
 
     public UUID getId() {
         return id;
@@ -26,6 +27,14 @@ public class Disciplina {
 
     public void setNome(String nome) {
         this.nome = nome;
+    }
+
+    public void setTipo(TipoQuestao tipo) {
+        this.tipo = tipo;
+    }
+
+    public TipoQuestao getTipo() {
+        return this.tipo;
     }
 
 }
