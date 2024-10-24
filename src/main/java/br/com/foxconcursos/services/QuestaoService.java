@@ -126,6 +126,10 @@ public class QuestaoService {
             sql += " AND q.numero_exame_oab = '" + questao.getNumeroExameOab() + "' ";
         }
 
+        if (questao.getTipo() != null) {
+            sql += " AND q.tipo = '" + questao.getTipo() + "' ";
+        }
+
         sql += """
                         GROUP BY 
                             q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, q.numero_exame_oab, 

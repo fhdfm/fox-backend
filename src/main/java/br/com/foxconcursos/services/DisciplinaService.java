@@ -37,7 +37,7 @@ public class DisciplinaService {
         UUID id = disciplina.getId();
 
         if (id == null) {
-            if (disciplinaRepository.existsByNome(disciplina.getNome()))
+            if (disciplinaRepository.existsByNomeAndTipo(disciplina.getNome(), disciplina.getTipo().name()))
                 throw new IllegalArgumentException("Disciplina já cadastrada.");
             return disciplinaRepository.save(disciplina);
         }
@@ -46,7 +46,7 @@ public class DisciplinaService {
             .orElseThrow(() -> new IllegalArgumentException("Disciplina não encontrada."));
             
         if (!disciplinaDB.getNome().equals(disciplina.getNome()) 
-            && disciplinaRepository.existsByNome(disciplina.getNome()))
+            && disciplinaRepository.existsByNomeAndTipo(disciplina.getNome(), disciplina.getTipo().name()))
             throw new IllegalArgumentException("Disciplina já cadastrada.");
         
         disciplinaDB.setNome(disciplina.getNome());

@@ -50,7 +50,7 @@ public class DisciplinaController {
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @GetMapping(value = "/api/admin/disciplinas/{id}")
-    public ResponseEntity<Disciplina> buscar(@PathVariable UUID id) {
+    public ResponseEntity<Disciplina> buscarPorId(@PathVariable UUID id) {
         return ResponseEntity.ok(disciplinaService.findById(id));
     }
 
