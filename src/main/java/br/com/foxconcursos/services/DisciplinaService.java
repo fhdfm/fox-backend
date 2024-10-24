@@ -30,29 +30,46 @@ public class DisciplinaService {
     }
 
     public Disciplina salvar(Disciplina disciplina) {
-        
+
+        // Verifica se o nome da disciplina foi informado
         if (disciplina.getNome() == null || disciplina.getNome().isBlank())
             throw new IllegalArgumentException("Informe o nome da disciplina.");
 
+        // Verifica se o tipo da disciplina foi informado
+        if (disciplina.getTipo() == null)
+            throw new IllegalArgumentException("Informe o tipo da disciplina (CONCURSO, ENEM, OAB).");
+
         UUID id = disciplina.getId();
 
+        // Se o ID da disciplina não foi informado, é um novo cadastro
         if (id == null) {
-            if (disciplinaRepository.existsByNomeAndTipo(disciplina.getNome(), disciplina.getTipo().name()))
-                throw new IllegalArgumentException("Disciplina já cadastrada.");
+            // Verifica se já existe uma disciplina com o mesmo nome e tipo
+            if (disciplinaRepository.existsByNomeAndTipo(disciplina.getNome(), disciplina.getTipo()))
+                throw new IllegalArgumentException("Disciplina já cadastrada com este tipo.");
+
+            // Salva a nova disciplina
             return disciplinaRepository.save(disciplina);
         }
 
+        // Busca a disciplina pelo ID informado
         Disciplina disciplinaDB = disciplinaRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Disciplina não encontrada."));
             
-        if (!disciplinaDB.getNome().equals(disciplina.getNome()) 
-            && disciplinaRepository.existsByNomeAndTipo(disciplina.getNome(), disciplina.getTipo().name()))
-            throw new IllegalArgumentException("Disciplina já cadastrada.");
-        
-        disciplinaDB.setNome(disciplina.getNome());
+        // Verifica se o nome e o tipo são diferentes e se já existe outra disciplina com o mesmo nome e tipo
+        if (!disciplinaDB.getNome().equals(disciplina.getNome())
+            || !disciplinaDB.getTipo().equals(disciplina.getTipo())) {
+            if (disciplinaRepository.existsByNomeAndTipo(disciplina.getNome(), disciplina.getTipo()))
+                throw new IllegalArgumentException("Disciplina já cadastrada com este tipo.");
+        }
 
+        // Atualiza o nome e o tipo da disciplina
+        disciplinaDB.setNome(disciplina.getNome());
+        disciplinaDB.setTipo(disciplina.getTipo());
+
+        // Salva a disciplina atualizada
         return disciplinaRepository.save(disciplina);
     }
+
 
     public List<Disciplina> findAll(String filter) throws Exception {
 
