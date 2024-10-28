@@ -291,15 +291,15 @@ public class QuestaoService {
             throw new IllegalArgumentException("Assunto é obrigatório.");
         }
 
-        if (request.getBancaId() == null) {
+        if (request.getBancaId() == null && request.getTipo().isConcurso()) {
             throw new IllegalArgumentException("Banca é obrigatória.");
         }
 
-        if (request.getAno() == null) {
+        if (request.getAno() == null && !request.getTipo().isOAB()) {
             throw new IllegalArgumentException("Ano é obrigatório.");
         }
 
-        if (request.getEscolaridade() == null) {
+        if (request.getEscolaridade() == null && request.getTipo().isConcurso()) {
             throw new IllegalArgumentException("Escolaridade é obrigatória.");
         }
 
