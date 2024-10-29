@@ -43,20 +43,17 @@ public class StorageServiceImpl implements StorageService {
 
     @Override
     public List<File> list(String content, String folderId) throws IOException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'list'");
+        return googleDriveService.list("FOLDER", folderId);
     }
 
     @Override
     public void deleteEmptyFolder(String folderId) throws IOException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'deleteEmptyFolder'");
+        googleDriveService.deleteEmptyFolder(folderId);
     }
 
     @Override
     public String createFolder(String folderName, String parentFolder) throws IOException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'createFolder'");
+        return googleDriveService.createFolder(folderName, parentFolder);
     }
 
     @Override
