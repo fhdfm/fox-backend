@@ -2,12 +2,12 @@ package br.com.foxconcursos.domain;
 
 public enum TipoQuestao {
     
-    CONCURSO(1), OAB(2), ENEM(3);
+    CONCURSO(1), OAB(2), ENEM(3), MILITAR(4);
 
     private Integer codigo;
 
     TipoQuestao(Integer codigo) {
-        if (codigo == null || codigo < 1 || codigo > 3)
+        if (codigo == null || codigo < 1 || codigo > 4)
             throw new IllegalArgumentException("Código inválido: " + codigo);
 
         this.codigo = codigo;
@@ -27,5 +27,9 @@ public enum TipoQuestao {
 
     public boolean isEnem() {
         return this.codigo == 3;
+    }
+
+    public boolean isMilitar() {
+        return this.codigo == 4;
     }
 }

@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import br.com.foxconcursos.domain.Apostila;
+import br.com.foxconcursos.domain.Status;
 import br.com.foxconcursos.dto.ApostilaRequest;
 import br.com.foxconcursos.dto.ApostilaResponse;
 import br.com.foxconcursos.repositories.ApostilaRepository;
@@ -118,7 +119,8 @@ public class ApostilaController {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, 
                                                    "Apostila com o ID: " + id + " não foi encontrada."));
 
-        this.repository.delete(apostila);
+        apostila.setStatus(Status.INATIVO);                                                   
+        this.repository.save(apostila);
 
         return ResponseEntity.status(HttpStatus.OK).body("Apostila com o ID: " + id + " foi deletada com sucesso.");
 

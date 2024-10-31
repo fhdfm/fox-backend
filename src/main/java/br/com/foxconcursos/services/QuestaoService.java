@@ -60,6 +60,7 @@ public class QuestaoService {
                             i.nome as instituicao,
                             a2.nome as assunto,
                             b.nome as banca,
+                            em.nome as escola, 
                 """;
 
         if (isAluno)
@@ -75,6 +76,7 @@ public class QuestaoService {
                             LEFT JOIN assunto a2 ON q.assunto_id = a2.id
                             LEFT JOIN disciplinas d ON q.disciplina_id = d.id 
                             LEFT JOIN comentarios cm ON cm.questao_id = q.id
+                            LEFT JOIN escola_militar em ON q.escola_militar_id = q.id
                 """;
 
         if (isAluno)
@@ -130,10 +132,14 @@ public class QuestaoService {
             sql += " AND q.tipo = '" + questao.getTipo() + "' ";
         }
 
+        if (questao.getEscolaMilitarId() != null) {
+            sql += " AND q.escola_militar_id = '" + questao.getEscolaMilitarId() + "' ";
+        }
+
         sql += """
                         GROUP BY 
                             q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, q.numero_exame_oab, 
-                            c.nome, d.nome, i.nome, a2.nome, b.nome
+                            c.nome, d.nome, i.nome, a2.nome, b.nome, em.nome 
                 """;
 
         if (isAluno)
@@ -143,7 +149,7 @@ public class QuestaoService {
                     )
                     SELECT 
                         pq.qid, pq.enunciado, pq.numero_exame_oab, pq.ano, pq.uf, pq.escolaridade, pq.cidade,
-                        pq.cargo, pq.disciplina, pq.instituicao, pq.assunto, pq.banca,
+                        pq.cargo, pq.disciplina, pq.instituicao, pq.assunto, pq.banca, pq.escola
                         pq.comentario_count, a.id as aid, a.descricao, a.correta, a.letra
                 """;
 
@@ -188,6 +194,7 @@ public class QuestaoService {
                 }
                 qr.setComentarios(rs.getInt("comentario_count"));
                 qr.setNumeroExameOab(rs.getString("numero_exame_oab"));
+                qr.setEscolaMilitar(rs.getString("escola"));
                 qr.setAlternativas(new ArrayList<>());
                 questaoMap.put(questaoId, qr);
             }
@@ -255,6 +262,8 @@ public class QuestaoService {
         questao.setUf(request.getUf());
         questao.setCidade(request.getCidade());
         questao.setEscolaridade(request.getEscolaridade());
+        questao.setNumeroExameOab(request.getNumeroExameOab());
+        questao.setEscolaMilitarId(request.getEscolaMilitarId());
 
         this.questaoRepository.save(questao);
 
@@ -278,6 +287,8 @@ public class QuestaoService {
 
 
     private void validate(QuestaoRequest request) {
+
+        /* TODO: validar de acordo com o tipo */
 
         if (request.getEnunciado() == null || request.getEnunciado().trim().isEmpty()) {
             throw new IllegalArgumentException("Enunciado é obrigatória.");
@@ -474,6 +485,8 @@ public class QuestaoService {
                                c.id as cid,
                                d.id as did,
                                a2.id as a2id,
+                               em.nome as escola,
+                               q.numero_exame_oab,  
                 """;
 
         if (isAluno)
@@ -490,6 +503,7 @@ public class QuestaoService {
                                 left join assunto a2 on q.assunto_id = a2.id
                                 left join disciplinas d on q.disciplina_id = d.id
                                 LEFT JOIN comentarios cm ON cm.questao_id = q.id
+                                left join escola_militar em on em.id = q.escola_militar_id
                 """;
 
         if (isAluno)
@@ -499,7 +513,7 @@ public class QuestaoService {
                     where q.status = 'ATIVO' and q.id = ? 
                     group by q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, 
                     a.id, a.descricao, a.correta, a.letra, b.id, i.id, c.id, a2.id, d.id, 
-                    c.nome, d.nome, i.nome, a2.nome, b.nome 
+                    c.nome, d.nome, i.nome, a2.nome, b.nome, em.nome, q.numero_exame_oab
                 """;
 
         if (isAluno)
@@ -521,6 +535,7 @@ public class QuestaoService {
                     qr.setDisciplinaId(UUID.fromString(rs.getString("did")));
                     qr.setAssuntoId(UUID.fromString(rs.getString("a2id")));
                     qr.setAlternativas(new ArrayList<>());
+                    qr.setEscolaMilitar(rs.getString("escola"));
 
                     String uf = rs.getString("uf");
                     String cidade = rs.getString("cidade");
@@ -533,6 +548,8 @@ public class QuestaoService {
                     qr.setCidade(cidade != null && !cidade.trim().isEmpty() ? cidade : null);
                     qr.setInstituicaoId(instituicaoId != null && !instituicaoId.trim().isEmpty() ? UUID.fromString(instituicaoId) : null);
                     qr.setCargoId(cargoId != null && !cargoId.trim().isEmpty() ? UUID.fromString(cargoId) : null);
+
+                    qr.setNumeroExameOab(rs.getString("numero_exame_oab"));
 
 
                     if (isAluno) {

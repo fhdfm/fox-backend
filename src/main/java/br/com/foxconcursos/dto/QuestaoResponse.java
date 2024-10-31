@@ -26,6 +26,8 @@ public class QuestaoResponse {
     private int comentarios;
     private UUID alternativaSelecionadaId;
     private String numeroExameOab;
+    private UUID escolaMilitarId;
+    private String escolaMilitar;
 
 
     public QuestaoResponse() {  }
@@ -196,5 +198,21 @@ public class QuestaoResponse {
 
     public void setNumeroExameOab(String numeroExameOab) {
         this.numeroExameOab = numeroExameOab;
+    }
+
+    public void setEscolaMilitarId(UUID escolaMilitarId) {
+        this.escolaMilitarId = escolaMilitarId;
+    }
+
+    public UUID getEscolaMilitarId() {
+        return this.escolaMilitarId;
+    }
+
+    public void setEscolaMilitar(String escolaMilitar) {
+        this.escolaMilitar = escolaMilitar;
+    }
+
+    public String getEscolaMilitar() {
+        return this.escolaMilitar;
     }
 }

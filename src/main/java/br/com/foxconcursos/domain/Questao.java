@@ -26,6 +26,7 @@ public class Questao {
     private Status status;
     private TipoQuestao tipo;
     private String numeroExameOab;
+    private UUID escolaMilitarId;
     @Version
     private Integer version;
 
@@ -46,6 +47,7 @@ public class Questao {
         this.status = Status.ATIVO;
         this.numeroExameOab = request.getNumeroExameOab();
         this.tipo = request.getTipo();
+        this.escolaMilitarId = request.getEscolaMilitarId();
     }
 
     public UUID getId() {
@@ -158,6 +160,14 @@ public class Questao {
 
     public void setNumeroExameOab(String numeroExameOab) {
         this.numeroExameOab = numeroExameOab;
+    }
+
+    public void setEscolaMilitarId(UUID escolaMilitarId) {
+        this.escolaMilitarId = escolaMilitarId;
+    }
+
+    public UUID getEscolaMilitarId() {
+        return this.escolaMilitarId;
     }
 
 }

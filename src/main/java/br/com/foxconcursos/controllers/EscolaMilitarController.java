@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import br.com.foxconcursos.domain.EscolaMilitar;
+import br.com.foxconcursos.domain.Status;
 import br.com.foxconcursos.dto.EscolaMilitarRequest;
 import br.com.foxconcursos.dto.EscolaMilitarResponse;
 import br.com.foxconcursos.repositories.EscolaMilitarRepository;
@@ -117,8 +118,8 @@ public class EscolaMilitarController {
         EscolaMilitar escola = this.repository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, 
                                                    "Escola com o ID: " + id + " não foi encontrada."));
-
-        this.repository.delete(escola);
+        escola.setStatus(Status.INATIVO);
+        this.repository.save(escola);
 
         return ResponseEntity.status(HttpStatus.OK).body("Escola com o ID: " + id + " foi deletada com sucesso.");
 

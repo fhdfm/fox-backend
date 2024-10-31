@@ -18,6 +18,7 @@ public class FiltroQuestao {
     private Escolaridade escolaridade;
     private String numeroExameOab;
     private TipoQuestao tipo;
+    private UUID escolaMilitarId;
     
     public FiltroQuestao() {
     }
@@ -116,6 +117,14 @@ public class FiltroQuestao {
 
     public void setTipo(TipoQuestao tipo) {
         this.tipo = tipo;
+    }
+
+    public void setEscolaMilitarId(UUID escolaMilitarId) {
+        this.escolaMilitarId = escolaMilitarId;
+    }
+
+    public UUID getEscolaMilitarId() {
+        return this.escolaMilitarId;
     }
 
 }
