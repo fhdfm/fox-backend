@@ -333,6 +333,17 @@ CREATE TABLE youtube_tokens (
     refresh_token VARCHAR(255) NOT NULL
 );
 
+CREATE TABLE apostilas (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+    nome VARCHAR(50) NOT NULL,
+    descricao VARCHAR(255) NOT NULL,
+    imagem TEXT NOT NULL,
+    valor NUMERIC(10, 2) NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    version INT DEFAULT 0 NOT NULL
+);
+
+
 -- indices
 CREATE INDEX idx_respostas_questao_id ON respostas(questao_id);
 CREATE INDEX idx_respostas_usuario_id ON respostas(usuario_id);

@@ -7,6 +7,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Table;
 
+import br.com.foxconcursos.dto.ApostilaRequest;
 import br.com.foxconcursos.dto.ApostilaResponse;
 
 @Table("apostilas")
@@ -46,6 +47,15 @@ public class Apostila {
     public ApostilaResponse toAssembly() {
         return new ApostilaResponse(id, nome, descricao, imagem, valor, status);
     }
+
+    public void updateFromRequest(ApostilaRequest request) {
+        this.setNome(request.getNome());
+        this.setDescricao(request.getDescricao());
+        this.setImagem(request.getImagem());
+        this.setValor(request.getValor());
+        this.setStatus(request.getStatus());
+    }
+
 
     // Getters e setters
 
