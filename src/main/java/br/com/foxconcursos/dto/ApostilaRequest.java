@@ -28,15 +28,19 @@ public class ApostilaRequest {
         if (nome == null || nome.trim().isEmpty()) {
             throw new IllegalArgumentException("O campo 'nome' é obrigatório e não está preenchido.");
         }
+
         if (descricao == null || descricao.trim().isEmpty()) {
             throw new IllegalArgumentException("O campo 'descricao' é obrigatório e não está preenchido.");
         }
+
         if (imagem == null || imagem.trim().isEmpty()) {
             throw new IllegalArgumentException("O campo 'imagem' é obrigatório e não está preenchido.");
         }
+
         if (valor == null) {
             throw new IllegalArgumentException("O campo 'valor' é obrigatório e não está preenchido.");
         }
+        
         if (status == null) {
             throw new IllegalArgumentException("O campo 'status' é obrigatório e não está preenchido.");
         }

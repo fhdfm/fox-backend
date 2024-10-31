@@ -343,6 +343,14 @@ CREATE TABLE apostilas (
     version INT DEFAULT 0 NOT NULL
 );
 
+CREATE TABLE escola_militar (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4() UNIQUE NOT NULL,
+    nome VARCHAR(100) NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    version INT DEFAULT 0 NOT NULL
+);
+
+
 
 -- indices
 CREATE INDEX idx_respostas_questao_id ON respostas(questao_id);
