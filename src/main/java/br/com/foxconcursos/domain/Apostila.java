@@ -20,6 +20,9 @@ public class Apostila {
     private String imagem;
     private BigDecimal valor;
     private Status status;
+    private String cargo;
+    private String cidade;
+    private String uf;
     @Version
     private int version;
 
@@ -36,16 +39,19 @@ public class Apostila {
         this.status = status;
     }
 
-    public Apostila(String nome, String descricao, String imagem, BigDecimal valor, Status status) {
+    public Apostila(String nome, String descricao, String imagem, BigDecimal valor, Status status, String cargo, String cidade, String uf) {
         this.nome = nome;
         this.descricao = descricao;
         this.imagem = imagem;
         this.valor = valor;
         this.status = status;
+        this.cargo = cargo;
+        this.cidade = cidade;
+        this.uf = uf;
     }
 
     public ApostilaResponse toAssembly() {
-        return new ApostilaResponse(id, nome, descricao, imagem, valor, status);
+        return new ApostilaResponse(id, nome, descricao, imagem, valor, status, cargo, cidade, uf);
     }
 
     public void updateFromRequest(ApostilaRequest request) {
@@ -54,8 +60,15 @@ public class Apostila {
         this.setImagem(request.getImagem());
         this.setValor(request.getValor());
         this.setStatus(request.getStatus());
+        this.setUf(request.getUf());
+        this.setCidade(request.getCidade());
+        this.setCargo(request.getCargo());
     }
 
+    public void updateFromRequest(UUID id, ApostilaRequest request) {
+        this.id = id;
+        updateFromRequest(request);
+    }
 
     // Getters e setters
 
@@ -113,6 +126,30 @@ public class Apostila {
 
     public void setVersion(int version) {
         this.version = version;
+    }
+
+    public void setUf(String uf) {
+        this.uf = uf;
+    }
+
+    public String getUf() {
+        return this.uf;
+    }
+
+    public void setCidade(String cidade) {
+        this.cidade = cidade;
+    }
+
+    public String getCidade() {
+        return this.cidade;
+    }
+
+    public void setCargo(String cargo) {
+        this.cargo = cargo;
+    }
+
+    public String getCargo() {
+        return this.cargo;
     }
 
     @Override

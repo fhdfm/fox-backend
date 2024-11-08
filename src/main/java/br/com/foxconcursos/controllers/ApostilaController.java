@@ -65,7 +65,7 @@ public class ApostilaController {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, 
                                                        "Apostila com o ID: " + id + " não foi encontrada."));
 
-       apostila.updateFromRequest(request);
+       apostila.updateFromRequest(id, request);
 
         this.repository.save(apostila);
 

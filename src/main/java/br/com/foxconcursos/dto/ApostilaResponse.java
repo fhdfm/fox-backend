@@ -13,18 +13,25 @@ public class ApostilaResponse {
     private String imagem;
     private BigDecimal valor;
     private Status status;
+    private String cargo;
+    private String cidade;
+    private String uf;
 
     // Construtor vazio
     public ApostilaResponse() {}
 
     // Construtor completo
-    public ApostilaResponse(UUID id, String nome, String descricao, String imagem, BigDecimal valor, Status status) {
+    public ApostilaResponse(UUID id, String nome, String descricao, String imagem, 
+            BigDecimal valor, Status status, String cargo, String cidade, String uf) {
         this.id = id;
         this.nome = nome;
         this.descricao = descricao;
         this.imagem = imagem;
         this.valor = valor;
         this.status = status;
+        this.cargo = cargo;
+        this.cidade = cidade;
+        this.uf = uf;
     }
 
     // Getters e Setters
@@ -74,5 +81,29 @@ public class ApostilaResponse {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public void setCidade(String cidade) {
+        this.cidade = cidade;
+    }
+
+    public String getCidade() {
+        return this.cidade;
+    }
+
+    public void setUf(String uf) {
+        this.uf = uf;
+    }
+
+    public String getUf() {
+        return this.uf;
+    }
+
+    public void setCargo(String cargo) {
+        this.cargo = cargo;
+    }
+
+    public String getCargo() {
+        return this.cargo;
     }
 }    

@@ -344,7 +344,10 @@ CREATE TABLE apostilas (
     imagem TEXT NOT NULL,
     valor NUMERIC(10, 2) NOT NULL,
     status VARCHAR(20) NOT NULL,
-    version INT DEFAULT 0 NOT NULL
+    version INT DEFAULT 0 NOT NULL,
+    cargo VARCHAR(80) NOT NULL,
+    cidade VARCHAR(80),
+    uf VARCHAR(2)
 );
 
 CREATE TABLE escola_militar (

@@ -12,6 +12,9 @@ public class ApostilaRequest {
     private String imagem;
     private BigDecimal valor;
     private Status status;
+    private String cidade;
+    private String uf;
+    private String cargo;
 
     // Construtor vazio
     public ApostilaRequest() {}
@@ -40,6 +43,10 @@ public class ApostilaRequest {
         if (valor == null) {
             throw new IllegalArgumentException("O campo 'valor' é obrigatório e não está preenchido.");
         }
+
+        if (cargo == null || cargo.trim().isEmpty()) {
+            throw new IllegalArgumentException("O campo 'cargo' é obrigatório e não esta preenchido.");
+        }
         
         if (status == null) {
             throw new IllegalArgumentException("O campo 'status' é obrigatório e não está preenchido.");
@@ -47,7 +54,7 @@ public class ApostilaRequest {
     }
     
     public Apostila toModel() {
-        return new Apostila(nome, descricao, imagem, valor, status);
+        return new Apostila(nome, descricao, imagem, valor, status, cargo, cidade, uf);
     }
 
     // Getters e Setters
@@ -90,6 +97,30 @@ public class ApostilaRequest {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public void setCidade(String cidade) {
+        this.cidade = cidade;
+    }
+
+    public String getCidade() {
+        return this.cidade;
+    }
+
+    public void setUf(String uf) {
+        this.uf = uf;
+    }
+
+    public String getUf() {
+        return this.uf;
+    }
+
+    public void setCargo(String cargo)  {
+        this.cargo = cargo;
+    }
+
+    public String getCargo() {
+        return this.cargo;
     }
 
 }
