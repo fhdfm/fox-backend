@@ -28,6 +28,7 @@ public class QuestaoResponse {
     private String numeroExameOab;
     private UUID escolaMilitarId;
     private String escolaMilitar;
+    private String edicao;
 
 
     public QuestaoResponse() {  }
@@ -214,5 +215,13 @@ public class QuestaoResponse {
 
     public String getEscolaMilitar() {
         return this.escolaMilitar;
+    }
+
+    public void setEdicao(String edicao) {
+        this.edicao = edicao;
+    }
+
+    public String getEdicao() {
+        return this.edicao;
     }
 }

@@ -212,22 +212,23 @@ CREATE TABLE tarefas_agendadas (
 
 CREATE TABLE questoes (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
-    enunciado TEXT NOT NULL,               -- Comum para todos
+    enunciado TEXT NOT NULL,
     alternativa_correta CHAR(1),
-    disciplina_id UUID NOT NULL,           -- Comum para todos
-    assunto_id UUID NOT NULL,              -- Comum para todos
-    banca_id UUID,                         -- Presente para Concurso e ENEM, mas opcional para OAB
+    disciplina_id UUID NOT NULL,
+    assunto_id UUID NOT NULL,
+    banca_id UUID,
     instituicao_id UUID,
     cargo_id UUID,
-    ano INT,                               -- Presente para Concurso e ENEM, mas opcional para OAB
+    ano INT,
     uf VARCHAR(2),
     cidade VARCHAR(255),
     escolaridade VARCHAR(50),
-    status CHAR(1) NOT NULL,               -- Comum para todos
+    status CHAR(1) NOT NULL,
     version INT NOT NULL DEFAULT 0,
-    tipo INT NOT NULL DEFAULT 1,           -- Define o tipo da questão (1: Concurso, 2: OAB, 3: ENEM)
-    numero_exame_oab VARCHAR(20),                  -- Presente para OAB, mas não para os outros tipos
+    tipo INT NOT NULL DEFAULT 1,
+    numero_exame_oab VARCHAR(20),
     escola_militar_id UUID,
+    edicao VARCHAR(5), -- Novo campo adicionado, permitindo valores nulos
     CONSTRAINT fk_escola_militar
         FOREIGN KEY (escola_militar_id)
         REFERENCES escola_militar(id),
@@ -247,6 +248,7 @@ CREATE TABLE questoes (
         FOREIGN KEY(cargo_id) 
         REFERENCES cargo(id)
 );
+
 
 CREATE TABLE alternativas (
     id UUID PRIMARY key DEFAULT uuid_generate_v4() NOT null UNIQUE,

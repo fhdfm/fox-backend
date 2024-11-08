@@ -15,6 +15,7 @@ import br.com.foxconcursos.domain.Alternativa;
 import br.com.foxconcursos.domain.FiltroQuestao;
 import br.com.foxconcursos.domain.Questao;
 import br.com.foxconcursos.domain.Status;
+import br.com.foxconcursos.domain.TipoQuestao;
 import br.com.foxconcursos.domain.UsuarioLogado;
 import br.com.foxconcursos.dto.AlternativaRequest;
 import br.com.foxconcursos.dto.AlternativaResponse;
@@ -264,6 +265,7 @@ public class QuestaoService {
         questao.setEscolaridade(request.getEscolaridade());
         questao.setNumeroExameOab(request.getNumeroExameOab());
         questao.setEscolaMilitarId(request.getEscolaMilitarId());
+        questao.setEdicao(request.getEdicao());
 
         this.questaoRepository.save(questao);
 
@@ -285,13 +287,10 @@ public class QuestaoService {
         return id;
     }
 
-
-    private void validate(QuestaoRequest request) {
-
-        /* TODO: validar de acordo com o tipo */
-
-        if (request.getEnunciado() == null || request.getEnunciado().trim().isEmpty()) {
-            throw new IllegalArgumentException("Enunciado é obrigatória.");
+    private void validateMilitar(QuestaoRequest request) {
+        
+        if (request.getAno() == null && !request.getTipo().isOAB()) {
+            throw new IllegalArgumentException("Ano é obrigatório.");
         }
 
         if (request.getDisciplinaId() == null) {
@@ -302,16 +301,78 @@ public class QuestaoService {
             throw new IllegalArgumentException("Assunto é obrigatório.");
         }
 
-        if (request.getBancaId() == null && request.getTipo().isConcurso()) {
-            throw new IllegalArgumentException("Banca é obrigatória.");
+        if (request.getEscolaMilitarId() == null) {
+            throw new IllegalArgumentException("Escola militar é obrigatório.");
         }
 
+    }
+
+    private void validateEnem(QuestaoRequest request) {
+        
         if (request.getAno() == null && !request.getTipo().isOAB()) {
             throw new IllegalArgumentException("Ano é obrigatório.");
         }
 
-        if (request.getEscolaridade() == null && request.getTipo().isConcurso()) {
-            throw new IllegalArgumentException("Escolaridade é obrigatória.");
+        if (request.getDisciplinaId() == null) {
+            throw new IllegalArgumentException("Disciplina é obrigatória.");
+        }
+
+        if (request.getAssuntoId() == null) {
+            throw new IllegalArgumentException("Assunto é obrigatório.");
+        }
+
+    }
+
+    private void validateOab(QuestaoRequest request) {
+        
+        if (request.getDisciplinaId() == null) {
+            throw new IllegalArgumentException("Disciplina é obrigatória.");
+        }
+
+        if (request.getAssuntoId() == null) {
+            throw new IllegalArgumentException("Assunto é obrigatório.");
+        }        
+    }
+
+    private void validate(QuestaoRequest request) {
+        
+        TipoQuestao tipo = request.getTipo();
+
+        if (tipo == null) {
+            throw new IllegalArgumentException("Tipo da questão é obrigatório.");
+        }
+
+        if (tipo.isEnem())
+            validateEnem(request);
+        else if (tipo.isMilitar())
+            validateMilitar(request);
+        else if (tipo.isOAB())
+            validateOab(request);
+        else {
+
+            if (request.getEnunciado() == null || request.getEnunciado().trim().isEmpty()) {
+                throw new IllegalArgumentException("Enunciado é obrigatória.");
+            }
+
+            if (request.getDisciplinaId() == null) {
+                throw new IllegalArgumentException("Disciplina é obrigatória.");
+            }
+
+            if (request.getAssuntoId() == null) {
+                throw new IllegalArgumentException("Assunto é obrigatório.");
+            }
+
+            if (request.getBancaId() == null) {
+                throw new IllegalArgumentException("Banca é obrigatória.");
+            }
+
+            if (request.getAno() == null) {
+                throw new IllegalArgumentException("Ano é obrigatório.");
+            }
+
+            if (request.getEscolaridade() == null) {
+                throw new IllegalArgumentException("Escolaridade é obrigatória.");
+            }
         }
 
         if (request.getAlternativas() == null || request.getAlternativas().isEmpty()) {
@@ -486,7 +547,8 @@ public class QuestaoService {
                                d.id as did,
                                a2.id as a2id,
                                em.nome as escola,
-                               q.numero_exame_oab,  
+                               q.numero_exame_oab,
+                               q.edicao,  
                 """;
 
         if (isAluno)
@@ -513,7 +575,7 @@ public class QuestaoService {
                     where q.status = 'ATIVO' and q.id = ? 
                     group by q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, 
                     a.id, a.descricao, a.correta, a.letra, b.id, i.id, c.id, a2.id, d.id, 
-                    c.nome, d.nome, i.nome, a2.nome, b.nome, em.nome, q.numero_exame_oab
+                    c.nome, d.nome, i.nome, a2.nome, b.nome, em.nome, q.numero_exame_oab, q.edicao
                 """;
 
         if (isAluno)
@@ -550,6 +612,7 @@ public class QuestaoService {
                     qr.setCargoId(cargoId != null && !cargoId.trim().isEmpty() ? UUID.fromString(cargoId) : null);
 
                     qr.setNumeroExameOab(rs.getString("numero_exame_oab"));
+                    qr.setEdicao(rs.getString("edicao"));
 
 
                     if (isAluno) {

@@ -27,6 +27,7 @@ public class Questao {
     private TipoQuestao tipo;
     private String numeroExameOab;
     private UUID escolaMilitarId;
+    private String edicao;
     @Version
     private Integer version;
 
@@ -48,6 +49,7 @@ public class Questao {
         this.numeroExameOab = request.getNumeroExameOab();
         this.tipo = request.getTipo();
         this.escolaMilitarId = request.getEscolaMilitarId();
+        this.edicao = request.getEdicao();
     }
 
     public UUID getId() {
@@ -168,6 +170,14 @@ public class Questao {
 
     public UUID getEscolaMilitarId() {
         return this.escolaMilitarId;
+    }
+
+    public void setEdicao(String edicao) {
+        this.edicao = edicao;
+    }
+
+    public String getEdicao() {
+        return this.edicao;
     }
 
 }

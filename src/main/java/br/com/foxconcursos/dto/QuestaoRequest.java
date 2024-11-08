@@ -21,6 +21,7 @@ public class QuestaoRequest {
     private TipoQuestao tipo;
     private String numeroExameOab;
     private UUID escolaMilitarId;
+    private String edicao;
     private List<AlternativaRequest> alternativas;
 
     public QuestaoRequest() {
@@ -137,6 +138,14 @@ public class QuestaoRequest {
 
     public UUID getEscolaMilitarId() {
         return this.escolaMilitarId;
+    }
+
+    public String getEdicao() {
+        return this.edicao;
+    }
+
+    public void setEdicao(String edicao) {
+        this.edicao = edicao;
     }
 
 }
