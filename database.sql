@@ -359,7 +359,13 @@ CREATE TABLE escola_militar (
     version INT DEFAULT 0 NOT NULL
 );
 
-
+CREATE TABLE questao_assunto (
+    questao_id UUID NOT NULL,
+    assunto_id UUID NOT NULL,
+    PRIMARY KEY (questao_id, assunto_id),
+    FOREIGN KEY (questao_id) REFERENCES questoes(id) ON DELETE CASCADE,
+    FOREIGN KEY (assunto_id) REFERENCES assunto(id) ON DELETE CASCADE
+);
 
 -- indices
 CREATE INDEX idx_respostas_questao_id ON respostas(questao_id);

@@ -1,7 +1,5 @@
 package br.com.foxconcursos.dto;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
 import java.util.UUID;
 
 public class AssuntoResponse {

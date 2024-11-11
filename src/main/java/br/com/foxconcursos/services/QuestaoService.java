@@ -19,26 +19,32 @@ import br.com.foxconcursos.domain.TipoQuestao;
 import br.com.foxconcursos.domain.UsuarioLogado;
 import br.com.foxconcursos.dto.AlternativaRequest;
 import br.com.foxconcursos.dto.AlternativaResponse;
+import br.com.foxconcursos.dto.AssuntoResponse;
 import br.com.foxconcursos.dto.QuestaoRequest;
 import br.com.foxconcursos.dto.QuestaoResponse;
 import br.com.foxconcursos.dto.ResultadoResponse;
 import br.com.foxconcursos.repositories.AlternativaRepository;
+import br.com.foxconcursos.repositories.QuestaoAssuntoRepository;
 import br.com.foxconcursos.repositories.QuestaoRepository;
 import br.com.foxconcursos.util.SecurityUtil;
 
 @Service
 public class QuestaoService {
+    
     private final QuestaoRepository questaoRepository;
     private final AlternativaRepository alternativaRepository;
+    private final QuestaoAssuntoRepository questaoAssuntoRepository;
     private JdbcTemplate jdbcTemplate;
 
     public QuestaoService(QuestaoRepository questaoRepository,
                           AlternativaRepository alternativaRepository,
-                          JdbcTemplate jdbcTemplate) {
+                          JdbcTemplate jdbcTemplate, 
+                          QuestaoAssuntoRepository questaoAssuntoRepository) {
 
         this.questaoRepository = questaoRepository;
         this.alternativaRepository = alternativaRepository;
         this.jdbcTemplate = jdbcTemplate;
+        this.questaoAssuntoRepository = questaoAssuntoRepository;
 
     }
 
@@ -59,7 +65,7 @@ public class QuestaoService {
                             c.nome as cargo,
                             d.nome as disciplina,
                             i.nome as instituicao,
-                            a2.nome as assunto,
+                            STRING_AGG(DISTINCT a.id || ':' || a.nome, ', ') as assuntos,
                             b.nome as banca,
                             em.nome as escola, 
                 """;
@@ -74,6 +80,7 @@ public class QuestaoService {
                             LEFT JOIN bancas b ON q.banca_id = b.id
                             LEFT JOIN instituicao i ON q.instituicao_id = i.id
                             LEFT JOIN cargo c ON q.cargo_id = c.id
+                            LEFT JOIN questao_assunto qa ON q.id = qa.questao_id
                             LEFT JOIN assunto a2 ON q.assunto_id = a2.id
                             LEFT JOIN disciplinas d ON q.disciplina_id = d.id 
                             LEFT JOIN comentarios cm ON cm.questao_id = q.id
@@ -150,7 +157,7 @@ public class QuestaoService {
                     )
                     SELECT 
                         pq.qid, pq.enunciado, pq.numero_exame_oab, pq.ano, pq.uf, pq.escolaridade, pq.cidade,
-                        pq.cargo, pq.disciplina, pq.instituicao, pq.assunto, pq.banca, pq.escola,
+                        pq.cargo, pq.disciplina, pq.instituicao, pq.assuntos, pq.banca, pq.escola,
                         pq.comentario_count, a.id as aid, a.descricao, a.correta, a.letra
                 """;
 
@@ -188,7 +195,23 @@ public class QuestaoService {
                 qr.setUf(rs.getString("uf"));
                 qr.setDisciplina(rs.getString("disciplina"));
                 qr.setCargo(rs.getString("cargo"));
-                qr.setAssunto(rs.getString("assunto"));
+                
+                List<AssuntoResponse> assuntosList = new ArrayList<>();
+                String assuntosStr = rs.getString("assuntos");
+                if (assuntosStr != null) {
+                    String[] assuntosArray = assuntosStr.split(", ");
+                    for (String assuntoPair : assuntosArray) {
+                        String[] parts = assuntoPair.split(":");
+                        AssuntoResponse assuntoResponse = new AssuntoResponse();
+                        assuntoResponse.setId(UUID.fromString(parts[0]));
+                        assuntoResponse.setNome(parts[1]);
+                        assuntosList.add(assuntoResponse);
+                    }
+                }
+
+                
+                qr.setAssuntos(assuntosList);
+                
                 if (isAluno) {
                     String acerto = rs.getObject("acerto") != null ? (rs.getBoolean("acerto") ? "true" : "false") : null;
                     qr.setAcerto(acerto);
@@ -234,6 +257,9 @@ public class QuestaoService {
         questao = this.questaoRepository.save(questao);
 
         UUID questaoId = questao.getId();
+        UUID assuntoId = request.getAssuntoId();
+
+        this.questaoAssuntoRepository.save(questaoId, assuntoId);
 
         List<AlternativaRequest> alternativas = request.getAlternativas();
         for (AlternativaRequest ar : alternativas) {
@@ -255,7 +281,6 @@ public class QuestaoService {
 
         questao.setEnunciado(request.getEnunciado());
         questao.setDisciplinaId(request.getDisciplinaId());
-        questao.setAssuntoId(request.getAssuntoId());
         questao.setBancaId(request.getBancaId());
         questao.setInstituicaoId(request.getInstituicaoId());
         questao.setCargoId(request.getCargoId());
@@ -268,6 +293,8 @@ public class QuestaoService {
         questao.setEdicao(request.getEdicao());
 
         this.questaoRepository.save(questao);
+
+        this.questaoAssuntoRepository.save(id, request.getAssuntoId());
 
         List<AlternativaRequest> alternativas = request.getAlternativas();
         for (AlternativaRequest ar : alternativas) {
@@ -549,6 +576,7 @@ public class QuestaoService {
                                em.nome as escola,
                                q.numero_exame_oab,
                                q.edicao,  
+                               STRING_AGG(DISTINCT a2.id || ':' || a2.nome, ', ') AS assuntos, 
                 """;
 
         if (isAluno)
@@ -562,6 +590,7 @@ public class QuestaoService {
                                 left join bancas b on q.banca_id = b.id
                                 left join instituicao i on q.instituicao_id = i.id
                                 left join cargo c on q.cargo_id = c.id
+                                LEFT JOIN questao_assunto qa ON q.id = qa.questao_id
                                 left join assunto a2 on q.assunto_id = a2.id
                                 left join disciplinas d on q.disciplina_id = d.id
                                 LEFT JOIN comentarios cm ON cm.questao_id = q.id
@@ -595,7 +624,6 @@ public class QuestaoService {
                     qr.setAno(rs.getInt("ano"));
                     qr.setBancaId(UUID.fromString(rs.getString("bid")));
                     qr.setDisciplinaId(UUID.fromString(rs.getString("did")));
-                    qr.setAssuntoId(UUID.fromString(rs.getString("a2id")));
                     qr.setAlternativas(new ArrayList<>());
                     qr.setEscolaMilitar(rs.getString("escola"));
 
@@ -613,6 +641,26 @@ public class QuestaoService {
 
                     qr.setNumeroExameOab(rs.getString("numero_exame_oab"));
                     qr.setEdicao(rs.getString("edicao"));
+
+
+                    List<AssuntoResponse> assuntosList = new ArrayList<>();
+                    String assuntosStr = rs.getString("assuntos");
+                    if (assuntosStr != null) {
+                        String[] assuntosArray = assuntosStr.split(", ");
+                        for (String assuntoPair : assuntosArray) {
+                            String[] parts = assuntoPair.split(":");
+                            if (parts.length == 2) {
+                                AssuntoResponse assunto = new AssuntoResponse();
+                                assunto.setId(UUID.fromString(parts[0]));
+                                assunto.setNome(parts[1]);
+                                assuntosList.add(assunto);
+                                
+                                
+                                qr.setAssuntoId(UUID.fromString(parts[0]));
+                            }
+                        }
+                    }
+                    qr.setAssuntos(assuntosList);
 
 
                     if (isAluno) {

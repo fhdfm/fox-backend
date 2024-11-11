@@ -15,7 +15,6 @@ public class Questao {
     private UUID id;
     private String enunciado;
     private UUID disciplinaId;
-    private UUID assuntoId;
     private UUID bancaId;
     private UUID instituicaoId;
     private UUID cargoId;
@@ -37,7 +36,6 @@ public class Questao {
     public Questao(QuestaoRequest request) {
         this.enunciado = request.getEnunciado();
         this.disciplinaId = request.getDisciplinaId();
-        this.assuntoId = request.getAssuntoId();
         this.bancaId = request.getBancaId();
         this.instituicaoId = request.getInstituicaoId();
         this.cargoId = request.getCargoId();
@@ -74,14 +72,6 @@ public class Questao {
 
     public UUID getDisciplinaId() {
         return this.disciplinaId;
-    }
-
-    public void setAssuntoId(UUID assuntoId) {
-        this.assuntoId = assuntoId;
-    }
-
-    public UUID getAssuntoId() {
-        return this.assuntoId;
     }
 
     public void setBancaId(UUID bancaId) {

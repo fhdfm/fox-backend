@@ -21,6 +21,7 @@ public class QuestaoResponse {
     private String cargo;
     private UUID assuntoId;
     private String assunto;
+    private List<AssuntoResponse> assuntos;
     private String acerto;
     private List<AlternativaResponse> alternativas;
     private int comentarios;
@@ -154,7 +155,7 @@ public class QuestaoResponse {
     }
 
     public String getAssunto() {
-        return assunto;
+        return assuntos.get(0).getId().toString();
     }
 
     public void setAssunto(String assunto) {
@@ -223,5 +224,13 @@ public class QuestaoResponse {
 
     public String getEdicao() {
         return this.edicao;
+    }
+
+    public void setAssuntos(List<AssuntoResponse> assuntos) {
+        this.assuntos = assuntos;
+    }
+
+    public List<AssuntoResponse> getAssuntos() {
+        return this.assuntos;
     }
 }
