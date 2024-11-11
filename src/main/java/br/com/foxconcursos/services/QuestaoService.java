@@ -65,7 +65,7 @@ public class QuestaoService {
                             c.nome as cargo,
                             d.nome as disciplina,
                             i.nome as instituicao,
-                            STRING_AGG(DISTINCT a.id || ':' || a.nome, ', ') as assuntos,
+                            STRING_AGG(DISTINCT a2.id || ':' || a2.nome, ', ') AS assuntos, 
                             b.nome as banca,
                             em.nome as escola, 
                 """;
@@ -81,7 +81,7 @@ public class QuestaoService {
                             LEFT JOIN instituicao i ON q.instituicao_id = i.id
                             LEFT JOIN cargo c ON q.cargo_id = c.id
                             LEFT JOIN questao_assunto qa ON q.id = qa.questao_id
-                            LEFT JOIN assunto a2 ON q.assunto_id = a2.id
+                            LEFT JOIN assunto a2 ON qa.assunto_id = a2.id
                             LEFT JOIN disciplinas d ON q.disciplina_id = d.id 
                             LEFT JOIN comentarios cm ON cm.questao_id = q.id
                             LEFT JOIN escola_militar em ON q.escola_militar_id = q.id
@@ -93,7 +93,7 @@ public class QuestaoService {
         sql += " WHERE q.status = 'ATIVO'";
 
         if (questao.getAssuntoId() != null && !questao.getAssuntoId().isEmpty()) {
-            sql += " AND q.assunto_id IN (" + listToString(questao.getAssuntoId()) + ") ";
+            sql += " AND qa.assunto_id IN (" + listToString(questao.getAssuntoId()) + ") ";
         }
 
         if (questao.getAno() != null) {
