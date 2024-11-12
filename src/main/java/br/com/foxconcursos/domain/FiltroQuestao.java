@@ -17,114 +17,122 @@ public class FiltroQuestao {
     private String cidade;
     private Escolaridade escolaridade;
     private String numeroExameOab;
+    private String edicao;
     private TipoQuestao tipo;
     private UUID escolaMilitarId;
     
     public FiltroQuestao() {
     }
-    
+
     public String getEnunciado() {
-        return this.enunciado;
+        return enunciado;
     }
 
     public void setEnunciado(String enunciado) {
         this.enunciado = enunciado;
     }
 
+    public List<UUID> getDisciplinaId() {
+        return disciplinaId;
+    }
+
     public void setDisciplinaId(List<UUID> disciplinaId) {
         this.disciplinaId = disciplinaId;
     }
 
-    public List<UUID> getDisciplinaId() {
-        return this.disciplinaId;
+    public List<UUID> getAssuntoId() {
+        return assuntoId;
     }
 
     public void setAssuntoId(List<UUID> assuntoId) {
         this.assuntoId = assuntoId;
     }
 
-    public List<UUID> getAssuntoId() {
-        return this.assuntoId;
+    public UUID getBancaId() {
+        return bancaId;
     }
 
     public void setBancaId(UUID bancaId) {
         this.bancaId = bancaId;
     }
 
-    public UUID getBancaId() {
-        return this.bancaId;
+    public UUID getInstituicaoId() {
+        return instituicaoId;
     }
 
     public void setInstituicaoId(UUID instituicaoId) {
         this.instituicaoId = instituicaoId;
     }
 
-    public UUID getInstituicaoId() {
-        return this.instituicaoId;
+    public UUID getCargoId() {
+        return cargoId;
     }
 
     public void setCargoId(UUID cargoId) {
         this.cargoId = cargoId;
     }
 
-    public UUID getCargoId() {
-        return this.cargoId;
+    public String getAno() {
+        return ano;
     }
 
     public void setAno(String ano) {
         this.ano = ano;
     }
 
-    public String getAno() {
-        return this.ano;
+    public String getUf() {
+        return uf;
     }
 
     public void setUf(String uf) {
         this.uf = uf;
     }
 
-    public String getUf() {
-        return this.uf;
+    public String getCidade() {
+        return cidade;
     }
 
     public void setCidade(String cidade) {
         this.cidade = cidade;
     }
 
-    public String getCidade() {
-        return this.cidade;
-    }
-
     public Escolaridade getEscolaridade() {
-        return this.escolaridade;
+        return escolaridade;
     }
 
     public void setEscolaridade(Escolaridade escolaridade) {
         this.escolaridade = escolaridade;
     }
-    
+
     public String getNumeroExameOab() {
-        return this.numeroExameOab;
+        return numeroExameOab;
     }
 
     public void setNumeroExameOab(String numeroExameOab) {
         this.numeroExameOab = numeroExameOab;
     }
 
+    public String getEdicao() {
+        return edicao;
+    }
+
+    public void setEdicao(String edicao) {
+        this.edicao = edicao;
+    }
+
     public TipoQuestao getTipo() {
-        return this.tipo;
+        return tipo;
     }
 
     public void setTipo(TipoQuestao tipo) {
         this.tipo = tipo;
     }
 
+    public UUID getEscolaMilitarId() {
+        return escolaMilitarId;
+    }
+
     public void setEscolaMilitarId(UUID escolaMilitarId) {
         this.escolaMilitarId = escolaMilitarId;
     }
-
-    public UUID getEscolaMilitarId() {
-        return this.escolaMilitarId;
-    }
-
 }

@@ -65,7 +65,7 @@ public class QuestaoService {
                             c.nome as cargo,
                             d.nome as disciplina,
                             i.nome as instituicao,
-                            STRING_AGG(DISTINCT a2.id || ':' || a2.nome, ', ') AS assuntos, 
+                            STRING_AGG(DISTINCT a2.id || ':' || a2.nome, '###$### ') AS assuntos, 
                             b.nome as banca,
                             em.nome as escola, 
                 """;
@@ -199,7 +199,7 @@ public class QuestaoService {
                 List<AssuntoResponse> assuntosList = new ArrayList<>();
                 String assuntosStr = rs.getString("assuntos");
                 if (assuntosStr != null) {
-                    String[] assuntosArray = assuntosStr.split(", ");
+                    String[] assuntosArray = assuntosStr.split("###$### ");
                     for (String assuntoPair : assuntosArray) {
                         String[] parts = assuntoPair.split(":");
                         AssuntoResponse assuntoResponse = new AssuntoResponse();
@@ -547,6 +547,10 @@ public class QuestaoService {
             sql += " and q.instituicao_id = '" + questao.getInstituicaoId() + "' ";
         }
 
+        if (questao.getTipo() != null) {
+            sql += " and q.tipo = '" + questao.getTipo() + "' ";
+        }
+
         int count = this.jdbcTemplate.queryForObject(sql, Integer.class);
 
         return count;
@@ -576,7 +580,7 @@ public class QuestaoService {
                                em.nome as escola,
                                q.numero_exame_oab,
                                q.edicao,  
-                               STRING_AGG(DISTINCT a2.id || ':' || a2.nome, ', ') AS assuntos, 
+                               STRING_AGG(DISTINCT a2.id || ':' || a2.nome, '###$### ') AS assuntos, 
                 """;
 
         if (isAluno)
@@ -646,7 +650,7 @@ public class QuestaoService {
                     List<AssuntoResponse> assuntosList = new ArrayList<>();
                     String assuntosStr = rs.getString("assuntos");
                     if (assuntosStr != null) {
-                        String[] assuntosArray = assuntosStr.split(", ");
+                        String[] assuntosArray = assuntosStr.split("###$### ");
                         for (String assuntoPair : assuntosArray) {
                             String[] parts = assuntoPair.split(":");
                             if (parts.length == 2) {

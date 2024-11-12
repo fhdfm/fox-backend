@@ -60,7 +60,7 @@ public class EscolaMilitarController {
         return ResponseEntity.ok(escola);
     }
 
-    @GetMapping({"/api/admin/escola", "/public/escola"})
+    @GetMapping( "/public/escola")
     public ResponseEntity<List<EscolaMilitar>> listar(@RequestParam(required = false) String filter) throws Exception {
 
         if (filter == null || filter.isEmpty())
