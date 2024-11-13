@@ -1,36 +1,20 @@
 package br.com.foxconcursos.services;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import br.com.foxconcursos.domain.Alternativa;
-import br.com.foxconcursos.domain.FiltroQuestao;
-import br.com.foxconcursos.domain.Questao;
-import br.com.foxconcursos.domain.Status;
-import br.com.foxconcursos.domain.TipoQuestao;
-import br.com.foxconcursos.domain.UsuarioLogado;
-import br.com.foxconcursos.dto.AlternativaRequest;
-import br.com.foxconcursos.dto.AlternativaResponse;
-import br.com.foxconcursos.dto.AssuntoResponse;
-import br.com.foxconcursos.dto.QuestaoRequest;
-import br.com.foxconcursos.dto.QuestaoResponse;
-import br.com.foxconcursos.dto.ResultadoResponse;
+import br.com.foxconcursos.domain.*;
+import br.com.foxconcursos.dto.*;
 import br.com.foxconcursos.repositories.AlternativaRepository;
 import br.com.foxconcursos.repositories.QuestaoAssuntoRepository;
 import br.com.foxconcursos.repositories.QuestaoRepository;
 import br.com.foxconcursos.util.SecurityUtil;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
 
 @Service
 public class QuestaoService {
-    
+
     private final QuestaoRepository questaoRepository;
     private final AlternativaRepository alternativaRepository;
     private final QuestaoAssuntoRepository questaoAssuntoRepository;
@@ -38,7 +22,7 @@ public class QuestaoService {
 
     public QuestaoService(QuestaoRepository questaoRepository,
                           AlternativaRepository alternativaRepository,
-                          JdbcTemplate jdbcTemplate, 
+                          JdbcTemplate jdbcTemplate,
                           QuestaoAssuntoRepository questaoAssuntoRepository) {
 
         this.questaoRepository = questaoRepository;
@@ -195,7 +179,7 @@ public class QuestaoService {
                 qr.setUf(rs.getString("uf"));
                 qr.setDisciplina(rs.getString("disciplina"));
                 qr.setCargo(rs.getString("cargo"));
-                
+
                 List<AssuntoResponse> assuntosList = new ArrayList<>();
                 String assuntosStr = rs.getString("assuntos");
                 if (assuntosStr != null) {
@@ -209,9 +193,9 @@ public class QuestaoService {
                     }
                 }
 
-                
+
                 qr.setAssuntos(assuntosList);
-                
+
                 if (isAluno) {
                     String acerto = rs.getObject("acerto") != null ? (rs.getBoolean("acerto") ? "true" : "false") : null;
                     qr.setAcerto(acerto);
@@ -315,7 +299,7 @@ public class QuestaoService {
     }
 
     private void validateMilitar(QuestaoRequest request) {
-        
+
         if (request.getAno() == null && !request.getTipo().isOAB()) {
             throw new IllegalArgumentException("Ano é obrigatório.");
         }
@@ -335,7 +319,7 @@ public class QuestaoService {
     }
 
     private void validateEnem(QuestaoRequest request) {
-        
+
         if (request.getAno() == null && !request.getTipo().isOAB()) {
             throw new IllegalArgumentException("Ano é obrigatório.");
         }
@@ -351,18 +335,18 @@ public class QuestaoService {
     }
 
     private void validateOab(QuestaoRequest request) {
-        
+
         if (request.getDisciplinaId() == null) {
             throw new IllegalArgumentException("Disciplina é obrigatória.");
         }
 
         if (request.getAssuntoId() == null) {
             throw new IllegalArgumentException("Assunto é obrigatório.");
-        }        
+        }
     }
 
     private void validate(QuestaoRequest request) {
-        
+
         TipoQuestao tipo = request.getTipo();
 
         if (tipo == null) {
@@ -502,11 +486,13 @@ public class QuestaoService {
 
     public int getRecordCount(FiltroQuestao questao) {
         String sql = """
-                    select count(q.id) from questoes q where q.status = 'ATIVO' 
+                    select count(q.id) from questoes q 
+                    LEFT JOIN questao_assunto qa ON q.id = qa.questao_id
+                    where q.status = 'ATIVO' 
                 """;
 
         if (questao.getAssuntoId() != null && !questao.getAssuntoId().isEmpty()) {
-            sql += " and q.assunto_id in ("
+            sql += " and qa.assunto_id in ("
                     + listToString(questao.getAssuntoId()) + ") ";
         }
 
@@ -658,8 +644,8 @@ public class QuestaoService {
                                 assunto.setId(UUID.fromString(parts[0]));
                                 assunto.setNome(parts[1]);
                                 assuntosList.add(assunto);
-                                
-                                
+
+
                                 qr.setAssuntoId(UUID.fromString(parts[0]));
                             }
                         }
