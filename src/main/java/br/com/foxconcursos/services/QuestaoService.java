@@ -588,10 +588,10 @@ public class QuestaoService {
                                 left join bancas b on q.banca_id = b.id
                                 left join instituicao i on q.instituicao_id = i.id
                                 left join cargo c on q.cargo_id = c.id
-                                LEFT JOIN questao_assunto qa ON q.id = qa.questao_id
-                                left join assunto a2 on q.assunto_id = a2.id
+                                left join questao_assunto qa ON q.id = qa.questao_id
+                                left join assunto a2 on qa.assunto_id = a2.id
                                 left join disciplinas d on q.disciplina_id = d.id
-                                LEFT JOIN comentarios cm ON cm.questao_id = q.id
+                                left join comentarios cm ON cm.questao_id = q.id
                                 left join escola_militar em on em.id = q.escola_militar_id
                 """;
 
@@ -620,7 +620,7 @@ public class QuestaoService {
                     qr.setEnunciado(rs.getString("enunciado"));
                     qr.setEscolaridade(rs.getString("escolaridade"));
                     qr.setAno(rs.getInt("ano"));
-                    qr.setBancaId(UUID.fromString(rs.getString("bid")));
+//                    qr.setBancaId(UUID.fromString(rs.getString("bid")));
                     qr.setDisciplinaId(UUID.fromString(rs.getString("did")));
                     qr.setAlternativas(new ArrayList<>());
                     qr.setEscolaMilitar(rs.getString("escola"));
@@ -630,12 +630,14 @@ public class QuestaoService {
                     String instituicaoId = rs.getString("iid");
                     String cargoId = rs.getString("cid");
                     String comentarios = rs.getString("comentario_count");
+                    String banca = rs.getString("bid");
 
                     qr.setComentarios(comentarios != null ? Integer.valueOf(comentarios) : 0);
                     qr.setUf(uf != null && !uf.trim().isEmpty() ? uf : null);
                     qr.setCidade(cidade != null && !cidade.trim().isEmpty() ? cidade : null);
                     qr.setInstituicaoId(instituicaoId != null && !instituicaoId.trim().isEmpty() ? UUID.fromString(instituicaoId) : null);
                     qr.setCargoId(cargoId != null && !cargoId.trim().isEmpty() ? UUID.fromString(cargoId) : null);
+                    qr.setBancaId(banca != null && !banca.trim().isEmpty() ? UUID.fromString(banca) : null);
 
                     qr.setNumeroExameOab(rs.getString("numero_exame_oab"));
                     qr.setEdicao(rs.getString("edicao"));
