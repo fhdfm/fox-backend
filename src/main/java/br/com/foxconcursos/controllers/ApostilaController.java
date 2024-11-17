@@ -95,9 +95,9 @@ public class ApostilaController {
         Apostila apostilaFilter = FoxUtils.criarObjetoDinamico(filter, Apostila.class);
 
         ExampleMatcher matcher = ExampleMatcher.matching()
-            .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING) // Correspondência parcial
-            .withIgnoreCase() // Ignorar case
-            .withIgnoreNullValues(); // Ignorar valores nulos
+            .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING)
+            .withIgnoreCase()
+            .withIgnoreNullValues();
             
         Example<Apostila> example = Example.of(apostilaFilter, matcher);
 

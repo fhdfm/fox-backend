@@ -68,7 +68,7 @@ public class QuestaoService {
                             LEFT JOIN assunto a2 ON qa.assunto_id = a2.id
                             LEFT JOIN disciplinas d ON q.disciplina_id = d.id 
                             LEFT JOIN comentarios cm ON cm.questao_id = q.id
-                            LEFT JOIN escola_militar em ON q.escola_militar_id = q.id
+                            LEFT JOIN escola_militar em ON q.escola_militar_id = em.id
                 """;
 
         if (isAluno)
@@ -535,6 +535,14 @@ public class QuestaoService {
 
         if (questao.getTipo() != null) {
             sql += " and q.tipo = '" + questao.getTipo() + "' ";
+        }
+
+        if (questao.getNumeroExameOab() != null) {
+            sql += " and q.numero_exame_oab = '" + questao.getNumeroExameOab() + "' ";
+        }
+
+        if (questao.getEscolaMilitarId() != null) {
+            sql += " and q.escola_militar_id = '" + questao.getEscolaMilitarId() + "' ";
         }
 
         int count = this.jdbcTemplate.queryForObject(sql, Integer.class);

@@ -11,6 +11,7 @@ public class Cargo {
     @Id
     private UUID id;
     private String nome;
+    private TipoQuestao tipo;
 
     public UUID getId() {
         return id;
@@ -28,4 +29,11 @@ public class Cargo {
         this.nome = nome;
     }
 
+    public TipoQuestao getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(TipoQuestao tipo) {
+        this.tipo = tipo;
+    }
 }

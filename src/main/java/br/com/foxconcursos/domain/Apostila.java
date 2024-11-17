@@ -120,14 +120,6 @@ public class Apostila {
         this.status = status;
     }
 
-    public int getVersion() {
-        return version;
-    }
-
-    public void setVersion(int version) {
-        this.version = version;
-    }
-
     public void setUf(String uf) {
         this.uf = uf;
     }
@@ -160,8 +152,7 @@ public class Apostila {
                 ", descricao='" + descricao + '\'' +
                 ", imagem='" + imagem + '\'' +
                 ", valor=" + valor +
-                ", status='" + status + '\'' +
-                ", version=" + version +
+                ", status='" + status +
                 '}';
     }
 }
