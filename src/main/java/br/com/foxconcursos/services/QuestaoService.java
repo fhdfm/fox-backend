@@ -45,6 +45,7 @@ public class QuestaoService {
                             q.uf,
                             q.escolaridade,
                             q.numero_exame_oab,
+                            q.tipo_prova_enem,
                             q.cidade,
                             c.nome as cargo,
                             d.nome as disciplina,
@@ -128,10 +129,14 @@ public class QuestaoService {
             sql += " AND q.escola_militar_id = '" + questao.getEscolaMilitarId() + "' ";
         }
 
+        if (questao.getTipoProvaEnem() != null) {
+            sql += " AND q.tipo_prova_enem = '" + questao.getTipoProvaEnem() + "' ";
+        }
+
         sql += """
                         GROUP BY 
                             q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, q.numero_exame_oab, 
-                            c.nome, d.nome, i.nome, a2.nome, b.nome, em.nome 
+                            c.nome, d.nome, i.nome, a2.nome, b.nome, em.nome, q.tipo_prova_enem
                 """;
 
         if (isAluno)
@@ -142,7 +147,7 @@ public class QuestaoService {
                     SELECT 
                         pq.qid, pq.enunciado, pq.numero_exame_oab, pq.ano, pq.uf, pq.escolaridade, pq.cidade,
                         pq.cargo, pq.disciplina, pq.instituicao, pq.assuntos, pq.banca, pq.escola,
-                        pq.comentario_count, a.id as aid, a.descricao, a.correta, a.letra
+                        pq.comentario_count, pq.tipo_prova_enem, a.id as aid, a.descricao, a.correta, a.letra
                 """;
 
         if (isAluno)
@@ -202,6 +207,7 @@ public class QuestaoService {
                 }
                 qr.setComentarios(rs.getInt("comentario_count"));
                 qr.setNumeroExameOab(rs.getString("numero_exame_oab"));
+                qr.setTipoProvaEnem(rs.getString("tipo_prova_enem"));
                 qr.setEscolaMilitar(rs.getString("escola"));
                 qr.setAlternativas(new ArrayList<>());
                 questaoMap.put(questaoId, qr);
@@ -545,6 +551,10 @@ public class QuestaoService {
             sql += " and q.escola_militar_id = '" + questao.getEscolaMilitarId() + "' ";
         }
 
+        if (questao.getTipoProvaEnem() != null) {
+            sql += " and q.tipo_prova_enem = '" + questao.getTipoProvaEnem() + "' ";
+        }
+
         int count = this.jdbcTemplate.queryForObject(sql, Integer.class);
 
         return count;
@@ -640,7 +650,7 @@ public class QuestaoService {
                     qr.setBancaId(banca != null && !banca.trim().isEmpty() ? UUID.fromString(banca) : null);
 
                     qr.setNumeroExameOab(rs.getString("numero_exame_oab"));
-                    qr.setTipoProvaEnem(rs.getString("tipoProvaEnem"));
+                    qr.setTipoProvaEnem(rs.getString("tipo_prova_enem"));
 
 
                     List<AssuntoResponse> assuntosList = new ArrayList<>();
