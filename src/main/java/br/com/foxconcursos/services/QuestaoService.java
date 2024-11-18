@@ -583,7 +583,7 @@ public class QuestaoService {
                                a2.id as a2id,
                                em.nome as escola,
                                q.numero_exame_oab,
-                               q.tipo_prova_enem as tipoProvaEnem,  
+                               q.tipo_prova_enem ,  
                                STRING_AGG(DISTINCT a2.id || ':' || a2.nome, '###$### ') AS assuntos, 
                 """;
 
@@ -612,7 +612,7 @@ public class QuestaoService {
                     where q.status = 'ATIVO' and q.id = ? 
                     group by q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, 
                     a.id, a.descricao, a.correta, a.letra, b.id, i.id, c.id, a2.id, d.id, 
-                    c.nome, d.nome, i.nome, a2.nome, b.nome, em.nome, q.numero_exame_oab, q.tipoProvaEnem
+                    c.nome, d.nome, i.nome, a2.nome, b.nome, em.nome, q.numero_exame_oab, q.tipo_prova_enem
                 """;
 
         if (isAluno)
