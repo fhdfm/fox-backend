@@ -56,7 +56,7 @@ public class ApostilaController {
     }
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
-    @PutMapping("/api/admin/apostilas")
+    @PutMapping("/api/admin/apostilas/{id}")
     public ResponseEntity<String> update(@PathVariable UUID id, @RequestBody ApostilaRequest request) {
 
         request.validateFields();
@@ -119,10 +119,10 @@ public class ApostilaController {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, 
                                                    "Apostila com o ID: " + id + " não foi encontrada."));
 
-        apostila.setStatus(Status.INATIVO);                                                   
-        this.repository.save(apostila);
+        this.repository.deleteById(apostila.getId());
+        return ResponseEntity.status(HttpStatus.OK).body("Apostila deletada com sucesso.");
 
-        return ResponseEntity.status(HttpStatus.OK).body("Apostila com o ID: " + id + " foi deletada com sucesso.");
+//        return ResponseEntity.status(HttpStatus.OK).body("Apostila com o ID: " + id + " foi deletada com sucesso.");
 
     }
 
