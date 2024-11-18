@@ -17,7 +17,7 @@ public class FiltroQuestao {
     private String cidade;
     private Escolaridade escolaridade;
     private String numeroExameOab;
-    private String edicao;
+    private String tipoProvaEnem;
     private TipoQuestao tipo;
     private UUID escolaMilitarId;
     
@@ -112,12 +112,12 @@ public class FiltroQuestao {
         this.numeroExameOab = numeroExameOab;
     }
 
-    public String getEdicao() {
-        return edicao;
+    public String getTipoProvaEnem() {
+        return tipoProvaEnem;
     }
 
-    public void setEdicao(String edicao) {
-        this.edicao = edicao;
+    public void setTipoProvaEnem(String tipoProvaEnem) {
+        this.tipoProvaEnem = tipoProvaEnem;
     }
 
     public TipoQuestao getTipo() {

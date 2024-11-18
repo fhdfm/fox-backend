@@ -228,7 +228,7 @@ CREATE TABLE questoes (
     tipo INT NOT NULL DEFAULT 1,
     numero_exame_oab VARCHAR(20),
     escola_militar_id UUID,
-    edicao VARCHAR(5), -- Novo campo adicionado, permitindo valores nulos
+    tipo_prova_enem VARCHAR(50), -- Novo campo adicionado, permitindo valores nulos
     CONSTRAINT fk_escola_militar
         FOREIGN KEY (escola_militar_id)
         REFERENCES escola_militar(id),

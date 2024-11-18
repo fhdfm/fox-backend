@@ -21,7 +21,7 @@ public class QuestaoRequest {
     private TipoQuestao tipo;
     private String numeroExameOab;
     private UUID escolaMilitarId;
-    private String edicao;
+    private String tipoProvaEnem;
     private List<AlternativaRequest> alternativas;
 
     public QuestaoRequest() {
@@ -140,12 +140,12 @@ public class QuestaoRequest {
         return this.escolaMilitarId;
     }
 
-    public String getEdicao() {
-        return this.edicao;
+    public String getTipoProvaEnem() {
+        return this.tipoProvaEnem;
     }
 
-    public void setEdicao(String edicao) {
-        this.edicao = edicao;
+    public void setTipoProvaEnem(String tipoProvaEnem) {
+        this.tipoProvaEnem = tipoProvaEnem;
     }
 
 }

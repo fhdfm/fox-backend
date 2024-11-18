@@ -274,7 +274,7 @@ public class QuestaoService {
         questao.setEscolaridade(request.getEscolaridade());
         questao.setNumeroExameOab(request.getNumeroExameOab());
         questao.setEscolaMilitarId(request.getEscolaMilitarId());
-        questao.setEdicao(request.getEdicao());
+        questao.setTipoProvaEnem(request.getTipoProvaEnem());
 
         this.questaoRepository.save(questao);
 
@@ -573,7 +573,7 @@ public class QuestaoService {
                                a2.id as a2id,
                                em.nome as escola,
                                q.numero_exame_oab,
-                               q.edicao,  
+                               q.tipo_prova_enem as tipoProvaEnem,  
                                STRING_AGG(DISTINCT a2.id || ':' || a2.nome, '###$### ') AS assuntos, 
                 """;
 
@@ -602,7 +602,7 @@ public class QuestaoService {
                     where q.status = 'ATIVO' and q.id = ? 
                     group by q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, 
                     a.id, a.descricao, a.correta, a.letra, b.id, i.id, c.id, a2.id, d.id, 
-                    c.nome, d.nome, i.nome, a2.nome, b.nome, em.nome, q.numero_exame_oab, q.edicao
+                    c.nome, d.nome, i.nome, a2.nome, b.nome, em.nome, q.numero_exame_oab, q.tipoProvaEnem
                 """;
 
         if (isAluno)
@@ -640,7 +640,7 @@ public class QuestaoService {
                     qr.setBancaId(banca != null && !banca.trim().isEmpty() ? UUID.fromString(banca) : null);
 
                     qr.setNumeroExameOab(rs.getString("numero_exame_oab"));
-                    qr.setEdicao(rs.getString("edicao"));
+                    qr.setTipoProvaEnem(rs.getString("tipoProvaEnem"));
 
 
                     List<AssuntoResponse> assuntosList = new ArrayList<>();

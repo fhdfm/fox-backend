@@ -29,7 +29,8 @@ public class QuestaoResponse {
     private String numeroExameOab;
     private UUID escolaMilitarId;
     private String escolaMilitar;
-    private String edicao;
+    private String tipoProvaEnem;
+
 
 
     public QuestaoResponse() {  }
@@ -218,12 +219,12 @@ public class QuestaoResponse {
         return this.escolaMilitar;
     }
 
-    public void setEdicao(String edicao) {
-        this.edicao = edicao;
+    public String getTipoProvaEnem() {
+        return tipoProvaEnem;
     }
 
-    public String getEdicao() {
-        return this.edicao;
+    public void setTipoProvaEnem(String tipoProvaEnem) {
+        this.tipoProvaEnem = tipoProvaEnem;
     }
 
     public void setAssuntos(List<AssuntoResponse> assuntos) {
