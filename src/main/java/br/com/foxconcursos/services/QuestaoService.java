@@ -555,6 +555,10 @@ public class QuestaoService {
             sql += " and q.tipo_prova_enem = '" + questao.getTipoProvaEnem() + "' ";
         }
 
+        if (questao.getNumeroExameOab() != null) {
+            sql += " and q.numero_exame_oab = '" + questao.getNumeroExameOab() + "' ";
+        }
+
         int count = this.jdbcTemplate.queryForObject(sql, Integer.class);
 
         return count;
@@ -666,7 +670,7 @@ public class QuestaoService {
                                 assuntosList.add(assunto);
 
 
-                                qr.setAssuntoId(UUID.fromString(parts[0]));
+//                                qr.setAssuntoId(UUID.fromString(parts[0]));
                             }
                         }
                     }
