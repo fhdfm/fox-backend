@@ -1,5 +1,7 @@
 package br.com.foxconcursos.controllers;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -13,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -23,10 +26,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import br.com.foxconcursos.domain.Apostila;
-import br.com.foxconcursos.domain.Status;
 import br.com.foxconcursos.dto.ApostilaRequest;
 import br.com.foxconcursos.dto.ApostilaResponse;
 import br.com.foxconcursos.repositories.ApostilaRepository;
+import br.com.foxconcursos.services.StorageService;
 import br.com.foxconcursos.util.FoxUtils;
 
 @RestController
@@ -37,17 +40,23 @@ public class ApostilaController {
     
     private final ApostilaRepository repository;
 
-    public ApostilaController(ApostilaRepository repository) {
+    private final StorageService storageService;
+
+    public ApostilaController(ApostilaRepository repository, StorageService storageService) {
         this.repository = repository;
+        this.storageService = storageService;
     }
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @PostMapping("/api/admin/apostilas")
-    public ResponseEntity<UUID> create(@RequestBody ApostilaRequest request) {
+    public ResponseEntity<UUID> create(@ModelAttribute @RequestBody ApostilaRequest request) throws IOException, GeneralSecurityException {
 
-        request.validateFields();
+        request.validate();
 
         Apostila apostila = request.toModel();
+
+        String url = storageService.upload(request.getImagem());
+        apostila.setImagem(url);
 
         this.repository.save(apostila);
 
@@ -57,15 +66,22 @@ public class ApostilaController {
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @PutMapping("/api/admin/apostilas/{id}")
-    public ResponseEntity<String> update(@PathVariable UUID id, @RequestBody ApostilaRequest request) {
+    public ResponseEntity<String> update(@PathVariable UUID id, @ModelAttribute @RequestBody ApostilaRequest request) throws IOException, GeneralSecurityException {
 
-        request.validateFields();
 
         Apostila apostila = this.repository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, 
                                                        "Apostila com o ID: " + id + " não foi encontrada."));
+        boolean validarImagem = false;
+        if (request.getImagem() != null) {
+            String url = storageService.upload(request.getImagem());
+            apostila.setImagem(url);
+            validarImagem = true;
+        }
 
-       apostila.updateFromRequest(id, request);
+        request.validate(validarImagem);
+
+        apostila.updateFromRequest(id, request);
 
         this.repository.save(apostila);
 

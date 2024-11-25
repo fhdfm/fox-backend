@@ -30,19 +30,17 @@ public class Apostila {
 
     }
 
-    public Apostila(UUID id, String nome, String descricao, String imagem, BigDecimal valor, Status status) {
+    public Apostila(UUID id, String nome, String descricao, BigDecimal valor, Status status) {
         this.id = id;
         this.nome = nome;
         this.descricao = descricao;
-        this.imagem = imagem;
         this.valor = valor;
         this.status = status;
     }
 
-    public Apostila(String nome, String descricao, String imagem, BigDecimal valor, Status status, String cargo, String cidade, String uf) {
+    public Apostila(String nome, String descricao, BigDecimal valor, Status status, String cargo, String cidade, String uf) {
         this.nome = nome;
         this.descricao = descricao;
-        this.imagem = imagem;
         this.valor = valor;
         this.status = status;
         this.cargo = cargo;
@@ -57,7 +55,6 @@ public class Apostila {
     public void updateFromRequest(ApostilaRequest request) {
         this.setNome(request.getNome());
         this.setDescricao(request.getDescricao());
-        this.setImagem(request.getImagem());
         this.setValor(request.getValor());
         this.setStatus(request.getStatus());
         this.setUf(request.getUf());

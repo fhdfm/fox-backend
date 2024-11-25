@@ -35,10 +35,22 @@ public class StorageServiceImpl implements StorageService {
         if (file == null || file.isEmpty())
             throw new IllegalArgumentException("Arquivo inválido.");
 
-        if (FileTypeChecker.isMovie(storageRequest.getFile()))
+        if (FileTypeChecker.isMovie(file))
             return youTubeService.upload(storageRequest);
 
         return googleDriveService.upload(storageRequest);
+    }
+
+    @Override
+    public String upload(MultipartFile file) throws IOException, GeneralSecurityException {
+        
+        if (file == null || file.isEmpty())
+            throw new IllegalArgumentException("Arquivo inválido.");
+
+        // if (FileTypeChecker.isMovie(file))
+        //     return youTubeService.upload(file);
+
+        return googleDriveService.upload(file);
     }
 
     @Override

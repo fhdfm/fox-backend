@@ -2,6 +2,8 @@ package br.com.foxconcursos.dto;
 
 import java.math.BigDecimal;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import br.com.foxconcursos.domain.Apostila;
 import br.com.foxconcursos.domain.Status;
 
@@ -9,7 +11,7 @@ public class ApostilaRequest {
     
     private String nome;
     private String descricao;
-    private String imagem;
+    private MultipartFile imagem;
     private BigDecimal valor;
     private Status status;
     private String cidade;
@@ -19,7 +21,7 @@ public class ApostilaRequest {
     // Construtor vazio
     public ApostilaRequest() {}
 
-    public ApostilaRequest(String nome, String descricao, String imagem, BigDecimal valor, Status status) {
+    public ApostilaRequest(String nome, String descricao, MultipartFile imagem, BigDecimal valor, Status status) {
         this.nome = nome;
         this.descricao = descricao;
         this.imagem = imagem;
@@ -27,7 +29,15 @@ public class ApostilaRequest {
         this.status = status;
     }
 
-    public void validateFields() {
+    public void validate() {
+        validateFields(false);
+    }
+
+    public void validate(boolean validarImagem) {
+        validateFields(validarImagem);
+    }
+
+    private void validateFields(boolean validarImagem) {
         if (nome == null || nome.trim().isEmpty()) {
             throw new IllegalArgumentException("O campo 'nome' é obrigatório e não está preenchido.");
         }
@@ -36,9 +46,10 @@ public class ApostilaRequest {
             throw new IllegalArgumentException("O campo 'descricao' é obrigatório e não está preenchido.");
         }
 
-        if (imagem == null || imagem.trim().isEmpty()) {
-            throw new IllegalArgumentException("O campo 'imagem' é obrigatório e não está preenchido.");
-        }
+        if (validarImagem)
+            if (imagem == null || imagem.isEmpty()) {
+                throw new IllegalArgumentException("O campo 'imagem' é obrigatório e não está preenchido.");
+            }
 
         if (valor == null) {
             throw new IllegalArgumentException("O campo 'valor' é obrigatório e não está preenchido.");
@@ -54,7 +65,7 @@ public class ApostilaRequest {
     }
     
     public Apostila toModel() {
-        return new Apostila(nome, descricao, imagem, valor, status, cargo, cidade, uf);
+        return new Apostila(nome, descricao, valor, status, cargo, cidade, uf);
     }
 
     // Getters e Setters
@@ -75,11 +86,11 @@ public class ApostilaRequest {
         this.descricao = descricao;
     }
 
-    public String getImagem() {
+    public MultipartFile getImagem() {
         return imagem;
     }
 
-    public void setImagem(String imagem) {
+    public void setImagem(MultipartFile imagem) {
         this.imagem = imagem;
     }
 

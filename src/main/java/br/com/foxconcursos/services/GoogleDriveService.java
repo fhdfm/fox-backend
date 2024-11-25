@@ -37,6 +37,8 @@ import br.com.foxconcursos.repositories.StorageRepository;
 @Service
 public class GoogleDriveService {
 
+    private final static String FOLDER_ID = "1SKWl74Pp3MbGZzencoeU2Fg7lDZC6dhJ";
+
     private static final String APPLICATION_NAME = "fox-backend";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     
@@ -90,6 +92,45 @@ public class GoogleDriveService {
         UUID assuntoId = request.getAssuntoId();
         if (assuntoId == null)
             throw new IllegalArgumentException("Campo assuntoId é requerido.");
+    }
+
+    public String upload(MultipartFile file) throws IOException {
+    
+        // Convertendo MultipartFile para java.io.File
+        java.io.File convFile = new java.io.File(System.getProperty("java.io.tmpdir")
+            + java.io.File.separator + file.getOriginalFilename());
+
+        try {
+        
+            FileOutputStream fos = new FileOutputStream(convFile);
+            fos.write(file.getBytes());
+            fos.close();
+        
+            // Criando o metadata do arquivo para Google Drive
+            File fileMetadata = new File();
+            fileMetadata.setName(file.getOriginalFilename()); // Nome do arquivo no Google Drive
+            fileMetadata.setParents(Collections.singletonList(FOLDER_ID)); // Pasta no Google Drive
+        
+            // Preparando o conteúdo do arquivo
+            FileContent mediaContent = new FileContent(file.getContentType(), convFile);
+
+            Drive.Files.Create requestStorage = this.driveService.files().create(
+                fileMetadata, mediaContent).setFields("id, webViewLink, thumbnailLink");
+
+            MediaHttpUploader uploader = requestStorage.getMediaHttpUploader();
+            uploader.setDirectUploadEnabled(false);
+            uploader.setChunkSize(MediaHttpUploader.MINIMUM_CHUNK_SIZE);
+
+            File uploadedFile = requestStorage.execute();
+        
+            // Retornando o link do arquivo no Google 
+            String link = uploadedFile.getWebViewLink();
+
+            return link;
+        } finally {
+            if (convFile.exists())
+                convFile.delete();
+        }
     }
 
     @Transactional
