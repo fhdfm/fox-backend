@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.format.datetime.DateFormatter;
 import org.springframework.format.datetime.DateFormatterRegistrar;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -30,5 +31,7 @@ public class SpringWebConfig implements WebMvcConfigurer {
         DateFormatterRegistrar registrar = new DateFormatterRegistrar();
         registrar.setFormatter(formatter);
         registrar.registerFormatters(registry);
+
+        registry.addConverter(String.class, MultipartFile.class, source -> null);
     }
 }
