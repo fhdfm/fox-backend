@@ -1,6 +1,7 @@
 package br.com.foxconcursos.services;
 
-import java.util.HashMap;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -16,7 +17,8 @@ import br.com.foxconcursos.domain.Banca;
 import br.com.foxconcursos.domain.Curso;
 import br.com.foxconcursos.domain.Simulado;
 import br.com.foxconcursos.domain.Status;
-import br.com.foxconcursos.dto.CursoDTO;
+import br.com.foxconcursos.dto.CursoRequest;
+import br.com.foxconcursos.dto.CursoResponse;
 import br.com.foxconcursos.dto.ProdutoCursoResponse;
 import br.com.foxconcursos.repositories.CursoRepository;
 import br.com.foxconcursos.repositories.SimuladoRepository;
@@ -33,13 +35,16 @@ public class CursoService {
     private final DisciplinaService disciplinaService;
     private final SimuladoRepository simuladoRepository;
 
+    private final StorageService storageService;
+
     public CursoService(CursoRepository cursoRepository, BancaService bancaService, 
-        DisciplinaService disciplinaService,
-                        SimuladoRepository simuladoRepository) {
+        DisciplinaService disciplinaService, SimuladoRepository simuladoRepository, 
+        StorageService storageService) {
         this.cursoRepository = cursoRepository;
         this.bancaService = bancaService;
         this.disciplinaService = disciplinaService;
         this.simuladoRepository = simuladoRepository;
+        this.storageService = storageService;
     }
 
     public ProdutoCursoResponse getMatriculaCursoResponse(UUID id) {
@@ -52,29 +57,60 @@ public class CursoService {
         return new ProdutoCursoResponse(curso, banca.getNome());
     }
 
-    public UUID save(CursoDTO cursoDTO) {
+    public UUID create(CursoRequest request) throws IOException, GeneralSecurityException {
 
-        validarEntrada(cursoDTO);
+        validarEntrada(request, true);
 
-        return this.cursoRepository.save(new Curso(cursoDTO)).getId();
+        Curso curso = new Curso(request);
+
+        String imagem = this.storageService.upload(request.getImagem());
+        curso.setImagem(imagem);
+
+        this.cursoRepository.save(curso);
+
+        return curso.getId();
     }
 
-    private void validarEntrada(CursoDTO cursoDTO) {
-        if (cursoDTO.getTitulo() == null) {
+    public void update(UUID id, CursoRequest request) throws IOException, GeneralSecurityException {
+
+        Curso curso = this.cursoRepository.findById(id)
+                .orElseThrow(() -> new IllegalAccessError("Curso não encontrado."));
+
+        validarEntrada(request, false);
+
+        if (request.getImagem() != null) {
+            String newImagem = this.storageService.upload(request.getImagem());
+            curso.setImagem(newImagem);
+        }
+
+        this.cursoRepository.save(curso);
+
+    }
+
+    private void validarEntrada(CursoRequest request, boolean validarImagem) {
+        if (request.getTitulo() == null) {
             throw new IllegalArgumentException("Título é requerido.");
         }
 
-        if (cursoRepository.existsByTitulo(cursoDTO.getTitulo())) {
+        if (cursoRepository.existsByTitulo(request.getTitulo())) {
             throw new IllegalArgumentException("Já existe um curso com este título.");
         }
 
-        if (cursoDTO.getDescricao() == null) {
+        if (request.getDescricao() == null) {
             throw new IllegalArgumentException("Descrição é requerida.");
         }
 
-        if (cursoDTO.getValor() == null) {
+        if (validarImagem) {
+            if (request.getImagem() == null) {
+                throw new IllegalArgumentException("A imagem é obrigatória.");
+            }
+        }
+
+        if (request.getValor() == null) {
             throw new IllegalArgumentException("Preço é requerido.");
         }
+
+        // TODO - add demais campos obrigatorios.
     }
 
     public void delete(UUID id) {
@@ -94,7 +130,7 @@ public class CursoService {
         return this.cursoRepository.findById(id).orElse(null);
     }
 
-    public CursoDTO findById(UUID id) {
+    public CursoResponse findById(UUID id) {
         
         if (id == null) {
             throw new IllegalArgumentException("Id é requerido.");
@@ -108,7 +144,7 @@ public class CursoService {
 
         Banca banca = this.bancaService.findById(curso.getBancaId());
 
-        CursoDTO result = new CursoDTO(curso);
+        CursoResponse result = new CursoResponse(curso);
         result.setPossuiDisciplinas(disciplinaService.existsByCursoId(id));
         result.setBanca(banca.getNome());
 
@@ -126,7 +162,7 @@ public class CursoService {
         return simuladoRepository.findByCursoId(cursoId);
     }
 
-    public Page<CursoDTO> findAll(Pageable pageable, String filter) throws Exception {
+    public Page<CursoResponse> findAll(Pageable pageable, String filter) throws Exception {
 
         Map<UUID, String> bancas = this.bancaService.findAllAsMap();
 
@@ -152,32 +188,15 @@ public class CursoService {
             cursos = this.cursoRepository.findAllByStatus(pageable, Status.ATIVO);
         }
         
-        Page<CursoDTO> result = cursos.map(new Function<Curso, CursoDTO>() {
-            public CursoDTO apply(Curso curso) {
+        Page<CursoResponse> result = cursos.map(new Function<Curso, CursoResponse>() {
+            public CursoResponse apply(Curso curso) {
                 String banca = bancas.get(curso.getBancaId());
-                CursoDTO cursoDTO = new CursoDTO(curso);
-                cursoDTO.setBanca(banca);
-                cursoDTO.setPossuiDisciplinas(disciplinaService.existsByCursoId(curso.getId()));
-                return cursoDTO;
+                CursoResponse response = new CursoResponse(curso);
+                response.setBanca(banca);
+                response.setPossuiDisciplinas(disciplinaService.existsByCursoId(curso.getId()));
+                return response;
             }
         });
-
-        return result;
-    }
-
-    public Map<UUID, CursoDTO> findAllAsMap() {
-
-        Map<UUID, CursoDTO> result = new HashMap<UUID, CursoDTO>();
-
-        Map<UUID, String> bancas = this.bancaService.findAllAsMap();
-
-        List<Curso> cursos = this.cursoRepository.findAllByStatus(Status.ATIVO);
-        for (Curso curso : cursos) {
-            String banca = bancas.get(curso.getBancaId());
-            CursoDTO cursoDTO = new CursoDTO(curso);
-            cursoDTO.setBanca(banca);
-            result.put(curso.getId(), cursoDTO);
-        }
 
         return result;
     }

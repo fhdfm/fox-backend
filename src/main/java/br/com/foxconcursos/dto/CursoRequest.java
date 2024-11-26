@@ -1,18 +1,17 @@
-package br.com.foxconcursos.domain;
+package br.com.foxconcursos.dto;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.web.multipart.MultipartFile;
 
-import br.com.foxconcursos.dto.CursoRequest;
+import br.com.foxconcursos.domain.Escolaridade;
+import br.com.foxconcursos.domain.Status;
 
-@Table("cursos")
-public class Curso {
-
-    @Id
+public class CursoRequest implements Serializable {
+    
     private UUID id;
     private String titulo;
     private String descricao;
@@ -20,27 +19,14 @@ public class Curso {
     private LocalDate dataTermino;
     private Status status;
     private UUID bancaId;
+    private String banca;
     private Escolaridade escolaridade;
     private String estado;
     private String cidade;
     private BigDecimal valor;
-    private String imagem;
+    private MultipartFile imagem;
 
-    public Curso() {
-    }
-
-    public Curso(CursoRequest request) {
-        this.id = request.getId();
-        this.titulo = request.getTitulo();
-        this.descricao = request.getDescricao();
-        this.dataInicio = request.getDataInicio();
-        this.dataTermino = request.getDataTermino();
-        this.status = request.getStatus();
-        this.bancaId = request.getBancaId();
-        this.escolaridade = request.getEscolaridade();
-        this.estado = request.getEstado();
-        this.cidade = request.getCidade();
-        this.valor = request.getValor();
+    public CursoRequest() {
     }
 
     public UUID getId() {
@@ -99,6 +85,14 @@ public class Curso {
         this.bancaId = bancaId;
     }
 
+    public String getBanca() {
+        return banca;
+    }
+
+    public void setBanca(String banca) {
+        this.banca = banca;
+    }
+
     public Escolaridade getEscolaridade() {
         return escolaridade;
     }
@@ -131,11 +125,11 @@ public class Curso {
         this.valor = valor;
     }
 
-    public void setImagem(String imagem) {
+    public void setImagem(MultipartFile imagem) {
         this.imagem = imagem;
     }
 
-    public String getImagem() {
+    public MultipartFile getImagem() {
         return this.imagem;
     }
 }

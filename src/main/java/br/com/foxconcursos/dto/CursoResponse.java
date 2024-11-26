@@ -11,15 +11,13 @@ import br.com.foxconcursos.domain.Escolaridade;
 import br.com.foxconcursos.domain.Status;
 import br.com.foxconcursos.util.FoxUtils;
 
-public class CursoDTO implements Serializable {
+public class CursoResponse implements Serializable {
     
     private UUID id;
     private String titulo;
     private String descricao;
-    private LocalDate dataInicio;
-    private LocalDate dataTermino;
-    private Date dataInicioView;
-    private Date dataTerminoView;
+    private Date dataInicio;
+    private Date dataTermino;
     private Status status;
     private UUID bancaId;
     private String banca;
@@ -31,25 +29,24 @@ public class CursoDTO implements Serializable {
 
     private boolean possuiDisciplinas;
 
-    public CursoDTO() {
+    public CursoResponse() {
     }
 
-    public CursoDTO(Curso curso) {
+    public CursoResponse(Curso curso) {
         this.id = curso.getId();
         this.titulo = curso.getTitulo();
         this.descricao = curso.getDescricao();
-        this.dataInicio = curso.getDataInicio();
         
-        if (curso.getDataInicio() != null) {
-            this.dataInicioView = 
-                FoxUtils.convertLocalDateToDate(this.dataInicio);
+        LocalDate inicio = curso.getDataInicio();
+        if (inicio != null) {
+            this.dataInicio = 
+                FoxUtils.convertLocalDateToDate(inicio);
         }
 
-        this.dataTermino = curso.getDataTermino();
-        
-        if (curso.getDataTermino() != null) {
-            this.dataTerminoView =
-                FoxUtils.convertLocalDateToDate(this.dataTermino);
+        LocalDate termino = curso.getDataTermino();
+        if (termino != null) {
+            this.dataTermino =
+                FoxUtils.convertLocalDateToDate(termino);
         }
         
         this.bancaId = curso.getBancaId();
@@ -58,7 +55,6 @@ public class CursoDTO implements Serializable {
         this.estado = curso.getEstado();
         this.cidade = curso.getCidade();
         this.valor = curso.getValor();
-
         this.imagem = curso.getImagem();
 
         this.possuiDisciplinas = false;
@@ -88,19 +84,19 @@ public class CursoDTO implements Serializable {
         this.descricao = descricao;
     }
 
-    public LocalDate getDataInicio() {
+    public Date getDataInicio() {
         return dataInicio;
     }
 
-    public void setDataInicio(LocalDate dataInicio) {
+    public void setDataInicio(Date dataInicio) {
         this.dataInicio = dataInicio;
     }
 
-    public LocalDate getDataTermino() {
+    public Date getDataTermino() {
         return dataTermino;
     }
 
-    public void setDataTermino(LocalDate dataTermino) {
+    public void setDataTermino(Date dataTermino) {
         this.dataTermino = dataTermino;
     }
 
@@ -158,14 +154,6 @@ public class CursoDTO implements Serializable {
 
     public void setValor(BigDecimal valor) {
         this.valor = valor;
-    }
-
-    public Date getDataInicioView() {
-        return dataInicioView;
-    }
-
-    public Date getDataTerminoView() {
-        return dataTerminoView;
     }
 
     public boolean isPossuiDisciplinas() {
