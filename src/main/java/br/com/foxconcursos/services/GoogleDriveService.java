@@ -11,6 +11,7 @@ import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
+import com.google.api.services.drive.model.Permission;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
@@ -41,7 +42,7 @@ public class GoogleDriveService {
 
     private static final String APPLICATION_NAME = "fox-backend";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
-    
+
     private static final List<String> SCOPES = Collections.singletonList(DriveScopes.DRIVE_FILE);
 
     private final StorageRepository repository;
@@ -61,7 +62,7 @@ public class GoogleDriveService {
         this.driveService = new Drive.Builder(
                 GoogleNetHttpTransport.newTrustedTransport(), JSON_FACTORY, new HttpCredentialsAdapter(credentials))
                 .setApplicationName(APPLICATION_NAME)
-                .build();          
+                .build();
     }
 
     private GoogleCredentials getCredentials() throws IOException, GeneralSecurityException {
@@ -72,7 +73,7 @@ public class GoogleDriveService {
 
 
     private void validateRequest(StorageRequest request) {
-        
+
         MultipartFile file = request.getFile();
         if (file == null || file.isEmpty())
             throw new IllegalArgumentException("Campo file é requerido.");
@@ -80,7 +81,7 @@ public class GoogleDriveService {
         String folderId = request.getFolderId();
         if (folderId == null || folderId.isEmpty())
             throw new IllegalArgumentException("Campo folderId é requerido.");
-        
+
         TipoArquivo tipoArquivo = request.getTipo();
         if (tipoArquivo == null)
             throw new IllegalArgumentException("Campo tipo é requerido.");
@@ -95,38 +96,38 @@ public class GoogleDriveService {
     }
 
     public String upload(MultipartFile file) throws IOException {
-    
+
         // Convertendo MultipartFile para java.io.File
         java.io.File convFile = new java.io.File(System.getProperty("java.io.tmpdir")
             + java.io.File.separator + file.getOriginalFilename());
 
         try {
-        
+
             FileOutputStream fos = new FileOutputStream(convFile);
             fos.write(file.getBytes());
             fos.close();
-        
-            // Criando o metadata do arquivo para Google Drive
+
             File fileMetadata = new File();
             fileMetadata.setName(file.getOriginalFilename()); // Nome do arquivo no Google Drive
             fileMetadata.setParents(Collections.singletonList(FOLDER_ID)); // Pasta no Google Drive
-        
-            // Preparando o conteúdo do arquivo
+
             FileContent mediaContent = new FileContent(file.getContentType(), convFile);
+            Permission publicPermission = new Permission()
+                    .setType("anyone")
+                    .setRole("reader");
 
             Drive.Files.Create requestStorage = this.driveService.files().create(
-                fileMetadata, mediaContent).setFields("id, webViewLink, thumbnailLink");
+                fileMetadata, mediaContent).setFields("id, webViewLink");
 
             MediaHttpUploader uploader = requestStorage.getMediaHttpUploader();
             uploader.setDirectUploadEnabled(false);
             uploader.setChunkSize(MediaHttpUploader.MINIMUM_CHUNK_SIZE);
 
             File uploadedFile = requestStorage.execute();
-        
-            // Retornando o link do arquivo no Google 
-            String link = uploadedFile.getWebViewLink();
+            this.driveService.permissions().create(uploadedFile.getId(), publicPermission)
+                    .setFields("id").execute();
 
-            return link;
+            return uploadedFile.getId();
         } finally {
             if (convFile.exists())
                 convFile.delete();
@@ -135,31 +136,31 @@ public class GoogleDriveService {
 
     @Transactional
     public UUID upload(StorageRequest request) throws IOException {
-    
+
         this.validateRequest(request);
 
         // Pegando o arquivo do StorageRequest
         MultipartFile multipartFile = request.getFile();
         String folderId = request.getFolderId();
-    
+
         // Convertendo MultipartFile para java.io.File
         java.io.File convFile = new java.io.File(System.getProperty("java.io.tmpdir")
             + java.io.File.separator + multipartFile.getOriginalFilename());
 
         try {
-        
+
             FileOutputStream fos = new FileOutputStream(convFile);
             fos.write(multipartFile.getBytes());
             fos.close();
-        
+
             // Criando o metadata do arquivo para Google Drive
             File fileMetadata = new File();
             fileMetadata.setName(multipartFile.getOriginalFilename()); // Nome do arquivo no Google Drive
             fileMetadata.setParents(Collections.singletonList(folderId)); // Pasta no Google Drive
-        
+
             // Preparando o conteúdo do arquivo
             FileContent mediaContent = new FileContent(multipartFile.getContentType(), convFile);
-            
+
             // Fazendo o upload do arquivo no Google Drive
             // File uploadedFile = this.driveService.files().create(fileMetadata, mediaContent)
             //         .setFields("id, webViewLink, thumbnailLink")
@@ -173,7 +174,7 @@ public class GoogleDriveService {
             uploader.setChunkSize(MediaHttpUploader.MINIMUM_CHUNK_SIZE);
 
             File uploadedFile = requestStorage.execute();
-        
+
             // Retornando o link do arquivo no Google 
             String id = uploadedFile.getId();
 
@@ -202,16 +203,16 @@ public class GoogleDriveService {
     private String getFullFolderPath(String folderId) throws IOException {
         StringBuilder path = new StringBuilder();
         String currentFolderId = folderId;
-    
+
         while (currentFolderId != null && !currentFolderId.equals("root")) {
             // Recupera os metadados da pasta pelo ID
             File folder = this.driveService.files().get(currentFolderId)
                     .setFields("id, name, parents")
                     .execute();
-            
+
             // Prepend o nome da pasta ao caminho
             path.insert(0, "/" + folder.getName());
-            
+
             // Atualiza o ID para subir na hierarquia
             if (folder.getParents() != null && !folder.getParents().isEmpty()) {
                 currentFolderId = folder.getParents().get(0);
@@ -219,7 +220,7 @@ public class GoogleDriveService {
                 currentFolderId = null; // Chegou ao topo (raiz)
             }
         }
-    
+
         return path.toString(); // Caminho completo da pasta
     }
 
@@ -267,10 +268,10 @@ public class GoogleDriveService {
     }
 
     public List<File> list(String type, String folderId) throws IOException {
-        
+
         if ("FOLDERS".equalsIgnoreCase(type))
             return this.listFoldersInFolder(folderId);
-        
+
         if ("FILES".equalsIgnoreCase(type))
             return this.listFilesInFolder(folderId);
 
@@ -309,5 +310,5 @@ public class GoogleDriveService {
                 .execute();
 
         return result.getFiles();
-    }    
+    }
 }
