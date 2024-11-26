@@ -70,8 +70,7 @@ public class StorageServiceImpl implements StorageService {
 
     @Override
     public InputStreamResource retrieveMedia(String fileId) throws IOException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'retrieveMedia'");
+        return this.googleDriveService.retrieveMedia(fileId);
     }
 
     @Override
