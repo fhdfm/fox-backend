@@ -132,4 +132,8 @@ public class CursoRequest implements Serializable {
     public MultipartFile getImagem() {
         return this.imagem;
     }
+
+    public boolean hasUpload() {
+        return this.imagem != null;
+    }
 }

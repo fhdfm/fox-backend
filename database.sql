@@ -367,6 +367,33 @@ CREATE TABLE questao_assunto (
     FOREIGN KEY (assunto_id) REFERENCES assunto(id) ON DELETE CASCADE
 );
 
+CREATE TABLE aulas (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+    curso_id UUID NOT NULL,
+    disciplina_id UUID NOT NULL,
+    assunto_id UUID NOT NULL,
+    titulo VARCHAR(100) NOT NULL,
+    ordem INT NOT NULL,
+    version INT DEFAULT 0 NOT NULL,
+    CONSTRAINT fk_curso FOREIGN KEY (curso_id) REFERENCES cursos(id),
+    CONSTRAINT fk_disciplina FOREIGN KEY (disciplina_id) REFERENCES disciplinas(id),
+    CONSTRAINT fk_assunto FOREIGN KEY (assunto_id) REFERENCES assunto(id)
+);
+
+CREATE TABLE aula_conteudo (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4() UNIQUE NOT NULL,
+    aula_id UUID NOT NULL,
+    tipo VARCHAR(20) NOT NULL,
+    titulo VARCHAR(100) NOT NULL,
+    video VARCHAR(200),
+    thumbnail VARCHAR(200),
+    file_id VARCHAR(100),
+    version INT DEFAULT 0 NOT NULL,
+    CONSTRAINT fk_aula FOREIGN KEY (aula_id) REFERENCES aulas(id)
+);
+
+
+
 -- indices
 CREATE INDEX idx_respostas_questao_id ON respostas(questao_id);
 CREATE INDEX idx_respostas_usuario_id ON respostas(usuario_id);

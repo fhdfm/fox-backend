@@ -1,26 +1,39 @@
 package br.com.foxconcursos.controllers;
 
-import br.com.foxconcursos.domain.Apostila;
-import br.com.foxconcursos.dto.ApostilaRequest;
-import br.com.foxconcursos.dto.ApostilaResponse;
-import br.com.foxconcursos.repositories.ApostilaRepository;
-import br.com.foxconcursos.services.StorageService;
-import br.com.foxconcursos.util.FoxUtils;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+
+import br.com.foxconcursos.domain.Apostila;
+import br.com.foxconcursos.dto.ApostilaRequest;
+import br.com.foxconcursos.dto.ApostilaResponse;
+import br.com.foxconcursos.dto.StorageInput;
+import br.com.foxconcursos.dto.StorageOutput;
+import br.com.foxconcursos.repositories.ApostilaRepository;
+import br.com.foxconcursos.services.StorageService;
+import br.com.foxconcursos.util.FoxUtils;
 
 @RestController
 @RequestMapping(
@@ -37,6 +50,7 @@ public class ApostilaController {
         this.storageService = storageService;
     }
 
+    @Transactional
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @PostMapping(value = "/api/admin/apostilas", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UUID> create(@ModelAttribute @RequestBody ApostilaRequest request) throws IOException, GeneralSecurityException {
@@ -45,8 +59,16 @@ public class ApostilaController {
 
         Apostila apostila = request.toModel();
 
-        String url = storageService.upload(request.getImagem());
-        apostila.setImagem(url);
+        StorageInput input = new StorageInput.Builder()
+                .withInputStream(request.getImagem())
+                .isPublic(true)
+                .build();
+
+        if (input.isMovie()) 
+            throw new IllegalArgumentException("Tipo de media não permitida.");
+        
+        StorageOutput output = storageService.upload(input);
+        apostila.setImagem(output.getFileId());
 
         this.repository.save(apostila);
 
@@ -54,6 +76,7 @@ public class ApostilaController {
 
     }
 
+    @Transactional
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @PutMapping(value = "/api/admin/apostilas/{id}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<String> update(@PathVariable UUID id, @ModelAttribute @RequestBody ApostilaRequest request) throws IOException, GeneralSecurityException {
@@ -61,14 +84,22 @@ public class ApostilaController {
         Apostila apostila = this.repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Apostila com o ID: " + id + " não foi encontrada."));
-        boolean validarImagem = false;
-        if (request.getImagem() != null) {
-            String url = storageService.upload(request.getImagem());
-            apostila.setImagem(url);
-            validarImagem = true;
-        }
+        
+        request.validate(false);
 
-        request.validate(validarImagem);
+        if (request.hasUpload()) {
+
+            StorageInput input = new StorageInput.Builder()
+                .withInputStream(request.getImagem())
+                .isPublic(true)
+                .build();
+
+            if (input.isMovie()) 
+                throw new IllegalArgumentException("Tipo de media não permitida.");
+
+            StorageOutput output = storageService.upload(input);
+            apostila.setImagem(output.getFileId());
+        }
 
         apostila.updateFromRequest(id, request);
 
@@ -126,9 +157,6 @@ public class ApostilaController {
 
         this.repository.deleteById(apostila.getId());
         return ResponseEntity.status(HttpStatus.OK).body("Apostila deletada com sucesso.");
-
-//        return ResponseEntity.status(HttpStatus.OK).body("Apostila com o ID: " + id + " foi deletada com sucesso.");
-
     }
 
 }

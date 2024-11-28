@@ -2,20 +2,16 @@ package br.com.foxconcursos.services.impl;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.util.List;
-import java.util.UUID;
 
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import com.google.api.services.drive.model.File;
-
-import br.com.foxconcursos.dto.StorageRequest;
+import br.com.foxconcursos.dto.GoogleDriveResponse;
+import br.com.foxconcursos.dto.StorageInput;
+import br.com.foxconcursos.dto.StorageOutput;
+import br.com.foxconcursos.dto.YouTubeResponse;
 import br.com.foxconcursos.services.GoogleDriveService;
 import br.com.foxconcursos.services.StorageService;
 import br.com.foxconcursos.services.YouTubeService;
-import br.com.foxconcursos.util.FileTypeChecker;
 
 @Service
 public class StorageServiceImpl implements StorageService {
@@ -29,54 +25,20 @@ public class StorageServiceImpl implements StorageService {
     }
 
     @Override
-    public UUID upload(StorageRequest storageRequest) throws IOException, GeneralSecurityException {
+    public StorageOutput upload(StorageInput input) throws IOException, GeneralSecurityException {
         
-        MultipartFile file = storageRequest.getFile();
-        if (file == null || file.isEmpty())
-            throw new IllegalArgumentException("Arquivo inválido.");
+        if (input.isMovie()) {
+            YouTubeResponse response = youTubeService.upload(input);
+            return response.get();
+        }
 
-        if (FileTypeChecker.isMovie(file))
-            return youTubeService.upload(storageRequest);
-
-        return googleDriveService.upload(storageRequest);
+        GoogleDriveResponse response = googleDriveService.upload(input);
+        return response.get();
     }
 
     @Override
-    public String upload(MultipartFile file) throws IOException, GeneralSecurityException {
-        
-        if (file == null || file.isEmpty())
-            throw new IllegalArgumentException("Arquivo inválido.");
-
-        // if (FileTypeChecker.isMovie(file))
-        //     return youTubeService.upload(file);
-
-        return googleDriveService.upload(file);
-    }
-
-    @Override
-    public List<File> list(String content, String folderId) throws IOException {
-        return googleDriveService.list("FOLDER", folderId);
-    }
-
-    @Override
-    public void deleteEmptyFolder(String folderId) throws IOException {
-        googleDriveService.deleteEmptyFolder(folderId);
-    }
-
-    @Override
-    public String createFolder(String folderName, String parentFolder) throws IOException {
-        return googleDriveService.createFolder(folderName, parentFolder);
-    }
-
-    @Override
-    public InputStreamResource retrieveMedia(String fileId) throws IOException {
-        return this.googleDriveService.retrieveMedia(fileId);
-    }
-
-    @Override
-    public File getFile(String fileId) throws IOException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getFile'");
-    }
-    
+    public StorageOutput retrieveMedia(String fileId) throws IOException {
+        GoogleDriveResponse response = this.googleDriveService.retrieveMedia(fileId);
+        return response.get();
+    }    
 }

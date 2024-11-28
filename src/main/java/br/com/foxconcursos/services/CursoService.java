@@ -20,6 +20,8 @@ import br.com.foxconcursos.domain.Status;
 import br.com.foxconcursos.dto.CursoRequest;
 import br.com.foxconcursos.dto.CursoResponse;
 import br.com.foxconcursos.dto.ProdutoCursoResponse;
+import br.com.foxconcursos.dto.StorageInput;
+import br.com.foxconcursos.dto.StorageOutput;
 import br.com.foxconcursos.repositories.CursoRepository;
 import br.com.foxconcursos.repositories.SimuladoRepository;
 import br.com.foxconcursos.util.FoxUtils;
@@ -28,8 +30,6 @@ import br.com.foxconcursos.util.SecurityUtil;
 @Service
 public class CursoService {
     
-    // private final StorageService storageService;
-
     private final CursoRepository cursoRepository;
     private final BancaService bancaService;
     private final DisciplinaService disciplinaService;
@@ -63,8 +63,13 @@ public class CursoService {
 
         Curso curso = new Curso(request);
 
-        String imagem = this.storageService.upload(request.getImagem());
-        curso.setImagem(imagem);
+        StorageInput input = new StorageInput.Builder()
+                .withInputStream(request.getImagem())
+                .isPublic(true)
+                .build();
+
+        StorageOutput output = this.storageService.upload(input);
+        curso.setImagem(output.getFileId());
 
         this.cursoRepository.save(curso);
 
@@ -78,9 +83,15 @@ public class CursoService {
 
         validarEntrada(request, false);
 
-        if (request.getImagem() != null) {
-            String newImagem = this.storageService.upload(request.getImagem());
-            curso.setImagem(newImagem);
+        if (request.hasUpload()) {
+
+            StorageInput input = new StorageInput.Builder()
+                .withInputStream(request.getImagem())
+                .isPublic(true)
+                .build();
+
+            StorageOutput output = this.storageService.upload(input);
+            curso.setImagem(output.getFileId());
         }
 
         this.cursoRepository.save(curso);

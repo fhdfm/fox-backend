@@ -30,7 +30,7 @@ public class ApostilaRequest {
     }
 
     public void validate() {
-        validateFields(false);
+        validateFields(true);
     }
 
     public void validate(boolean validarImagem) {
@@ -132,6 +132,10 @@ public class ApostilaRequest {
 
     public String getCargo() {
         return this.cargo;
+    }
+
+    public boolean hasUpload() {
+        return this.imagem != null;
     }
 
 }
