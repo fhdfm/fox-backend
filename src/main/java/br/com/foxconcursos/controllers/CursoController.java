@@ -44,7 +44,7 @@ public class CursoController {
         this.disciplinaService = disciplinaService;
     }
 
-    @PostMapping(value = "/api/admin/cursos", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/api/admin/cursos", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     public ResponseEntity<UUID> create(@RequestBody @ModelAttribute CursoRequest request) throws IOException, GeneralSecurityException {
 
