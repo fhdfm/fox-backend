@@ -23,6 +23,13 @@ public class StorageOutput {
         this.fileId = fileId;
     }
 
+    public StorageOutput(InputStreamResource fileStream, String mimeType, String fileId, String fileName) {
+        this.fileStream = fileStream;
+        this.mimeType = mimeType;
+        this.fileId = fileId;
+        this.fileName = fileName;
+    }
+
     public StorageOutput(InputStreamResource fileStream, String mimeType) {
         this.fileStream = fileStream;
         this.mimeType = mimeType;

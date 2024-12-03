@@ -120,10 +120,11 @@ public class GoogleDriveService {
                                     .setFields("name, mimeType")
                                     .execute();
 
-        return new GoogleDriveResponse(
-                new InputStreamResource(inputStream), 
-                metadata.getMimeType(), 
-                metadata.getName());
+        GoogleDriveResponse response = new GoogleDriveResponse(
+                                        new InputStreamResource(inputStream), 
+                                        metadata.getMimeType(), 
+                                        fileId, metadata.getName());
+        return response;
 
     }
 

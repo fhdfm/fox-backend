@@ -7,6 +7,14 @@ public class GoogleDriveResponse {
     private InputStreamResource fileStream;
     private String mimeType;
     private String fileId;
+    private String fileName;
+
+    public GoogleDriveResponse(InputStreamResource fileStream, String mimeType, String fileId, String fileName) {
+        this.fileStream = fileStream;
+        this.mimeType = mimeType;
+        this.fileId = fileId;
+        this.fileName = fileName;
+    }
 
     public GoogleDriveResponse(InputStreamResource fileStream, String mimeType, String fileId) {
         this.fileStream = fileStream;
@@ -24,7 +32,7 @@ public class GoogleDriveResponse {
     }
 
     public StorageOutput get() {
-        return new StorageOutput(fileStream, mimeType, fileId);
+        return new StorageOutput(fileStream, mimeType, fileId, fileName);
     }
 
 }
