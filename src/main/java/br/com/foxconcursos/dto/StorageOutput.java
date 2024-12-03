@@ -17,10 +17,10 @@ public class StorageOutput {
         this.thumbnailUrl = thumnailUrl;
     }
 
-    public StorageOutput(InputStreamResource fileStream, String mimeType, String fileName) {
+    public StorageOutput(InputStreamResource fileStream, String mimeType, String fileId) {
         this.fileStream = fileStream;
         this.mimeType = mimeType;
-        this.fileName = fileName;
+        this.fileId = fileId;
     }
 
     public StorageOutput(InputStreamResource fileStream, String mimeType) {
