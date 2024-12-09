@@ -78,10 +78,10 @@ public class AulaController {
     @GetMapping(value = "/api/admin/aula", 
         produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<AulaResponse>> list(
-                @RequestParam(required = false, value = "titulo") String titulo, 
-                @RequestParam(required = false, value = "cursoId") UUID cursoId, 
-                @RequestParam(required = false, value = "disciplinaId") UUID disciplinaId, 
-                @RequestParam(required = false, value = "assuntoId") UUID assuntoId) {
+                @RequestParam(required = false, value = "titulo", defaultValue = "") String titulo, 
+                @RequestParam(required = false, value = "cursoId", defaultValue = "00000000-0000-0000-0000-000000000000") UUID cursoId, 
+                @RequestParam(required = false, value = "disciplinaId", defaultValue = "00000000-0000-0000-0000-000000000000") UUID disciplinaId, 
+                @RequestParam(required = false, value = "assuntoId", defaultValue = "00000000-0000-0000-0000-000000000000") UUID assuntoId) {
 
         return ResponseEntity.status(HttpStatus.OK).body(
                         this.service.buscarPorParametros(titulo, cursoId, disciplinaId, assuntoId));

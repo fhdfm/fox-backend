@@ -24,6 +24,8 @@ import br.com.foxconcursos.repositories.AulaRepository;
 @Service
 public class AulaService {
     
+    private static final String NULL_VALUE = "00000000-0000-0000-0000-000000000000";
+
     private final AulaRepository repository;
     private final AulaConteudoRepository conteudoRepository;
     private final StorageService storageService;
@@ -120,16 +122,16 @@ public class AulaService {
         String sql = getSqlBase();
         sql += " where 1=1 ";
 
-        if (titulo != null && !titulo.isEmpty())
+        if (titulo.isEmpty())
             sql += " and a.titulo like '%" + titulo + "%' ";
         
-        if (cursoId != null)
+        if (!cursoId.equals(UUID.fromString(NULL_VALUE)))
             sql += " and c.id = '" + cursoId + "' ";
 
-        if (disciplinaId != null)
+        if (!disciplinaId.equals(UUID.fromString(NULL_VALUE)))
             sql += " and d.id = '" + disciplinaId + "' ";
 
-        if (assuntoId != null)
+        if (!assuntoId.equals(UUID.fromString(NULL_VALUE)))
             sql += " and ass.id = '" + assuntoId + "' ";
 
         List<AulaResponse> response = new ArrayList<>();
