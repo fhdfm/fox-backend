@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.foxconcursos.dto.StorageOutput;
+import br.com.foxconcursos.services.CursoAlunoService;
 import br.com.foxconcursos.services.StorageService;
 
 @RestController
@@ -19,14 +20,18 @@ public class DownloadController {
     
     private StorageService storageService;
 
-    public DownloadController(StorageService storageService) {
+    private CursoAlunoService cursoAlunoService;
+
+    public DownloadController(StorageService storageService, CursoAlunoService cursoAlunoService) {
         this.storageService = storageService;
+        this.cursoAlunoService = cursoAlunoService;
     }
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO')")
     @GetMapping("/api/aluno/download/{fileId}/curso/{cursoId}")
     public ResponseEntity<InputStreamResource> downloadAluno(
             @PathVariable String fileId, @PathVariable UUID cursoId) throws IOException {
+        this.cursoAlunoService.validarDownload(cursoId, fileId);
         StorageOutput file = this.storageService.retrieveMedia(fileId);
         return getResponse(file);
     }

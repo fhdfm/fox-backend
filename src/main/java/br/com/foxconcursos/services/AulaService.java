@@ -183,4 +183,8 @@ public class AulaService {
         return sql;
     }
 
+    public UUID findCursoIdByFileId(String fileId) {
+        return this.conteudoRepository.findCursoIdByFileId(fileId);
+    }
+
 }
