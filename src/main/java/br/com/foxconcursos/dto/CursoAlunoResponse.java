@@ -8,6 +8,8 @@ public class CursoAlunoResponse {
     private UUID id;
     private String nome;
 
+    private AulaResponse aula;
+
     private List<DisciplinaAlunoResponse> disciplinas;
 
     public CursoAlunoResponse() {
@@ -36,5 +38,13 @@ public class CursoAlunoResponse {
 
     public List<DisciplinaAlunoResponse> getDisciplinas() {
         return this.disciplinas;
+    }
+
+    public AulaResponse getAula() {
+        return this.aula;
+    }
+
+    public void setAula(AulaResponse aula) {
+        this.aula = aula;
     }
 }

@@ -392,6 +392,15 @@ CREATE TABLE aula_conteudo (
     CONSTRAINT fk_aula FOREIGN KEY (aula_id) REFERENCES aulas(id)
 );
 
+CREATE TABLE progresso (
+    usuario_id UUID NOT NULL,
+    curso_id UUID NOT NULL,
+    aula_id UUID NOT NULL,
+    PRIMARY KEY (usuario_id, curso_id, aula_id),
+    CONSTRAINT fk_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios (id),
+    CONSTRAINT fk_curso FOREIGN KEY (curso_id) REFERENCES cursos (id),
+    CONSTRAINT fk_aula FOREIGN KEY (aula_id) REFERENCES aulas (id)
+);
 
 
 -- indices

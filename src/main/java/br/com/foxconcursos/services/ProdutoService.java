@@ -226,5 +226,20 @@ public class ProdutoService {
         jdbcTemplate.update(sql, event.getMatriculaId(), event.getInicio(), event.getFim());
     }
 
-    
+    public boolean estaMatriculado(UUID cursoId, UUID usuarioId) {
+
+        String sql = """
+            SELECT count(*) as qtd
+            FROM matriculas m
+            JOIN cursos c ON m.produto_id = c.id AND m.tipo_produto = 'CURSO'
+            WHERE m.usuario_id = ? and c.id = ? AND m.status = 'ATIVO'
+            AND DATE(c.data_termino) >= CURRENT_DATE
+        """;
+        
+        int qtd = jdbcTemplate.query(sql, (rs) -> {
+            return rs.getInt("qtd");
+        }, usuarioId, cursoId);
+
+        return qtd > 0;
+    }
 }
