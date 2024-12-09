@@ -2,8 +2,11 @@ package br.com.foxconcursos.services;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,6 +14,8 @@ import br.com.foxconcursos.domain.Aula;
 import br.com.foxconcursos.domain.AulaConteudo;
 import br.com.foxconcursos.dto.AulaConteudoRequest;
 import br.com.foxconcursos.dto.AulaRequest;
+import br.com.foxconcursos.dto.AulaResponse;
+import br.com.foxconcursos.dto.ConteudoResponse;
 import br.com.foxconcursos.dto.StorageInput;
 import br.com.foxconcursos.dto.StorageOutput;
 import br.com.foxconcursos.repositories.AulaConteudoRepository;
@@ -22,13 +27,17 @@ public class AulaService {
     private final AulaRepository repository;
     private final AulaConteudoRepository conteudoRepository;
     private final StorageService storageService;
+    private final JdbcTemplate jdbcTemplate;
 
     public AulaService(AulaRepository repository, 
-            AulaConteudoRepository conteudoRepository, StorageService storageService) {
+            AulaConteudoRepository conteudoRepository, 
+            StorageService storageService, 
+            JdbcTemplate jdbcTemplate) {
         
         this.repository = repository;
         this.conteudoRepository = conteudoRepository;
         this.storageService = storageService;
+        this.jdbcTemplate = jdbcTemplate;
 
     }
 
@@ -104,6 +113,72 @@ public class AulaService {
         }
 
         this.conteudoRepository.save(conteudo);
+    }
+
+    public List<AulaResponse> buscarPorParametros(String titulo, UUID cursoId, UUID disciplinaId, UUID assuntoId) {
+
+        String sql = getSqlBase();
+        sql += " where 1=1 ";
+
+        if (titulo != null && !titulo.isEmpty())
+            sql += " and a.titulo like '%" + titulo + "%' ";
+        
+        if (cursoId != null)
+            sql += " and c.id = '" + cursoId + "' ";
+
+        if (disciplinaId != null)
+            sql += " and d.id = '" + disciplinaId + "' ";
+
+        if (assuntoId != null)
+            sql += " and ass.id = '" + assuntoId + "' ";
+
+        List<AulaResponse> response = new ArrayList<>();
+
+        jdbcTemplate.query(sql, (rs) -> {
+            AulaResponse aula = new AulaResponse();
+            aula.setId(rs.getObject("id", UUID.class));
+            aula.setTitulo(rs.getString("titulo"));
+            aula.setCurso(rs.getString("curso"));
+            aula.setDisciplina(rs.getString("disciplina"));
+            aula.setAssunto(rs.getString("assunto"));
+            response.add(aula);
+        });
+
+        return response;
+    }
+
+    public AulaResponse buscarPorId(UUID id) {
+        String sql = getSqlBase();
+        sql += " where a.id = '" + id + "'";
+
+        AulaResponse response = jdbcTemplate.query(sql, (rs) -> {
+            AulaResponse aula = new AulaResponse();
+            aula.setId(rs.getObject("id", UUID.class));
+            aula.setTitulo(rs.getString("titulo"));
+            aula.setCurso(rs.getString("curso"));
+            aula.setDisciplina(rs.getString("disciplina"));
+            aula.setAssunto(rs.getString("assunto"));
+            return aula;
+        });
+
+        List<AulaConteudo> anexos = this.conteudoRepository.findByAulaId(id);
+        List<ConteudoResponse> conteudoResponse = new ArrayList<>();
+        for (AulaConteudo anexo : anexos) {
+            conteudoResponse.add(anexo.toAssembly());
+        }
+
+        response.setConteudo(conteudoResponse);
+
+        return response;
+    }
+
+    private String getSqlBase() {
+        String sql = "select a.id as id, a.titulo as titulo, c.titulo as curso, d.nome ";
+            sql += "as disciplina, ass.nome as assunto from ";
+            sql += "aulas a inner join cursos c on a.curso_id = c.id ";
+            sql += "inner join disciplinas d on a.disciplina_id = d.id ";
+            sql += "inner join assunto ass on a.assunto_id = ass.id ";
+        return sql;
     }
 
 }

@@ -23,7 +23,6 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.File;
-import com.google.api.services.drive.model.FileList;
 import com.google.api.services.drive.model.Permission;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -34,13 +33,13 @@ import br.com.foxconcursos.dto.StorageInput;
 @Service
 public class GoogleDriveService {
 
-    private final static String FOLDER_ID = "1SKWl74Pp3MbGZzencoeU2Fg7lDZC6dhJ";
-
     private static final String APPLICATION_NAME = "fox-backend";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 
     private static final List<String> SCOPES = Collections.singletonList(DriveScopes.DRIVE_FILE);
 
+    @Value("${storage.folderId}")
+    private String folderId;
 
     @Value("${storage.credentials}")
     private String credentialsPath;
@@ -81,7 +80,7 @@ public class GoogleDriveService {
 
             File fileMetadata = new File();
             fileMetadata.setName(file.getOriginalFilename()); // Nome do arquivo no Google Drive
-            fileMetadata.setParents(Collections.singletonList(FOLDER_ID)); // Pasta no Google Drive
+            fileMetadata.setParents(Collections.singletonList(this.folderId)); // Pasta no Google Drive
 
             FileContent mediaContent = new FileContent(file.getContentType(), convFile);
 
@@ -128,22 +127,22 @@ public class GoogleDriveService {
 
     }
 
-    public File getFile(String fileId) throws IOException {
-        File file = driveService.files().get(fileId)
-        .setFields("id, name, mimeType")
-        .execute();
-        return file;
-    }
+    // public File getFile(String fileId) throws IOException {
+    //     File file = driveService.files().get(fileId)
+    //     .setFields("id, name, mimeType")
+    //     .execute();
+    //     return file;
+    // }
 
-    public void deleteEmptyFolder(String folderId) throws IOException {
-        FileList files = driveService.files().list()
-                .setQ("'" + folderId + "' in parents and trashed = false")
-                .setFields("files(id, name)")
-                .execute();
+    // public void deleteEmptyFolder(String folderId) throws IOException {
+    //     FileList files = driveService.files().list()
+    //             .setQ("'" + folderId + "' in parents and trashed = false")
+    //             .setFields("files(id, name)")
+    //             .execute();
 
-        if (files.getFiles().isEmpty()) {
-            driveService.files().delete(folderId).execute();
-        }
-    }
+    //     if (files.getFiles().isEmpty()) {
+    //         driveService.files().delete(folderId).execute();
+    //     }
+    // }
 
 }

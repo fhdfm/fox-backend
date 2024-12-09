@@ -212,4 +212,6 @@ public class CursoService {
         return result;
     }
 
+    //public CursoAlunoResponse iniciar(UUID cursoId)
+
 }

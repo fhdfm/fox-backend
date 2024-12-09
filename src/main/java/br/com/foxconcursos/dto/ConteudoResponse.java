@@ -1,39 +1,25 @@
-package br.com.foxconcursos.domain;
+package br.com.foxconcursos.dto;
 
 import java.util.UUID;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Version;
-import org.springframework.data.relational.core.mapping.Table;
+import br.com.foxconcursos.domain.TipoArquivo;
 
-import br.com.foxconcursos.dto.ConteudoResponse;
-
-@Table("aula_conteudo")
-public class AulaConteudo {
-
-    @Id
+public class ConteudoResponse {
+    
     private UUID id;
-    private UUID aulaId;
     private TipoArquivo tipo;
     private String titulo;
     private String video;
     private String thumbnail;
     private String fileId;
 
-    @Version
-    private int version;
-
-    // Construtor padrão
-    public AulaConteudo() {}
-
-        // Construtor
-    public AulaConteudo(TipoArquivo tipo, String titulo) {
+    public ConteudoResponse(UUID id, TipoArquivo tipo, String titulo, String video, String thumbnail, String fileId) {
+        this.id = id;
         this.tipo = tipo;
         this.titulo = titulo;
-    }
-
-    public ConteudoResponse toAssembly() {
-        return new ConteudoResponse(aulaId, tipo, titulo, video, thumbnail, fileId);
+        this.video = video;
+        this.thumbnail = thumbnail;
+        this.fileId = fileId;
     }
 
     // Getters e Setters
@@ -43,14 +29,6 @@ public class AulaConteudo {
 
     public void setId(UUID id) {
         this.id = id;
-    }
-
-    public UUID getAulaId() {
-        return aulaId;
-    }
-
-    public void setAulaId(UUID aulaId) {
-        this.aulaId = aulaId;
     }
 
     public TipoArquivo getTipo() {
@@ -92,4 +70,5 @@ public class AulaConteudo {
     public void setFileId(String fileId) {
         this.fileId = fileId;
     }
+
 }

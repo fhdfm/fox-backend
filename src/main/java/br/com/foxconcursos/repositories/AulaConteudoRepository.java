@@ -1,5 +1,6 @@
 package br.com.foxconcursos.repositories;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.repository.CrudRepository;
@@ -10,4 +11,6 @@ import br.com.foxconcursos.domain.AulaConteudo;
 @Repository
 public interface AulaConteudoRepository extends CrudRepository<AulaConteudo, UUID> {
     
+    List<AulaConteudo> findByAulaId(UUID aulaId);
+
 }
