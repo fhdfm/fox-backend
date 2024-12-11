@@ -14,9 +14,9 @@ public class FileUploadConfig {
     public MultipartConfigElement multipartConfigElement() {
         MultipartConfigFactory factory = new MultipartConfigFactory();
         // Definir tamanho máximo do arquivo (5GB)
-        factory.setMaxFileSize(DataSize.ofGigabytes(5));
+        factory.setMaxFileSize(DataSize.ofGigabytes(50));
         // Definir tamanho máximo da solicitação (5GB)
-        factory.setMaxRequestSize(DataSize.ofGigabytes(5));
+        factory.setMaxRequestSize(DataSize.ofGigabytes(50));
         return factory.createMultipartConfig();
     }
 }
