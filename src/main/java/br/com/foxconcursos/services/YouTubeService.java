@@ -13,8 +13,6 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.googleapis.media.MediaHttpUploader;
 import com.google.api.client.http.FileContent;
-import com.google.api.client.http.HttpRequest;
-import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.youtube.YouTube;
@@ -92,13 +90,6 @@ public class YouTubeService {
             JSON_FACTORY,
             credential)
             .setApplicationName(APPLICATION_NAME)
-            .setHttpRequestInitializer(new HttpRequestInitializer() {
-                @Override
-                public void initialize(HttpRequest request) {
-                    request.setConnectTimeout(120000); // 120 segundos
-                    request.setReadTimeout(120000); // 120 segundos
-                }
-            })
             .build();
 
         YouTube.Videos.Insert videoUploader = youTube.videos()
