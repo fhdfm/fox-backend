@@ -121,15 +121,23 @@ public class YouTubeService {
         throw new RuntimeException("Falha no upload após múltiplas tentativas.");
     }
     
+    // private File convertMultipartFileToFile(MultipartFile file) throws IOException {
+    //     File newFile = new File(
+    //             System.getProperty("java.io.tmpdir") 
+    //                 + File.separator 
+    //                 + file.getOriginalFilename());
+    //     file.transferTo(newFile);
+    //     newFile.deleteOnExit();
+    //     return newFile;
+    // }
+
     private File convertMultipartFileToFile(MultipartFile file) throws IOException {
-        File newFile = new File(
-                System.getProperty("java.io.tmpdir") 
-                    + File.separator 
-                    + file.getOriginalFilename());
-        file.transferTo(newFile);
-        newFile.deleteOnExit();
-        return newFile;
-    }
+        File tempFile = File.createTempFile("upload_", "_" + file.getOriginalFilename());
+        System.out.println("Arquivo temporário criado em: " + tempFile.getAbsolutePath());
+        file.transferTo(tempFile);
+        tempFile.deleteOnExit();
+        return tempFile;
+    }    
 
     private enum Acessibilidade {
         PRIVATE, UNLISTED
