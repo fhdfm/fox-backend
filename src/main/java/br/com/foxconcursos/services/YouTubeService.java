@@ -2,6 +2,7 @@ package br.com.foxconcursos.services;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.security.GeneralSecurityException;
 
 import org.springframework.stereotype.Service;
@@ -10,7 +11,10 @@ import org.springframework.web.multipart.MultipartFile;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
+import com.google.api.client.googleapis.media.MediaHttpUploader;
 import com.google.api.client.http.FileContent;
+import com.google.api.client.http.HttpRequest;
+import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.youtube.YouTube;
@@ -88,18 +92,42 @@ public class YouTubeService {
             JSON_FACTORY,
             credential)
             .setApplicationName(APPLICATION_NAME)
+            .setHttpRequestInitializer(new HttpRequestInitializer() {
+                @Override
+                public void initialize(HttpRequest request) {
+                    request.setConnectTimeout(120000); // 120 segundos
+                    request.setReadTimeout(120000); // 120 segundos
+                }
+            })
             .build();
 
         YouTube.Videos.Insert videoUploader = youTube.videos()
                 .insert("snippet,statistics,status", metadata, content);
 
-        try {
-            return videoUploader.execute();
-        } catch (GoogleJsonResponseException e) {
-            // logar
-            throw new RuntimeException("Erro ao fazer upload de vídeo para o YouTube.", e);
+        MediaHttpUploader uploader = videoUploader.getMediaHttpUploader();
+        uploader.setDirectUploadEnabled(false);
+
+        uploader.setProgressListener(progress -> {
+            System.out.println("Progress: " + progress.getProgress());
+        });
+
+        int MAX_RETRIES = 3;
+        for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+            try {
+                return videoUploader.execute();
+            } catch (SocketTimeoutException | GoogleJsonResponseException e) {
+                if (attempt == MAX_RETRIES) throw e; // Re-throw após tentativas
+                System.err.println("Erro no upload (tentativa " + attempt + "): " + e.getMessage());
+                try {
+                    Thread.sleep(2000 * attempt); // Atraso exponencial
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt(); // Restaura o status de interrupção da thread
+                    throw new RuntimeException("Thread interrompida durante o retry do upload.", ie);
+                }
+            }
         }
 
+        throw new RuntimeException("Falha no upload após múltiplas tentativas.");
     }
     
     private File convertMultipartFileToFile(MultipartFile file) throws IOException {
