@@ -1,6 +1,7 @@
 package br.com.foxconcursos.controllers;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.UUID;
@@ -10,18 +11,19 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.com.foxconcursos.domain.TipoArquivo;
 import br.com.foxconcursos.dto.AulaConteudoRequest;
 import br.com.foxconcursos.dto.AulaRequest;
 import br.com.foxconcursos.dto.AulaResponse;
 import br.com.foxconcursos.services.AulaService;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 public class AulaController {
@@ -53,25 +55,57 @@ public class AulaController {
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @PostMapping(value = "/api/admin/aula/{aulaId}/conteudo",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+            consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UUID> cadastrarConteudo(
-            UUID aulaId, @ModelAttribute AulaConteudoRequest request) throws IOException, GeneralSecurityException {
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(this.service.criarConteudo(aulaId, request));
+            UUID aulaId, @RequestParam("fileName") String fileName, 
+            @RequestParam("tipo") String tipo, @RequestParam("titulo") String titulo, 
+            HttpServletRequest request) throws IOException, GeneralSecurityException {
+
+        try (InputStream inputStream = request.getInputStream()) {
+        
+                AulaConteudoRequest aulaConteudoRequest = new AulaConteudoRequest();
+                aulaConteudoRequest.setFile(inputStream);
+                aulaConteudoRequest.setTitulo(titulo);
+                aulaConteudoRequest.setTipo(TipoArquivo.fromString(tipo));
+                aulaConteudoRequest.setFileName(fileName);
+
+                                        
+                return ResponseEntity
+                        .status(HttpStatus.CREATED)
+                        .body(this.service.criarConteudo(aulaId, aulaConteudoRequest));
+
+        } catch (Exception e) {
+                e.printStackTrace();
+                throw new RuntimeException(e);
+        }
     }
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @PutMapping(value = "/api/admin/aula/{aulaId}/conteudo/{conteudoId}",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+            consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> atualizarConteudo(
-            UUID aulaId, UUID conteudoId, @ModelAttribute AulaConteudoRequest request) throws IOException, GeneralSecurityException {
+            UUID aulaId, UUID conteudoId, @RequestParam("fileName") String fileName, 
+            @RequestParam("tipo") String tipo, @RequestParam("titulo") String titulo, 
+            HttpServletRequest request) throws IOException, GeneralSecurityException {
+        
+        try (InputStream inputStream = request.getInputStream()) {
+                
+                AulaConteudoRequest aulaConteudoRequest = new AulaConteudoRequest();
+                aulaConteudoRequest.setFile(inputStream);
+                aulaConteudoRequest.setTitulo(titulo);
+                aulaConteudoRequest.setTipo(TipoArquivo.fromString(tipo));
+                aulaConteudoRequest.setFileName(fileName);
 
-        this.service.atualizarConteudo(aulaId, conteudoId, request);
+                this.service.atualizarConteudo(aulaId, conteudoId, aulaConteudoRequest);
 
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body("Conteudo atualizado com sucesso.");
+                return ResponseEntity
+                        .status(HttpStatus.OK)
+                        .body("Conteudo atualizado com sucesso.");
+
+        } catch (IOException e) {
+                e.printStackTrace();
+                throw new RuntimeException(e);
+        }
     }
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")

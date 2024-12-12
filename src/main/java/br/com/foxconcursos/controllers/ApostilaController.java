@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import br.com.foxconcursos.domain.Apostila;
@@ -59,9 +60,13 @@ public class ApostilaController {
 
         Apostila apostila = request.toModel();
 
+        MultipartFile file = request.getImagem();
+
         StorageInput input = new StorageInput.Builder()
-                .withInputStream(request.getImagem())
-                .isPublic(true)
+                .withInputStream(file.getInputStream())
+                .isPublic(false)
+                .withFileName(file.getOriginalFilename())
+                .withMimeType(file.getContentType())
                 .build();
 
         if (input.isMovie()) 
@@ -89,10 +94,14 @@ public class ApostilaController {
 
         if (request.hasUpload()) {
 
+            MultipartFile file = request.getImagem();
+
             StorageInput input = new StorageInput.Builder()
-                .withInputStream(request.getImagem())
-                .isPublic(true)
-                .build();
+                    .withInputStream(file.getInputStream())
+                    .isPublic(false)
+                    .withFileName(file.getOriginalFilename())
+                    .withMimeType(file.getContentType())
+                    .build();
 
             if (input.isMovie()) 
                 throw new IllegalArgumentException("Tipo de media não permitida.");

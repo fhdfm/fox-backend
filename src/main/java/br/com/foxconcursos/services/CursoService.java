@@ -12,6 +12,7 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import br.com.foxconcursos.domain.Banca;
 import br.com.foxconcursos.domain.Curso;
@@ -63,8 +64,12 @@ public class CursoService {
 
         Curso curso = new Curso(request);
 
+        MultipartFile file = request.getImagem();
+
         StorageInput input = new StorageInput.Builder()
-                .withInputStream(request.getImagem())
+                .withInputStream(file.getInputStream())
+                .withMimeType(file.getContentType())
+                .withFileName(file.getOriginalFilename())
                 .isPublic(true)
                 .build();
 
@@ -85,10 +90,14 @@ public class CursoService {
 
         if (request.hasUpload()) {
 
+            MultipartFile file = request.getImagem();
+
             StorageInput input = new StorageInput.Builder()
-                .withInputStream(request.getImagem())
-                .isPublic(true)
-                .build();
+                    .withInputStream(file.getInputStream())
+                    .withMimeType(file.getContentType())
+                    .withFileName(file.getOriginalFilename())
+                    .isPublic(true)
+                    .build();
 
             StorageOutput output = this.storageService.upload(input);
             curso.setImagem(output.getFileId());
@@ -212,6 +221,6 @@ public class CursoService {
         return result;
     }
 
-    //public CursoAlunoResponse iniciar(UUID cursoId)
+    //gitpublic CursoAlunoResponse iniciar(UUID cursoId)
 
 }

@@ -13,5 +13,14 @@ public enum TipoArquivo {
     public String getTipoArquivo() {
         return this.tipoArquivo;
     }
+
+    public static TipoArquivo fromString(String tipoArquivo) {
+        for (TipoArquivo tipo : TipoArquivo.values()) {
+            if (tipo.getTipoArquivo().equalsIgnoreCase(tipoArquivo)) {
+                return tipo;
+            }
+        }
+        throw new IllegalArgumentException("Nenhum enum correspondente para: " + tipoArquivo);
+    }    
     
 }

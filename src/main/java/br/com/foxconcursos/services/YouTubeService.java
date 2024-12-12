@@ -1,18 +1,15 @@
 package br.com.foxconcursos.services;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.SocketTimeoutException;
 import java.security.GeneralSecurityException;
 
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.googleapis.media.MediaHttpUploader;
-import com.google.api.client.http.FileContent;
+import com.google.api.client.googleapis.media.MediaHttpUploaderProgressListener;
+import com.google.api.client.http.InputStreamContent;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.youtube.YouTube;
@@ -38,31 +35,6 @@ public class YouTubeService {
         this.auth = auth;
     }
 
-    public YouTubeResponse upload(StorageInput input) throws IOException, GeneralSecurityException {
-
-        Video metadata = buildVideoMetadata();
-
-        File videoFile = convertMultipartFileToFile(input.getInputStream());
-
-        try {
-
-            Video uploadedVideo = uploadVideo(metadata, videoFile);
-
-            String videoUrl = URL + uploadedVideo.getId();
-
-            ThumbnailDetails thumbnailDetails = uploadedVideo.getSnippet().getThumbnails();
-            String thumbnailUrl = thumbnailDetails.getDefault().getUrl();
-
-            return new YouTubeResponse(videoUrl, thumbnailUrl);
-        } finally {
-
-            if (videoFile.exists())
-                videoFile.delete();
-
-        }
-
-    }
-
     private Video buildVideoMetadata() {
         
         VideoStatus status = new VideoStatus();
@@ -79,9 +51,11 @@ public class YouTubeService {
         return metadata;
     }
 
-    private Video uploadVideo(Video metadata, File videoFile) throws IOException, GeneralSecurityException {
+    public YouTubeResponse upload(StorageInput input) throws IOException, GeneralSecurityException {
 
-        FileContent content = new FileContent("video/*", videoFile);
+        Video metadata = buildVideoMetadata();
+
+        InputStreamContent content = new InputStreamContent(null, input.getInputStream());
 
         Credential credential = this.auth.getAccessToken();
 
@@ -97,47 +71,35 @@ public class YouTubeService {
 
         MediaHttpUploader uploader = videoUploader.getMediaHttpUploader();
         uploader.setDirectUploadEnabled(false);
-
-        uploader.setProgressListener(progress -> {
-            System.out.println("Progress: " + progress.getProgress());
-        });
-
-        int MAX_RETRIES = 3;
-        for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-            try {
-                return videoUploader.execute();
-            } catch (SocketTimeoutException | GoogleJsonResponseException e) {
-                if (attempt == MAX_RETRIES) throw e; // Re-throw após tentativas
-                System.err.println("Erro no upload (tentativa " + attempt + "): " + e.getMessage());
-                try {
-                    Thread.sleep(2000 * attempt); // Atraso exponencial
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt(); // Restaura o status de interrupção da thread
-                    throw new RuntimeException("Thread interrompida durante o retry do upload.", ie);
+        // Listener de progresso
+        uploader.setProgressListener(new MediaHttpUploaderProgressListener() {
+            @Override
+            public void progressChanged(MediaHttpUploader uploader) throws IOException {
+                switch (uploader.getUploadState()) {
+                    case INITIATION_STARTED:
+                        System.out.println("Iniciando o upload...");
+                        break;
+                    case MEDIA_IN_PROGRESS:
+                        System.out.printf("Progresso do upload: %.2f%%%n", uploader.getProgress() * 100);
+                        break;
+                    case MEDIA_COMPLETE:
+                        System.out.println("Upload completo.");
+                        break;
+                    default:
+                        System.out.println("Estado desconhecido do upload.");
                 }
             }
-        }
+        });
 
-        throw new RuntimeException("Falha no upload após múltiplas tentativas.");
-    }
-    
-    // private File convertMultipartFileToFile(MultipartFile file) throws IOException {
-    //     File newFile = new File(
-    //             System.getProperty("java.io.tmpdir") 
-    //                 + File.separator 
-    //                 + file.getOriginalFilename());
-    //     file.transferTo(newFile);
-    //     newFile.deleteOnExit();
-    //     return newFile;
-    // }
+        Video newVideo = videoUploader.execute();
 
-    private File convertMultipartFileToFile(MultipartFile file) throws IOException {
-        File tempFile = File.createTempFile("upload_", "_" + file.getOriginalFilename());
-        System.out.println("Arquivo temporário criado em: " + tempFile.getAbsolutePath());
-        file.transferTo(tempFile);
-        tempFile.deleteOnExit();
-        return tempFile;
-    }    
+        String videoUrl = URL + newVideo.getId();
+
+        ThumbnailDetails thumbnailDetails = newVideo.getSnippet().getThumbnails();
+        String thumbnailUrl = thumbnailDetails.getDefault().getUrl();
+
+        return new YouTubeResponse(videoUrl, thumbnailUrl);
+    }  
 
     private enum Acessibilidade {
         PRIVATE, UNLISTED

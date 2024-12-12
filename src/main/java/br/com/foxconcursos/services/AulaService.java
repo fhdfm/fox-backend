@@ -1,11 +1,13 @@
 package br.com.foxconcursos.services;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.tika.Tika;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -69,10 +71,14 @@ public class AulaService {
         AulaConteudo conteudo = request.toModel();
         conteudo.setAulaId(aulaId);
 
+        InputStream inputStream = request.getFile();
+
         StorageInput input = new StorageInput.Builder()
-            .withInputStream(request.getFile())
-            .isPublic(false)
-            .build();
+                .withInputStream(inputStream)
+                .withFileName(request.getFileName())
+                .withMimeType(getMimeType(inputStream))
+                .isPublic(false)
+                .build();
         
         StorageOutput output = this.storageService.upload(input);
 
@@ -100,8 +106,12 @@ public class AulaService {
 
         if (request.hasMedia()) {
             
+            InputStream inputStream = request.getFile();
+
             StorageInput input = new StorageInput.Builder()
-                    .withInputStream(request.getFile())
+                    .withInputStream(inputStream)
+                    .withFileName(request.getFileName())
+                    .withMimeType(getMimeType(inputStream))
                     .isPublic(false)
                     .build();
 
@@ -115,6 +125,11 @@ public class AulaService {
         }
 
         this.conteudoRepository.save(conteudo);
+    }
+
+    private String getMimeType(InputStream inputStream) throws IOException {
+        Tika tika = new Tika();
+        return tika.detect(inputStream);
     }
 
     public List<AulaResponse> buscarPorParametros(String titulo, UUID cursoId, UUID disciplinaId, UUID assuntoId) {

@@ -1,7 +1,6 @@
 package br.com.foxconcursos.services;
 
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
@@ -13,11 +12,10 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.googleapis.media.MediaHttpUploader;
-import com.google.api.client.http.FileContent;
+import com.google.api.client.http.InputStreamContent;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
@@ -66,23 +64,15 @@ public class GoogleDriveService {
 
     public GoogleDriveResponse upload(StorageInput input) throws IOException {
 
-        MultipartFile file = input.getInputStream();
-
-        // Convertendo MultipartFile para java.io.File
-        java.io.File convFile = new java.io.File(System.getProperty("java.io.tmpdir")
-            + java.io.File.separator + file.getOriginalFilename());
+        InputStream inputStream = input.getInputStream();
 
         try {
 
-            FileOutputStream fos = new FileOutputStream(convFile);
-            fos.write(file.getBytes());
-            fos.close();
-
             File fileMetadata = new File();
-            fileMetadata.setName(file.getOriginalFilename()); // Nome do arquivo no Google Drive
+            fileMetadata.setName(input.getFileName()); // Nome do arquivo no Google Drive
             fileMetadata.setParents(Collections.singletonList(this.folderId)); // Pasta no Google Drive
 
-            FileContent mediaContent = new FileContent(file.getContentType(), convFile);
+            InputStreamContent mediaContent = new InputStreamContent(input.getMimeType(), inputStream);
 
             Drive.Files.Create requestStorage = this.driveService.files().create(
                 fileMetadata, mediaContent).setFields("id, webViewLink");
@@ -105,8 +95,8 @@ public class GoogleDriveService {
 
             return new GoogleDriveResponse(uploadedFile.getId());
         } finally {
-            if (convFile.exists())
-                convFile.delete();
+            if (inputStream != null)
+                inputStream.close();
         }
     }
 
@@ -126,23 +116,4 @@ public class GoogleDriveService {
         return response;
 
     }
-
-    // public File getFile(String fileId) throws IOException {
-    //     File file = driveService.files().get(fileId)
-    //     .setFields("id, name, mimeType")
-    //     .execute();
-    //     return file;
-    // }
-
-    // public void deleteEmptyFolder(String folderId) throws IOException {
-    //     FileList files = driveService.files().list()
-    //             .setQ("'" + folderId + "' in parents and trashed = false")
-    //             .setFields("files(id, name)")
-    //             .execute();
-
-    //     if (files.getFiles().isEmpty()) {
-    //         driveService.files().delete(folderId).execute();
-    //     }
-    // }
-
 }
