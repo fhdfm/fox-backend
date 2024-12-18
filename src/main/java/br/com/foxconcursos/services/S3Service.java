@@ -1,9 +1,10 @@
 package br.com.foxconcursos.services;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -12,9 +13,16 @@ import br.com.foxconcursos.dto.S3Response;
 import br.com.foxconcursos.dto.StorageInput;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.AbortMultipartUploadRequest;
+import software.amazon.awssdk.services.s3.model.CompleteMultipartUploadRequest;
+import software.amazon.awssdk.services.s3.model.CompletedMultipartUpload;
+import software.amazon.awssdk.services.s3.model.CompletedPart;
+import software.amazon.awssdk.services.s3.model.CreateMultipartUploadRequest;
+import software.amazon.awssdk.services.s3.model.CreateMultipartUploadResponse;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest.Builder;
+import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
+import software.amazon.awssdk.services.s3.model.UploadPartRequest;
+import software.amazon.awssdk.services.s3.model.UploadPartResponse;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 
@@ -39,9 +47,6 @@ public class S3Service {
 
     public S3Response upload(StorageInput input) throws IOException {
 
-        Builder builder = PutObjectRequest.builder();
-        builder.bucket(this.bucketName);
-
         StringBuilder sb = new StringBuilder();
 
         if (input.isDocument())
@@ -55,26 +60,81 @@ public class S3Service {
 
         sb.append(input.getFileName());
 
-        String fileName = sb.toString();
-        builder.key(fileName);
+        String key = sb.toString();
 
-        if (input.isPublic()) {
-            builder.acl("public-reader");
+        final long partSize = 5 * 1204 * 1024;
+
+        CreateMultipartUploadRequest.Builder createMultipartUploadRequestBuilder = 
+                CreateMultipartUploadRequest.builder()
+                        .bucket(this.bucketName)
+                        .key(key);
+        
+        if (input.isPublic())
+            createMultipartUploadRequestBuilder.acl(ObjectCannedACL.PUBLIC_READ);
+
+        CreateMultipartUploadRequest createMultipartUploadRequest = createMultipartUploadRequestBuilder.build();
+        
+        CreateMultipartUploadResponse createMultipartUploadResponse = 
+            this.client.createMultipartUpload(createMultipartUploadRequest);
+
+        String uploadId = createMultipartUploadResponse.uploadId();
+
+        List<CompletedPart> completedParts = new ArrayList<>();
+        byte[] buffer = new byte[(int) partSize];
+        int partNumber = 1;
+        long uploadedBytes = 0;
+
+        try {
+            int bytesRead;
+            while ((bytesRead = input.getFileInputStream().read(buffer)) != -1) {
+
+                byte[] partData = new byte[bytesRead];
+                System.arraycopy(buffer, 0, partData, 0, bytesRead);
+
+                UploadPartRequest uploadPartRequest = UploadPartRequest.builder()
+                        .bucket(this.bucketName)
+                        .key(key)
+                        .partNumber(partNumber)
+                        .contentLength((long) bytesRead)
+                        .build();
+
+                UploadPartResponse uploadPartResponse = this.client.uploadPart(
+                        uploadPartRequest, RequestBody.fromBytes(partData));
+
+                completedParts.add(CompletedPart.builder()
+                        .partNumber(partNumber)
+                        .eTag(uploadPartResponse.eTag())
+                        .build());
+
+                partNumber++;
+                uploadedBytes += bytesRead;
+
+                System.out.println("Parte " + (partNumber - 1) + " enviada. Total enviado: " + uploadedBytes + " bytes.");
+            }
+
+            CompleteMultipartUploadRequest completeRequest = CompleteMultipartUploadRequest.builder()
+                    .bucket(this.bucketName)
+                    .key(key)
+                    .uploadId(uploadId)
+                    .multipartUpload(
+                        CompletedMultipartUpload.builder()
+                            .parts(completedParts)
+                            .build())
+                    .build();
+
+            this.client.completeMultipartUpload(completeRequest);
+            System.out.println("Upload concluído com sucesso!");
+        } catch (Exception e) {
+            this.client.abortMultipartUpload(
+                    AbortMultipartUploadRequest.builder()
+                            .bucket(this.bucketName)
+                            .key(key)
+                            .uploadId(uploadId)
+                            .build());
+
+            throw new RuntimeException("Erro durante o upload multipart", e);
         }
 
-        PutObjectRequest request = builder.build();
-
-        try (InputStream fileInputStream = input.getFileInputStream()) {
-           this.client.putObject(request, RequestBody.fromInputStream(fileInputStream, input.getFileSize()));
-        }
-
-        String url = "https://" + this.bucketName + ".s3." + this.region + ".amazonaws.com/" + fileName;
-
-        return S3Response.builder()
-            .key(fileName)
-            .url(url)
-            .mimeType(input.getMimeType())
-            .build();
     }
 
     public S3Response getFile(String key) {
