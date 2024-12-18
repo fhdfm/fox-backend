@@ -124,6 +124,15 @@ public class S3Service {
 
             this.client.completeMultipartUpload(completeRequest);
             System.out.println("Upload concluído com sucesso!");
+            
+            String url = "https://" + bucketName + ".s3.amazonaws.com/" + key;
+
+            return S3Response.builder()
+                    .key(key)
+                    .url(url)
+                    .mimeType(input.getMimeType())
+                    .build();
+
         } catch (Exception e) {
             this.client.abortMultipartUpload(
                     AbortMultipartUploadRequest.builder()
