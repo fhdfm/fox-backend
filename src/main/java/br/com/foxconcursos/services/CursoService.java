@@ -67,14 +67,15 @@ public class CursoService {
         MultipartFile file = request.getImagem();
 
         StorageInput input = new StorageInput.Builder()
-                .withInputStream(file.getInputStream())
-                .withMimeType(file.getContentType())
+                .withFileInputStream(file.getInputStream())
                 .withFileName(file.getOriginalFilename())
+                .withFileSize(file.getSize())
+                .withMimeType(file.getContentType())
                 .isPublic(true)
                 .build();
 
         StorageOutput output = this.storageService.upload(input);
-        curso.setImagem(output.getFileId());
+        curso.setImagem(output.getUrl());
 
         this.cursoRepository.save(curso);
 
@@ -93,14 +94,15 @@ public class CursoService {
             MultipartFile file = request.getImagem();
 
             StorageInput input = new StorageInput.Builder()
-                    .withInputStream(file.getInputStream())
+                    .withFileInputStream(file.getInputStream())
                     .withMimeType(file.getContentType())
                     .withFileName(file.getOriginalFilename())
+                    .withFileSize(file.getSize())
                     .isPublic(true)
                     .build();
 
             StorageOutput output = this.storageService.upload(input);
-            curso.setImagem(output.getFileId());
+            curso.setImagem(output.getUrl());
         }
 
         this.cursoRepository.save(curso);

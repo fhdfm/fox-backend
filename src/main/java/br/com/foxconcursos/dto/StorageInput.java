@@ -7,22 +7,24 @@ import br.com.foxconcursos.util.FileTypeChecker;
 
 public class StorageInput {
 
-    private final InputStream inputStream; // Conteúdo do arquivo
+    private final InputStream fileInputStream; // Conteúdo do arquivo
     private final boolean isPublic;       // Indica se o arquivo é público ou privado
     private final String fileName;        // Nome do arquivo
     private final String mimeType;        // Tipo MIME do arquivo
+    private final long fileSize;
 
     // Construtor privado para ser usado pelo Builder
     private StorageInput(Builder builder) {
-        this.inputStream = builder.inputStream;
+        this.fileInputStream = builder.fileInputStream;
         this.isPublic = builder.isPublic;
         this.fileName = builder.fileName;
         this.mimeType = builder.mimeType;
+        this.fileSize = builder.fileSize;
     }
 
     // Getters
-    public InputStream getInputStream() {
-        return inputStream;
+    public InputStream getFileInputStream() {
+        return fileInputStream;
     }
 
     public boolean isPublic() {
@@ -37,20 +39,33 @@ public class StorageInput {
         return mimeType;
     }
 
+    public long getFileSize() {
+        return fileSize;
+    }
+
     public boolean isMovie() throws IOException {
-        return FileTypeChecker.isMovie(inputStream);
+        return FileTypeChecker.isMovie(fileInputStream);
+    }
+
+    public boolean isDocument() throws IOException {
+        return FileTypeChecker.isDocument(fileInputStream);
+    }
+
+    public boolean isImage() throws IOException {
+        return FileTypeChecker.isImage(fileInputStream);
     }
 
     // Builder estático
     public static class Builder {
-        private InputStream inputStream;
+        private InputStream fileInputStream;
         private boolean isPublic;
         private String fileName;
         private String mimeType;
+        private long fileSize;
 
         // Métodos do Builder
-        public Builder withInputStream(InputStream inputStream) {
-            this.inputStream = inputStream;
+        public Builder withFileInputStream(InputStream fileInputStream) {
+            this.fileInputStream = fileInputStream;
             return this;
         }
 
@@ -69,17 +84,30 @@ public class StorageInput {
             return this;
         }
 
+        public Builder withFileSize(long fileSize) {
+            this.fileSize = fileSize;
+            return this;
+        }
+
         // Método para construir o objeto
         public StorageInput build() {
-            if (inputStream == null) {
+            
+            if (fileInputStream == null) {
                 throw new IllegalArgumentException("InputStream é obrigatório.");
             }
+
             if (fileName == null || fileName.isEmpty()) {
                 throw new IllegalArgumentException("FileName é obrigatório.");
             }
+
             if (mimeType == null || mimeType.isEmpty()) {
                 throw new IllegalArgumentException("MimeType é obrigatório.");
             }
+
+            if (fileSize == 0) {
+                throw new IllegalArgumentException("FileSize é obrigatório.");
+            }
+
             return new StorageInput(this);
         }
     }

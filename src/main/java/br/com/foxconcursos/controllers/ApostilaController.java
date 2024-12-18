@@ -63,17 +63,18 @@ public class ApostilaController {
         MultipartFile file = request.getImagem();
 
         StorageInput input = new StorageInput.Builder()
-                .withInputStream(file.getInputStream())
-                .isPublic(false)
+                .withFileInputStream(file.getInputStream())
+                .isPublic(true)
                 .withFileName(file.getOriginalFilename())
                 .withMimeType(file.getContentType())
+                .withFileSize(file.getSize())
                 .build();
 
-        if (input.isMovie()) 
+        if (!input.isImage()) 
             throw new IllegalArgumentException("Tipo de media não permitida.");
         
         StorageOutput output = storageService.upload(input);
-        apostila.setImagem(output.getFileId());
+        apostila.setImagem(output.getUrl());
 
         this.repository.save(apostila);
 
@@ -97,17 +98,18 @@ public class ApostilaController {
             MultipartFile file = request.getImagem();
 
             StorageInput input = new StorageInput.Builder()
-                    .withInputStream(file.getInputStream())
-                    .isPublic(false)
+                    .withFileInputStream(file.getInputStream())
+                    .isPublic(true)
                     .withFileName(file.getOriginalFilename())
                     .withMimeType(file.getContentType())
+                    .withFileSize(file.getSize())
                     .build();
 
-            if (input.isMovie()) 
+            if (!input.isImage()) 
                 throw new IllegalArgumentException("Tipo de media não permitida.");
 
             StorageOutput output = storageService.upload(input);
-            apostila.setImagem(output.getFileId());
+            apostila.setImagem(output.getUrl());
         }
 
         apostila.updateFromRequest(id, request);

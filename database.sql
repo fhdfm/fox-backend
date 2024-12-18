@@ -381,16 +381,16 @@ CREATE TABLE aulas (
 );
 
 CREATE TABLE aula_conteudo (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4() UNIQUE NOT NULL,
-    aula_id UUID NOT NULL,
-    tipo VARCHAR(20) NOT NULL,
-    titulo VARCHAR(100) NOT NULL,
-    video VARCHAR(200),
-    thumbnail VARCHAR(200),
-    file_id VARCHAR(100),
-    version INT DEFAULT 0 NOT NULL,
-    CONSTRAINT fk_aula FOREIGN KEY (aula_id) REFERENCES aulas(id)
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL UNIQUE, -- Identificador único, chave primária
+    aula_id UUID NOT NULL REFERENCES aulas(id),    -- Relacionamento com tabela aulas
+    tipo VARCHAR(30) NOT NULL,                    -- Tipo do conteúdo
+    titulo VARCHAR(100) NOT NULL,                 -- Título do conteúdo
+    url VARCHAR(200) NOT NULL,                    -- URL do conteúdo
+    key VARCHAR(100) NOT NULL,                    -- Chave do arquivo no S3
+    mimetype VARCHAR(50) NOT NULL,                -- Tipo MIME do conteúdo
+    version INT NOT NULL DEFAULT 0                -- Controle de versão, valor padrão = 0
 );
+
 
 CREATE TABLE progresso (
     usuario_id UUID NOT NULL,

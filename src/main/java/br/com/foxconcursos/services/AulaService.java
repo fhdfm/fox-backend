@@ -1,16 +1,15 @@
 package br.com.foxconcursos.services;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import org.apache.tika.Tika;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import br.com.foxconcursos.domain.Aula;
 import br.com.foxconcursos.domain.AulaConteudo;
@@ -66,28 +65,27 @@ public class AulaService {
     @Transactional
     public UUID criarConteudo(UUID aulaId, AulaConteudoRequest request) 
             throws IOException, GeneralSecurityException {
+        
         request.validate(false);
         
         AulaConteudo conteudo = request.toModel();
         conteudo.setAulaId(aulaId);
 
-        InputStream inputStream = request.getFile();
+        MultipartFile file = request.getFile();
 
         StorageInput input = new StorageInput.Builder()
-                .withInputStream(inputStream)
-                .withFileName(request.getFileName())
-                .withMimeType(getMimeType(inputStream))
+                .withFileInputStream(file.getInputStream())
+                .withFileName(file.getOriginalFilename())
+                .withMimeType(file.getContentType())
+                .withFileSize(file.getSize())
                 .isPublic(false)
                 .build();
         
         StorageOutput output = this.storageService.upload(input);
-
-        if (input.isMovie()) {
-            conteudo.setVideo(output.getVideoUrl());
-            conteudo.setThumbnail(output.getThumbnailUrl());
-        } else {
-            conteudo.setFileId(output.getFileId());
-        }
+        
+        conteudo.setKey(output.getKey());
+        conteudo.setUrl(output.getUrl());
+        conteudo.setMimetype(output.getMimeType());
 
         this.conteudoRepository.save(conteudo);
         return conteudo.getId();
@@ -96,6 +94,7 @@ public class AulaService {
     @Transactional
     public void atualizarConteudo(UUID aulaId, UUID conteudoId, AulaConteudoRequest request) 
             throws IOException, GeneralSecurityException {
+        
         request.validate(true);
 
         AulaConteudo conteudo = this.conteudoRepository.findById(conteudoId).orElseThrow(
@@ -106,30 +105,23 @@ public class AulaService {
 
         if (request.hasMedia()) {
             
-            InputStream inputStream = request.getFile();
+            MultipartFile file = request.getFile();
 
             StorageInput input = new StorageInput.Builder()
-                    .withInputStream(inputStream)
-                    .withFileName(request.getFileName())
-                    .withMimeType(getMimeType(inputStream))
+                    .withFileInputStream(file.getInputStream())
+                    .withFileName(file.getOriginalFilename())
+                    .withMimeType(file.getContentType())
+                    .withFileSize(file.getSize())
                     .isPublic(false)
                     .build();
 
             StorageOutput output = this.storageService.upload(input);
-            if (input.isMovie()) {
-                conteudo.setVideo(output.getVideoUrl());
-                conteudo.setThumbnail(output.getThumbnailUrl());
-            } else {
-                conteudo.setFileId(output.getFileId());
-            }
+            conteudo.setKey(output.getKey());
+            conteudo.setUrl(output.getUrl());
+            conteudo.setMimetype(output.getMimeType());
         }
 
         this.conteudoRepository.save(conteudo);
-    }
-
-    private String getMimeType(InputStream inputStream) throws IOException {
-        Tika tika = new Tika();
-        return tika.detect(inputStream);
     }
 
     public List<AulaResponse> buscarPorParametros(String titulo, UUID cursoId, UUID disciplinaId, UUID assuntoId) {

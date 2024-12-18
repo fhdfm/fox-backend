@@ -127,4 +127,14 @@ public class CursoAlunoService {
             throw new IllegalStateException("Acesso Negado.");
     }
 
+    public String obterKeyFromFileId(UUID fileId) {
+        
+        String sql = "select key from aula_conteudo where file_id = ?";
+
+        return jdbcTemplate.query(sql, (rs) -> {
+            return rs.getString("key");
+        }, fileId);
+
+    }
+
 }

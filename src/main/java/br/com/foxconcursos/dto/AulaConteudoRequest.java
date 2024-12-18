@@ -1,6 +1,6 @@
 package br.com.foxconcursos.dto;
 
-import java.io.InputStream;
+import org.springframework.web.multipart.MultipartFile;
 
 import br.com.foxconcursos.domain.AulaConteudo;
 import br.com.foxconcursos.domain.TipoArquivo;
@@ -9,8 +9,7 @@ public class AulaConteudoRequest {
 
     private TipoArquivo tipo;
     private String titulo;
-    private InputStream file;
-    private String fileName; // Nome do arquivo
+    private MultipartFile file;
 
     // Construtor padrão
     public AulaConteudoRequest() {}
@@ -56,20 +55,12 @@ public class AulaConteudoRequest {
         this.titulo = titulo;
     }
 
-    public InputStream getFile() {
+    public MultipartFile getFile() {
         return file;
     }
 
-    public void setFile(InputStream file) {
+    public void setFile(MultipartFile file) {
         this.file = file;
-    }
-
-    public String getFileName() {
-        return fileName;
-    }
-
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
     }
 
     public boolean hasMedia() {

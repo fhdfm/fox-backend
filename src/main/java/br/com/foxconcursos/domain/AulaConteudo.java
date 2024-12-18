@@ -16,9 +16,9 @@ public class AulaConteudo {
     private UUID aulaId;
     private TipoArquivo tipo;
     private String titulo;
-    private String video;
-    private String thumbnail;
-    private String fileId;
+    private String url;
+    private String key;
+    private String mimetype;
 
     @Version
     private int version;
@@ -26,14 +26,25 @@ public class AulaConteudo {
     // Construtor padrão
     public AulaConteudo() {}
 
-        // Construtor
+    // Construtor com campos principais
+    public AulaConteudo(UUID id, UUID aulaId, TipoArquivo tipo, String titulo, String url, String key, String mimetype) {
+        this.id = id;
+        this.aulaId = aulaId;
+        this.tipo = tipo;
+        this.titulo = titulo;
+        this.url = url;
+        this.key = key;
+        this.mimetype = mimetype;
+    }
+
     public AulaConteudo(TipoArquivo tipo, String titulo) {
         this.tipo = tipo;
         this.titulo = titulo;
     }
 
+    // Método para conversão para DTO (ConteudoResponse)
     public ConteudoResponse toAssembly() {
-        return new ConteudoResponse(aulaId, tipo, titulo, video, thumbnail, fileId);
+        return new ConteudoResponse(id, aulaId, tipo, titulo, url, key, mimetype);
     }
 
     // Getters e Setters
@@ -69,27 +80,35 @@ public class AulaConteudo {
         this.titulo = titulo;
     }
 
-    public String getVideo() {
-        return video;
+    public String getUrl() {
+        return url;
     }
 
-    public void setVideo(String video) {
-        this.video = video;
+    public void setUrl(String url) {
+        this.url = url;
     }
 
-    public String getThumbnail() {
-        return thumbnail;
+    public String getKey() {
+        return key;
     }
 
-    public void setThumbnail(String thumbnail) {
-        this.thumbnail = thumbnail;
+    public void setKey(String key) {
+        this.key = key;
     }
 
-    public String getFileId() {
-        return fileId;
+    public String getMimetype() {
+        return mimetype;
     }
 
-    public void setFileId(String fileId) {
-        this.fileId = fileId;
+    public void setMimetype(String mimetype) {
+        this.mimetype = mimetype;
+    }
+
+    public int getVersion() {
+        return version;
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
     }
 }
