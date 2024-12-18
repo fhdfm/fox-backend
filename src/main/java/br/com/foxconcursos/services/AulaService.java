@@ -73,9 +73,16 @@ public class AulaService {
 
         MultipartFile file = request.getFile();
 
+        String destino = "";
+
+        switch (request.getTipo()){
+            case VIDEO -> destino = "videos/";
+            case APOSTILA -> destino = "apostilas/";
+        }
+
         StorageInput input = new StorageInput.Builder()
                 .withFileInputStream(file.getInputStream())
-                .withFileName(file.getOriginalFilename())
+                .withFileName(destino + file.getOriginalFilename())
                 .withMimeType(file.getContentType())
                 .withFileSize(file.getSize())
                 .isPublic(false)

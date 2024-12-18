@@ -62,7 +62,7 @@ public class S3Service {
 
         String key = sb.toString();
 
-        final long partSize = 5 * 1204 * 1024;
+        final long partSize = 5 * 1024 * 1024;
 
         CreateMultipartUploadRequest.Builder createMultipartUploadRequestBuilder = 
                 CreateMultipartUploadRequest.builder()
@@ -95,6 +95,7 @@ public class S3Service {
                         .bucket(this.bucketName)
                         .key(key)
                         .partNumber(partNumber)
+                        .uploadId(uploadId)
                         .contentLength((long) bytesRead)
                         .build();
 

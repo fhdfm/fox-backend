@@ -53,10 +53,10 @@ public class AulaController {
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @PostMapping(value = "/api/admin/aula/{aulaId}/conteudo",
-        consumes = MediaType.APPLICATION_JSON_VALUE, 
+        consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UUID> cadastrarConteudo(
-            UUID aulaId, @ModelAttribute AulaConteudoRequest request) throws IOException, GeneralSecurityException {
+           @PathVariable UUID aulaId, @ModelAttribute AulaConteudoRequest request) throws IOException, GeneralSecurityException {
                                        
         return ResponseEntity
                 .status(HttpStatus.CREATED)
