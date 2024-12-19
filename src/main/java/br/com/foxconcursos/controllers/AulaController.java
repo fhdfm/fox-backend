@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,7 +22,7 @@ import br.com.foxconcursos.dto.AulaConteudoRequest;
 import br.com.foxconcursos.dto.AulaRequest;
 import br.com.foxconcursos.dto.AulaResponse;
 import br.com.foxconcursos.services.AulaService;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+
 
 @RestController
 public class AulaController {
