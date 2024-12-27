@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -54,7 +53,7 @@ public class ApostilaController {
     @Transactional
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @PostMapping(value = "/api/admin/apostilas", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UUID> create(@ModelAttribute @RequestBody ApostilaRequest request) throws IOException, GeneralSecurityException {
+    public ResponseEntity<UUID> create(@ModelAttribute ApostilaRequest request) throws IOException, GeneralSecurityException {
 
         request.validate();
 
@@ -85,7 +84,7 @@ public class ApostilaController {
     @Transactional
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @PutMapping(value = "/api/admin/apostilas/{id}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<String> update(@PathVariable UUID id, @ModelAttribute @RequestBody ApostilaRequest request) throws IOException, GeneralSecurityException {
+    public ResponseEntity<String> update(@PathVariable UUID id, @ModelAttribute ApostilaRequest request) throws IOException, GeneralSecurityException {
 
         Apostila apostila = this.repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
