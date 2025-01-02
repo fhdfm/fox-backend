@@ -1,7 +1,5 @@
 package br.com.foxconcursos.services;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -58,7 +56,7 @@ public class CursoService {
         return new ProdutoCursoResponse(curso, banca.getNome());
     }
 
-    public UUID create(CursoRequest request) throws IOException, GeneralSecurityException {
+    public UUID create(CursoRequest request) throws Exception {
 
         validarEntrada(request, true);
 
@@ -68,7 +66,7 @@ public class CursoService {
 
         StorageInput input = new StorageInput.Builder()
                 .withFileInputStream(file.getInputStream())
-                .withFileName(file.getOriginalFilename())
+                .withFileName("imagens/" + file.getOriginalFilename())
                 .withFileSize(file.getSize())
                 .withMimeType(file.getContentType())
                 .isPublic(true)
@@ -82,7 +80,7 @@ public class CursoService {
         return curso.getId();
     }
 
-    public void update(UUID id, CursoRequest request) throws IOException, GeneralSecurityException {
+    public void update(UUID id, CursoRequest request) throws Exception {
 
         Curso curso = this.cursoRepository.findById(id)
                 .orElseThrow(() -> new IllegalAccessError("Curso não encontrado."));
@@ -96,7 +94,7 @@ public class CursoService {
             StorageInput input = new StorageInput.Builder()
                     .withFileInputStream(file.getInputStream())
                     .withMimeType(file.getContentType())
-                    .withFileName(file.getOriginalFilename())
+                    .withFileName("imagens/" + file.getOriginalFilename())
                     .withFileSize(file.getSize())
                     .isPublic(true)
                     .build();

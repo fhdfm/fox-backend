@@ -7,7 +7,7 @@ import br.com.foxconcursos.dto.StorageOutput;
 
 public interface StorageService {
 
-    StorageOutput upload(StorageInput file) throws IOException;
+    StorageOutput upload(StorageInput file) throws Exception;
 
     String retrieveMedia(String fileId) throws IOException;
     

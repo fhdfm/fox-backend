@@ -1,7 +1,5 @@
 package br.com.foxconcursos.controllers;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.UUID;
 
@@ -46,7 +44,7 @@ public class CursoController {
 
     @PostMapping(value = "/api/admin/cursos", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
-    public ResponseEntity<UUID> create(@RequestBody @ModelAttribute CursoRequest request) throws IOException, GeneralSecurityException {
+    public ResponseEntity<UUID> create(@RequestBody @ModelAttribute CursoRequest request) throws Exception {
 
         UUID newCurso = this.cursoService.create(request);
 
@@ -55,7 +53,7 @@ public class CursoController {
 
     @PutMapping(value = "/api/admin/cursos/{id}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
-    public ResponseEntity<String> update(@PathVariable UUID id, @RequestBody @ModelAttribute CursoRequest request) throws IOException, GeneralSecurityException {
+    public ResponseEntity<String> update(@PathVariable UUID id, @RequestBody @ModelAttribute CursoRequest request) throws Exception {
 
         this.cursoService.update(id, request);
 

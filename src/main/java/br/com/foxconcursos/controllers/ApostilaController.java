@@ -1,7 +1,5 @@
 package br.com.foxconcursos.controllers;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -53,7 +51,7 @@ public class ApostilaController {
     @Transactional
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @PostMapping(value = "/api/admin/apostilas", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UUID> create(@ModelAttribute ApostilaRequest request) throws IOException, GeneralSecurityException {
+    public ResponseEntity<UUID> create(@ModelAttribute ApostilaRequest request) throws Exception {
 
         request.validate();
 
@@ -64,7 +62,7 @@ public class ApostilaController {
         StorageInput input = new StorageInput.Builder()
                 .withFileInputStream(file.getInputStream())
                 .isPublic(true)
-                .withFileName(file.getOriginalFilename())
+                .withFileName("imagens/" +file.getOriginalFilename())
                 .withMimeType(file.getContentType())
                 .withFileSize(file.getSize())
                 .build();
@@ -84,7 +82,7 @@ public class ApostilaController {
     @Transactional
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @PutMapping(value = "/api/admin/apostilas/{id}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<String> update(@PathVariable UUID id, @ModelAttribute ApostilaRequest request) throws IOException, GeneralSecurityException {
+    public ResponseEntity<String> update(@PathVariable UUID id, @ModelAttribute ApostilaRequest request) throws Exception {
 
         Apostila apostila = this.repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
@@ -99,7 +97,7 @@ public class ApostilaController {
             StorageInput input = new StorageInput.Builder()
                     .withFileInputStream(file.getInputStream())
                     .isPublic(true)
-                    .withFileName(file.getOriginalFilename())
+                    .withFileName("imagens/" + file.getOriginalFilename())
                     .withMimeType(file.getContentType())
                     .withFileSize(file.getSize())
                     .build();

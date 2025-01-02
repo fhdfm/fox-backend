@@ -20,14 +20,19 @@ public class StorageServiceImpl implements StorageService {
     }
 
     @Override
-    public StorageOutput upload(StorageInput file) throws IOException {
-        S3Response response = this.service.upload(file);
+    public StorageOutput upload(StorageInput object) throws Exception {
+        
+        S3Response response;
+        if (object.isFileLargerThan5MB())
+            response = this.service.uploadLargeFiles(object);
+        else
+            response = this.service.upload(object);
+
         return response.get();
     }
 
     @Override
-    public String retrieveMedia(String fileId) throws IOException {
-        S3Response response = this.service.getFile(fileId);
-        return response.getUrl();
-    } 
+    public String retrieveMedia(String key) throws IOException {
+        return this.service.getFile(key);
+    }
 }

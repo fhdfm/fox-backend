@@ -55,6 +55,11 @@ public class StorageInput {
         return FileTypeChecker.isImage(fileInputStream);
     }
 
+    public boolean isFileLargerThan5MB() {
+        long fiveMBInBytes = 5 * 1024 * 1024; // 5 MB em bytes
+        return fileSize > fiveMBInBytes;
+    }    
+
     // Builder estático
     public static class Builder {
         private InputStream fileInputStream;

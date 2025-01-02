@@ -89,31 +89,31 @@
 		<dependency>
 			<groupId>org.ehcache</groupId>
 			<artifactId>ehcache</artifactId>
+		</dependency>								
+		<dependency>
+			<groupId>org.apache.tika</groupId>
+			<artifactId>tika-core</artifactId>
+			<version>2.4.1</version>
 		</dependency>
+		<!-- AWS SDK for S3 -->
 		<dependency>
 			<groupId>software.amazon.awssdk</groupId>
 			<artifactId>s3</artifactId>
-			<version>2.20.10</version>
+			<version>2.20.37</version>
 		</dependency>
-		<!-- Upload -->
+		<!-- Apache HTTP Client for AWS SDK -->
 		<dependency>
-			<groupId>jakarta.servlet</groupId>
-			<artifactId>jakarta.servlet-api</artifactId>
-			<version>5.0.0</version>
-			<scope>provided</scope>
+			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>apache-client</artifactId>
+			<version>2.20.37</version>
 		</dependency>
+		<!-- Commons FileUpload for Multipart Support -->
 		<dependency>
 			<groupId>commons-fileupload</groupId>
 			<artifactId>commons-fileupload</artifactId>
 			<version>1.4</version>
 		</dependency>
-		<!-- /Upload -->
-		<dependency>
-			<groupId>org.apache.tika</groupId>
-			<artifactId>tika-core</artifactId>
-			<version>2.4.1</version>
-		</dependency>		
- </dependencies>
+ 	</dependencies>
 
 	<build>
 		<plugins>

@@ -1,7 +1,5 @@
 package br.com.foxconcursos.controllers;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.UUID;
 
@@ -57,7 +55,7 @@ public class AulaController {
         consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UUID> cadastrarConteudo(
-           @PathVariable UUID aulaId, @ModelAttribute AulaConteudoRequest request) throws IOException, GeneralSecurityException {
+           @PathVariable UUID aulaId, @ModelAttribute AulaConteudoRequest request) throws Exception {
                                        
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -69,7 +67,7 @@ public class AulaController {
         consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE}, 
         produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> atualizarConteudo(
-            UUID aulaId, UUID conteudoId, @ModelAttribute AulaConteudoRequest request) throws IOException, GeneralSecurityException {
+            UUID aulaId, UUID conteudoId, @ModelAttribute AulaConteudoRequest request) throws Exception {
         
         this.service.atualizarConteudo(aulaId, conteudoId, request);
 

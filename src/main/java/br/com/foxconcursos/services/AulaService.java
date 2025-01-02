@@ -1,7 +1,5 @@
 package br.com.foxconcursos.services;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -64,7 +62,7 @@ public class AulaService {
 
     @Transactional
     public UUID criarConteudo(UUID aulaId, AulaConteudoRequest request) 
-            throws IOException, GeneralSecurityException {
+            throws Exception {
         
         request.validate(false);
         
@@ -100,7 +98,7 @@ public class AulaService {
 
     @Transactional
     public void atualizarConteudo(UUID aulaId, UUID conteudoId, AulaConteudoRequest request) 
-            throws IOException, GeneralSecurityException {
+            throws Exception {
         
         request.validate(true);
 
