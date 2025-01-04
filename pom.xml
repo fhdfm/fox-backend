@@ -16,6 +16,17 @@
 	<properties>
 		<java.version>21</java.version>
 	</properties>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>software.amazon.awssdk</groupId>
+				<artifactId>bom</artifactId>
+				<version>2.27.21</version> <!-- Substitua pela versão correta -->
+				<scope>import</scope>
+				<type>pom</type>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>		
 	<dependencies>	
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -95,18 +106,14 @@
 			<artifactId>tika-core</artifactId>
 			<version>2.4.1</version>
 		</dependency>
-		<!-- AWS SDK for S3 -->
-		<dependency>
-			<groupId>software.amazon.awssdk</groupId>
-			<artifactId>s3</artifactId>
-			<version>2.20.37</version>
-		</dependency>
-		<!-- Apache HTTP Client for AWS SDK -->
-		<dependency>
-			<groupId>software.amazon.awssdk</groupId>
-			<artifactId>apache-client</artifactId>
-			<version>2.20.37</version>
-		</dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>apache-client</artifactId>
+        </dependency>				
 		<!-- Commons FileUpload for Multipart Support -->
 		<dependency>
 			<groupId>commons-fileupload</groupId>

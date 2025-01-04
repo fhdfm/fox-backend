@@ -7,6 +7,7 @@ import java.net.URL;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -19,15 +20,14 @@ import br.com.foxconcursos.dto.S3Response;
 import br.com.foxconcursos.dto.StorageInput;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.http.SdkHttpClient;
 import software.amazon.awssdk.http.apache.ApacheHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.AbortMultipartUploadRequest;
-import software.amazon.awssdk.services.s3.model.CompleteMultipartUploadRequest;
 import software.amazon.awssdk.services.s3.model.CompletedMultipartUpload;
 import software.amazon.awssdk.services.s3.model.CompletedPart;
-import software.amazon.awssdk.services.s3.model.CreateMultipartUploadRequest;
 import software.amazon.awssdk.services.s3.model.CreateMultipartUploadResponse;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
@@ -52,18 +52,30 @@ public class S3Service {
     private String secretKey;
 
     private S3Client getClient() {
+        // Configuração do cliente HTTP (bloqueante)
+        SdkHttpClient httpClient = ApacheHttpClient.builder()
+            .maxConnections(50) // Ajuste conforme necessário
+            .connectionTimeout(Duration.ofSeconds(60)) // Tempo limite de conexão
+            .socketTimeout(Duration.ofSeconds(60)) // Tempo limite de leitura/escrita no socket
+            .build();
+
+        // Configuração personalizada para o cliente S3
+        ClientOverrideConfiguration overrideConfig = ClientOverrideConfiguration.builder()
+            .apiCallTimeout(Duration.ofMinutes(2)) // Tempo total para chamadas
+            .apiCallAttemptTimeout(Duration.ofSeconds(90)) // Tempo limite por tentativa
+            .build();
+
+        // Provedor de credenciais
+        AwsBasicCredentials credentials = AwsBasicCredentials.create(accessKey, secretKey);
+        StaticCredentialsProvider credentialsProvider = StaticCredentialsProvider.create(credentials);
+
+        // Construção do cliente S3 bloqueante
         return S3Client.builder()
-                .region(Region.of(region))
-                .credentialsProvider(
-                    StaticCredentialsProvider.create(
-                        AwsBasicCredentials.create(accessKey, secretKey)))
-                .httpClient(ApacheHttpClient.builder()
-                        .maxConnections(30)
-                        .connectionTimeout(Duration.ofSeconds(10))
-                        .connectionTimeout(Duration.ofSeconds(10))
-                        .socketTimeout(Duration.ofSeconds(30))
-                        .build())   
-                .build();
+            .httpClient(httpClient)
+            .overrideConfiguration(overrideConfig)
+            .region(Region.of(region))
+            .credentialsProvider(credentialsProvider)
+            .build();
     }
 
     public S3Response upload(StorageInput object) {
@@ -74,6 +86,7 @@ public class S3Service {
             PutObjectRequest request = PutObjectRequest.builder()
                     .bucket(bucketName)
                     .key(fileName)
+                    .contentType(object.getMimeType())
                     .build();
 
             getClient().putObject(request, RequestBody.fromInputStream(inputStream, object.getFileSize()));
@@ -89,84 +102,89 @@ public class S3Service {
                 .build();
     }
 
-    public S3Response uploadLargeFiles(StorageInput object) throws Exception {
+    public S3Response uploadLargeFiles(StorageInput input) {
 
-        final int partSize = 25 * 1024 * 1024; // 25MB
-
-        int totalParts = (int) Math.ceil((double) object.getFileSize() / partSize);
-
-        String fileName = object.getFileName();
-
-        S3Client s3Client = getClient();
-        CreateMultipartUploadResponse response =  s3Client.createMultipartUpload(CreateMultipartUploadRequest.builder()
+        CreateMultipartUploadResponse createMultipartUploadResponse = this.getClient().createMultipartUpload(b -> b
                 .bucket(bucketName)
-                .key(fileName)
-                .build());
+                .key(input.getFileName())
+                .contentType(input.getMimeType()));
 
-        String uploadId = response.uploadId();
+        String uploadId = createMultipartUploadResponse.uploadId();
 
-        ExecutorService executor = Executors.newFixedThreadPool(Math.min(totalParts, 10));
+        int partNumber = 1;
+        int partSize = 25 * 1024 * 1024; // 10 MB
         List<Future<CompletedPart>> futures = new ArrayList<>();
+        ExecutorService executor = Executors.newFixedThreadPool(5); // Número de threads
 
-        try (BufferedInputStream bis = new BufferedInputStream(object.getFileInputStream())) {
+        try (BufferedInputStream bis = new BufferedInputStream(input.getFileInputStream())) {
             byte[] buffer = new byte[partSize];
-            int partNumber = 1;
             int bytesRead;
-            
+
             while ((bytesRead = bis.read(buffer)) != -1) {
                 final int partNum = partNumber++;
-                final int readBytes = bytesRead;
+                final byte[] partData = new byte[bytesRead];
+                System.arraycopy(buffer, 0, partData, 0, bytesRead);
 
-                byte[] partData = new byte[readBytes];
-                System.arraycopy(buffer, 0, partData, 0, readBytes);
-
+                // Envia a parte em uma thread separada
                 futures.add(executor.submit(() -> {
-                    UploadPartRequest partRequest = UploadPartRequest.builder()
+                    UploadPartRequest uploadPartRequest = UploadPartRequest.builder()
                             .bucket(bucketName)
-                            .key(fileName)
+                            .key(input.getFileName())
                             .uploadId(uploadId)
                             .partNumber(partNum)
                             .build();
 
-                    UploadPartResponse partResponse = s3Client.uploadPart(partRequest,
+                    UploadPartResponse uploadPartResponse = getClient().uploadPart(uploadPartRequest,
                             RequestBody.fromBytes(partData));
 
                     return CompletedPart.builder()
                             .partNumber(partNum)
-                            .eTag(partResponse.eTag())
+                            .eTag(uploadPartResponse.eTag())
                             .build();
-                }));    
-            } 
+                }));
+            }
         } catch (IOException e) {
-            s3Client.abortMultipartUpload(AbortMultipartUploadRequest.builder()
-                    .bucket(bucketName)
-                    .key(fileName)
-                    .uploadId(uploadId)
-                    .build());
-            throw new RuntimeException("Erro ao dividir e enviar partes do arquivo: " + e.getMessage(), e);
+            e.printStackTrace();
+            throw new RuntimeException("Failed during upload part process: " + e.getMessage(), e);
         }
 
         executor.shutdown();
-        executor.awaitTermination(1, TimeUnit.HOURS);
+        try {
+            executor.awaitTermination(1, TimeUnit.HOURS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Executor interrupted during upload", e);
+        }
 
         List<CompletedPart> completedParts = new ArrayList<>();
         for (Future<CompletedPart> future : futures) {
-            completedParts.add(future.get());
+            try {
+                completedParts.add(future.get());
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException("Failed to upload a part: " + e.getMessage(), e);
+            }
         }
 
-        CompleteMultipartUploadRequest completeRequest = CompleteMultipartUploadRequest.builder()
-                .bucket(bucketName)
-                .key(fileName)
-                .uploadId(uploadId)
-                .multipartUpload(CompletedMultipartUpload.builder()
-                        .parts(completedParts)
-                        .build())
-                .build();
+        try {
+            this.getClient().completeMultipartUpload(b -> b
+                    .bucket(this.bucketName)
+                    .key(input.getFileName())
+                    .uploadId(uploadId)
+                    .multipartUpload(CompletedMultipartUpload.builder()
+                            .parts(completedParts)
+                            .build()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to complete multipart upload: " + e.getMessage(), e);
+        }
 
-        s3Client.completeMultipartUpload(completeRequest);
+        String fileUrl = String.format("https://%s.s3.amazonaws.com/%s", bucketName, input.getFileName());
+        String mimeType = input.getMimeType();
 
         return S3Response.builder()
-                .key(fileName)
+                .key(input.getFileName())
+                .url(fileUrl)
+                .mimeType(mimeType)
                 .build();
     }
 
