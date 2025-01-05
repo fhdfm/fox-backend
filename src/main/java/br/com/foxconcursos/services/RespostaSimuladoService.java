@@ -122,7 +122,8 @@ public class RespostaSimuladoService {
 
         String findBySimuladoIdAndUsuarioId = """
                 select id, version from respostas_simulado where simulado_id = ?
-                and usuario_id = ? and status = 'EM_ANDAMENTO';                
+                and usuario_id = ? and status = 'EM_ANDAMENTO' 
+                for update                
         """;
                 
         RespostaSimulado respostaSimulado = jdbcTemplate.queryForObject(findBySimuladoIdAndUsuarioId, 
@@ -145,6 +146,7 @@ public class RespostaSimuladoService {
                 select rsq.* from respostas_simulado_questao rsq inner join 
                 respostas_simulado rs on rsq.resposta_simulado_id = rs.id
                 where rsq.resposta_simulado_id = ? and rsq.questao_id = ? and rs.usuario_id = ?
+                for update
         """;
 
         List<RespostaSimuladoQuestao> respostaDB = jdbcTemplate.query(
@@ -331,8 +333,11 @@ public class RespostaSimuladoService {
                 .findByRespostaSimuladoId(respostaSimuladoId);
 
             Map<UUID, UUID> questaoParaItemMap = respostasSimuladoQuestao.stream()
-                .collect(Collectors.toMap(RespostaSimuladoQuestao::getQuestaoId, 
-                    RespostaSimuladoQuestao::getItemQuestaoId));
+                .collect(Collectors.toMap(
+                    RespostaSimuladoQuestao::getQuestaoId, 
+                    RespostaSimuladoQuestao::getItemQuestaoId,
+                    (existing, replacement) -> replacement // Escolher o último item em caso de duplicidade
+                    ));
 
             simulado.getDisciplinas().parallelStream().forEach(disciplina -> 
                 preencherQuestoesAluno(disciplina.getQuestoes(), questaoParaItemMap)
