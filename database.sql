@@ -100,14 +100,14 @@ CREATE TABLE respostas_simulado (
 
 CREATE TABLE respostas_simulado_questao (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
-    simuladoId UUID NOT NULL,
-    questaoId UUID NOT NULL,
-    itemQuestaoId UUID NOT NULL,
+    simulado_id UUID NOT NULL,
+    questao_id UUID NOT NULL,
+    item_questao_id UUID NOT NULL,
     correta BOOLEAN NOT NULL,
     version INT DEFAULT 0,
-    FOREIGN KEY (simuladoId) REFERENCES respostas_simulado(id),
-    FOREIGN KEY (questaoId) REFERENCES questoes_simulado(id),
-    FOREIGN KEY (itemQuestaoId) REFERENCES itens_questao_simulado(id)
+    FOREIGN KEY (simulado_id) REFERENCES respostas_simulado(id),
+    FOREIGN KEY (questao_id) REFERENCES questoes_simulado(id),
+    FOREIGN KEY (item_questao_id) REFERENCES itens_questao_simulado(id)
 );
 
 CREATE TABLE curso_simulado_key (

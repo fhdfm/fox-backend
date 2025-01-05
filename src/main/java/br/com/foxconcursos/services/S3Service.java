@@ -7,6 +7,8 @@ import java.net.URL;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -54,7 +56,7 @@ public class S3Service {
     private S3Client getClient() {
         // Configuração do cliente HTTP (bloqueante)
         SdkHttpClient httpClient = ApacheHttpClient.builder()
-            .maxConnections(50) // Ajuste conforme necessário
+            .maxConnections(100) // Ajuste conforme necessário
             .connectionTimeout(Duration.ofSeconds(60)) // Tempo limite de conexão
             .socketTimeout(Duration.ofSeconds(60)) // Tempo limite de leitura/escrita no socket
             .build();
@@ -103,68 +105,75 @@ public class S3Service {
     }
 
     public S3Response uploadLargeFiles(StorageInput input) {
-
         CreateMultipartUploadResponse createMultipartUploadResponse = this.getClient().createMultipartUpload(b -> b
                 .bucket(bucketName)
                 .key(input.getFileName())
                 .contentType(input.getMimeType()));
 
         String uploadId = createMultipartUploadResponse.uploadId();
-
+        int partSize = 50 * 1024 * 1024; // 50 MB (tamanho moderado para evitar problemas de memória)
         int partNumber = 1;
-        int partSize = 25 * 1024 * 1024; // 10 MB
-        List<Future<CompletedPart>> futures = new ArrayList<>();
-        ExecutorService executor = Executors.newFixedThreadPool(5); // Número de threads
+
+        // Executor com número controlado de threads
+        ExecutorService executor = Executors.newFixedThreadPool(5); // 5 threads simultâneas
+        BlockingQueue<Future<CompletedPart>> futureQueue = new ArrayBlockingQueue<>(5); // Limitar uploads simultâneos
+        List<CompletedPart> completedParts = new ArrayList<>();
 
         try (BufferedInputStream bis = new BufferedInputStream(input.getFileInputStream())) {
             byte[] buffer = new byte[partSize];
             int bytesRead;
 
+            // Ler partes do arquivo
             while ((bytesRead = bis.read(buffer)) != -1) {
-                final int partNum = partNumber++;
                 final byte[] partData = new byte[bytesRead];
                 System.arraycopy(buffer, 0, partData, 0, bytesRead);
+                final int currentPartNumber = partNumber++;
 
-                // Envia a parte em uma thread separada
-                futures.add(executor.submit(() -> {
+                // Enviar parte em paralelo
+                Future<CompletedPart> future = executor.submit(() -> {
                     UploadPartRequest uploadPartRequest = UploadPartRequest.builder()
                             .bucket(bucketName)
                             .key(input.getFileName())
                             .uploadId(uploadId)
-                            .partNumber(partNum)
+                            .partNumber(currentPartNumber)
                             .build();
 
                     UploadPartResponse uploadPartResponse = getClient().uploadPart(uploadPartRequest,
                             RequestBody.fromBytes(partData));
 
                     return CompletedPart.builder()
-                            .partNumber(partNum)
+                            .partNumber(currentPartNumber)
                             .eTag(uploadPartResponse.eTag())
                             .build();
-                }));
+                });
+
+                futureQueue.put(future); // Bloquear se a fila de uploads estiver cheia
+
+                // Processar partes concluídas assim que possível
+                if (futureQueue.remainingCapacity() == 0) {
+                    processCompletedParts(futureQueue, completedParts);
+                }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Failed during upload part process: " + e.getMessage(), e);
-        }
 
-        executor.shutdown();
-        try {
-            executor.awaitTermination(1, TimeUnit.HOURS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("Executor interrupted during upload", e);
-        }
-
-        List<CompletedPart> completedParts = new ArrayList<>();
-        for (Future<CompletedPart> future : futures) {
+            // Processar partes restantes
+            while (!futureQueue.isEmpty()) {
+                processCompletedParts(futureQueue, completedParts);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed during multipart upload", e);
+        } finally {
+            executor.shutdown();
             try {
-                completedParts.add(future.get());
-            } catch (InterruptedException | ExecutionException e) {
-                throw new RuntimeException("Failed to upload a part: " + e.getMessage(), e);
+                if (!executor.awaitTermination(1, TimeUnit.HOURS)) {
+                    executor.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                executor.shutdownNow();
+                Thread.currentThread().interrupt();
             }
         }
 
+        // Completar o upload
         try {
             this.getClient().completeMultipartUpload(b -> b
                     .bucket(this.bucketName)
@@ -174,19 +183,29 @@ public class S3Service {
                             .parts(completedParts)
                             .build()));
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Failed to complete multipart upload: " + e.getMessage(), e);
+            throw new RuntimeException("Failed to complete multipart upload", e);
         }
 
         String fileUrl = String.format("https://%s.s3.amazonaws.com/%s", bucketName, input.getFileName());
-        String mimeType = input.getMimeType();
-
         return S3Response.builder()
                 .key(input.getFileName())
                 .url(fileUrl)
-                .mimeType(mimeType)
+                .mimeType(input.getMimeType())
                 .build();
     }
+
+    // Processar partes concluídas e liberar memória
+    private void processCompletedParts(BlockingQueue<Future<CompletedPart>> futureQueue, List<CompletedPart> completedParts) {
+        try {
+            Future<CompletedPart> future = futureQueue.poll();
+            if (future != null) {
+                completedParts.add(future.get()); // Obtenha o resultado e armazene na lista
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Failed to process completed part", e);
+        }
+    }
+
 
     public String getFile(String key) {
 
