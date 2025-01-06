@@ -105,6 +105,7 @@ public class S3Service {
     }
 
     public S3Response uploadLargeFiles(StorageInput input) {
+        long startTime = System.currentTimeMillis(); // Registrar o horário de início
         CreateMultipartUploadResponse createMultipartUploadResponse = this.getClient().createMultipartUpload(b -> b
                 .bucket(bucketName)
                 .key(input.getFileName())
@@ -186,6 +187,15 @@ public class S3Service {
             throw new RuntimeException("Failed to complete multipart upload", e);
         }
 
+        long endTime = System.currentTimeMillis(); // Registrar o horário de término
+        long durationMillis = endTime - startTime;
+
+        // Converter o tempo para minutos e segundos
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(durationMillis);
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(durationMillis) % 60;
+
+        System.out.println("Tempo total de execução: " + minutes + " minutos e " + seconds + " segundos");
+
         String fileUrl = String.format("https://%s.s3.amazonaws.com/%s", bucketName, input.getFileName());
         return S3Response.builder()
                 .key(input.getFileName())
@@ -206,6 +216,116 @@ public class S3Service {
         }
     }
 
+    // public S3Response uploadLargeFiles(StorageInput input) {
+    //     long startTime = System.currentTimeMillis(); // Registrar o horário de início
+    //     CreateMultipartUploadResponse createMultipartUploadResponse = this.getClient().createMultipartUpload(b -> b
+    //             .bucket(bucketName)
+    //             .key(input.getFileName())
+    //             .contentType(input.getMimeType()));
+
+    //     String uploadId = createMultipartUploadResponse.uploadId();
+    //     int partSize = 50 * 1024 * 1024; // 50 MB por parte
+    //     int partNumber = 1;
+
+    //     ExecutorService executor = Executors.newFixedThreadPool(5); // 5 threads simultâneas
+    //     BlockingQueue<Future<CompletedPart>> futureQueue = new ArrayBlockingQueue<>(5); // Limita a fila a 5 uploads simultâneos
+    //     List<CompletedPart> completedParts = new ArrayList<>();
+
+    //     try (InputStream inputStream = input.getFileInputStream()) {
+    //         byte[] buffer = new byte[partSize];
+    //         int bytesRead;
+
+    //         while ((bytesRead = inputStream.read(buffer)) != -1) {
+    //             final byte[] partData = new byte[bytesRead];
+    //             System.arraycopy(buffer, 0, partData, 0, bytesRead);
+    //             final int currentPartNumber = partNumber++;
+
+    //             // Submete a tarefa de upload da parte para o executor
+    //             Future<CompletedPart> future = executor.submit(() -> {
+    //                 UploadPartRequest uploadPartRequest = UploadPartRequest.builder()
+    //                         .bucket(bucketName)
+    //                         .key(input.getFileName())
+    //                         .uploadId(uploadId)
+    //                         .partNumber(currentPartNumber)
+    //                         .build();
+
+    //                 UploadPartResponse uploadPartResponse = getClient().uploadPart(uploadPartRequest,
+    //                         RequestBody.fromInputStream(new ByteArrayInputStream(partData), partData.length));
+
+    //                 return CompletedPart.builder()
+    //                         .partNumber(currentPartNumber)
+    //                         .eTag(uploadPartResponse.eTag())
+    //                         .build();
+    //             });
+
+    //             futureQueue.put(future); // Bloqueia se a fila estiver cheia
+
+    //             // Processa partes concluídas para liberar espaço na fila
+    //             if (futureQueue.remainingCapacity() == 0) {
+    //                 processCompletedParts(futureQueue, completedParts);
+    //             }
+    //         }
+
+    //         // Processa quaisquer partes restantes na fila
+    //         while (!futureQueue.isEmpty()) {
+    //             processCompletedParts(futureQueue, completedParts);
+    //         }
+    //     } catch (Exception e) {
+    //         throw new RuntimeException("Failed during streaming upload", e);
+    //     } finally {
+    //         executor.shutdown();
+    //         try {
+    //             if (!executor.awaitTermination(1, TimeUnit.HOURS)) {
+    //                 executor.shutdownNow();
+    //             }
+    //         } catch (InterruptedException e) {
+    //             executor.shutdownNow();
+    //             Thread.currentThread().interrupt();
+    //         }
+    //     }
+
+    //     // Completa o upload multipart
+    //     try {
+    //         this.getClient().completeMultipartUpload(b -> b
+    //                 .bucket(this.bucketName)
+    //                 .key(input.getFileName())
+    //                 .uploadId(uploadId)
+    //                 .multipartUpload(CompletedMultipartUpload.builder()
+    //                         .parts(completedParts)
+    //                         .build()));
+    //     } catch (Exception e) {
+    //         throw new RuntimeException("Failed to complete multipart upload", e);
+    //     }
+
+    //     long endTime = System.currentTimeMillis(); // Registrar o horário de término
+    //     long durationMillis = endTime - startTime;
+    
+    //     // Converter o tempo para minutos e segundos
+    //     long minutes = TimeUnit.MILLISECONDS.toMinutes(durationMillis);
+    //     long seconds = TimeUnit.MILLISECONDS.toSeconds(durationMillis) % 60;
+    
+    //     System.out.println("Tempo total de execução: " + minutes + " minutos e " + seconds + " segundos");
+    
+
+    //     String fileUrl = String.format("https://%s.s3.amazonaws.com/%s", bucketName, input.getFileName());
+    //     return S3Response.builder()
+    //             .key(input.getFileName())
+    //             .url(fileUrl)
+    //             .mimeType(input.getMimeType())
+    //             .build();
+    // }
+
+    // // Processa partes concluídas e remove da fila
+    // private void processCompletedParts(BlockingQueue<Future<CompletedPart>> futureQueue, List<CompletedPart> completedParts) {
+    //     try {
+    //         Future<CompletedPart> future = futureQueue.poll();
+    //         if (future != null) {
+    //             completedParts.add(future.get()); // Adiciona a parte completada
+    //         }
+    //     } catch (InterruptedException | ExecutionException e) {
+    //         throw new RuntimeException("Failed to process completed part", e);
+    //     }
+    // }
 
     public String getFile(String key) {
 
