@@ -371,13 +371,11 @@ CREATE TABLE aulas (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
     curso_id UUID NOT NULL,
     disciplina_id UUID NOT NULL,
-    assunto_id UUID NOT NULL,
     titulo VARCHAR(100) NOT NULL,
     ordem INT NOT NULL,
     version INT DEFAULT 0 NOT NULL,
     CONSTRAINT fk_curso FOREIGN KEY (curso_id) REFERENCES cursos(id),
-    CONSTRAINT fk_disciplina FOREIGN KEY (disciplina_id) REFERENCES disciplinas(id),
-    CONSTRAINT fk_assunto FOREIGN KEY (assunto_id) REFERENCES assunto(id)
+    CONSTRAINT fk_disciplina FOREIGN KEY (disciplina_id) REFERENCES disciplinas(id)
 );
 
 CREATE TABLE aula_conteudo (

@@ -124,7 +124,7 @@ public class AulaService {
         this.conteudoRepository.save(conteudo);
     }
 
-    public List<AulaResponse> buscarPorParametros(String titulo, UUID cursoId, UUID disciplinaId, UUID assuntoId) {
+    public List<AulaResponse> buscarPorParametros(String titulo, UUID cursoId, UUID disciplinaId) {
 
         String sql = getSqlBase();
         sql += " where 1=1 ";
@@ -138,9 +138,6 @@ public class AulaService {
         if (!disciplinaId.equals(UUID.fromString(NULL_VALUE)))
             sql += " and d.id = '" + disciplinaId + "' ";
 
-        if (!assuntoId.equals(UUID.fromString(NULL_VALUE)))
-            sql += " and ass.id = '" + assuntoId + "' ";
-
         List<AulaResponse> response = new ArrayList<>();
 
         jdbcTemplate.query(sql, (rs) -> {
@@ -149,7 +146,6 @@ public class AulaService {
             aula.setTitulo(rs.getString("titulo"));
             aula.setCurso(rs.getString("curso"));
             aula.setDisciplina(rs.getString("disciplina"));
-            aula.setAssunto(rs.getString("assunto"));
             response.add(aula);
         });
 
@@ -167,7 +163,6 @@ public class AulaService {
                 aula.setTitulo(rs.getString("titulo"));
                 aula.setCurso(rs.getString("curso"));
                 aula.setDisciplina(rs.getString("disciplina"));
-                aula.setAssunto(rs.getString("assunto"));
                 return aula;
             }
             return aula;
@@ -189,10 +184,9 @@ public class AulaService {
 
     private String getSqlBase() {
         String sql = "select a.id as id, a.titulo as titulo, c.titulo as curso, d.nome ";
-            sql += "as disciplina, ass.nome as assunto from ";
+            sql += "as disciplina from ";
             sql += "aulas a inner join cursos c on a.curso_id = c.id ";
             sql += "inner join disciplinas d on a.disciplina_id = d.id ";
-            sql += "inner join assunto ass on a.assunto_id = ass.id ";
         return sql;
     }
 
