@@ -71,16 +71,10 @@ public class AulaService {
 
         MultipartFile file = request.getFile();
 
-        String destino = "";
-
-        switch (request.getTipo()){
-            case VIDEO -> destino = "videos/";
-            case APOSTILA -> destino = "apostilas/";
-        }
 
         StorageInput input = new StorageInput.Builder()
                 .withFileInputStream(file.getInputStream())
-                .withFileName(destino + file.getOriginalFilename())
+                .withFileName(file.getOriginalFilename())
                 .withMimeType(file.getContentType())
                 .withFileSize(file.getSize())
                 .isPublic(false)
@@ -163,17 +157,20 @@ public class AulaService {
 
     public AulaResponse buscarPorId(UUID id) {
         String sql = getSqlBase();
-        sql += " where a.id = '" + id + "'";
+        sql += " where a.id = ?";
 
         AulaResponse response = jdbcTemplate.query(sql, (rs) -> {
             AulaResponse aula = new AulaResponse();
-            aula.setId(rs.getObject("id", UUID.class));
-            aula.setTitulo(rs.getString("titulo"));
-            aula.setCurso(rs.getString("curso"));
-            aula.setDisciplina(rs.getString("disciplina"));
-            aula.setAssunto(rs.getString("assunto"));
+            if (rs.next()) {
+                aula.setId(rs.getObject("id", UUID.class));
+                aula.setTitulo(rs.getString("titulo"));
+                aula.setCurso(rs.getString("curso"));
+                aula.setDisciplina(rs.getString("disciplina"));
+                aula.setAssunto(rs.getString("assunto"));
+                return aula;
+            }
             return aula;
-        });
+        }, id);
 
         List<AulaConteudo> anexos = this.conteudoRepository.findByAulaId(id);
         List<ConteudoResponse> conteudoResponse = new ArrayList<>();
