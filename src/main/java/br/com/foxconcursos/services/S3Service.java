@@ -103,6 +103,7 @@ public class S3Service {
         return S3Response.builder()
                 .url(fileUrl)
                 .key(fileName)
+                .mimeType(object.getMimeType())
                 .build();
     }
 
