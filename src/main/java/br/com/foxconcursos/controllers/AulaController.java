@@ -1,5 +1,6 @@
 package br.com.foxconcursos.controllers;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -92,7 +93,7 @@ public class AulaController {
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @GetMapping(value = "/api/admin/aula/{id}", 
         produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<AulaResponse> findById(@PathVariable("id") UUID id) {
+    public ResponseEntity<AulaResponse> findById(@PathVariable("id") UUID id) throws IOException {
 
         return ResponseEntity.status(HttpStatus.OK).body(
                         this.service.buscarPorId(id));
