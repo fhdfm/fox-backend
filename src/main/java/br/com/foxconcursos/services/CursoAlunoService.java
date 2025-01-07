@@ -1,5 +1,6 @@
 package br.com.foxconcursos.services;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -36,11 +37,11 @@ public class CursoAlunoService {
 
     }
 
-    public CursoAlunoResponse obterCurso(UUID cursoId) {
+    public CursoAlunoResponse obterCurso(UUID cursoId) throws IOException {
         return obterCurso(cursoId, null);
     }
 
-    public CursoAlunoResponse obterCurso(UUID cursoId, UUID aulaId) {
+    public CursoAlunoResponse obterCurso(UUID cursoId, UUID aulaId) throws IOException {
 
         UsuarioLogado usuarioLogado = SecurityUtil.obterUsuarioLogado();
         UUID usuarioId = usuarioLogado.getId();
@@ -111,7 +112,7 @@ public class CursoAlunoService {
         return response;
     }
 
-    private AulaResponse obterAula(UUID aulaId) {
+    private AulaResponse obterAula(UUID aulaId) throws IOException {
         return this.aulaService.buscarPorId(aulaId);
     }
 

@@ -1,5 +1,6 @@
 package br.com.foxconcursos.services;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -155,7 +156,7 @@ public class AulaService {
         return response;
     }
 
-    public AulaResponse buscarPorId(UUID id) {
+    public AulaResponse buscarPorId(UUID id) throws IOException {
         String sql = getSqlBase();
         sql += " where a.id = ?";
 
@@ -175,7 +176,10 @@ public class AulaService {
         List<AulaConteudo> anexos = this.conteudoRepository.findByAulaId(id);
         List<ConteudoResponse> conteudoResponse = new ArrayList<>();
         for (AulaConteudo anexo : anexos) {
-            conteudoResponse.add(anexo.toAssembly());
+            ConteudoResponse content = anexo.toAssembly();
+            String url = this.storageService.retrieveMedia(anexo.getKey());
+            content.setUrl(url);
+            conteudoResponse.add(content);
         }
 
         response.setConteudo(conteudoResponse);

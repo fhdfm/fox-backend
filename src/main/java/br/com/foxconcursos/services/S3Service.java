@@ -349,9 +349,13 @@ public class S3Service {
                     .key(key)
                     .build();
 
+            int expiresaAtXMinutes = 10;
+            
+            if (key.startsWith("video/"))
+                    expiresaAtXMinutes = 120;
 
             GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-                    .signatureDuration(Duration.ofMinutes(10))
+                    .signatureDuration(Duration.ofMinutes(expiresaAtXMinutes))
                     .getObjectRequest(getObjectRequest)
                     .build();
 

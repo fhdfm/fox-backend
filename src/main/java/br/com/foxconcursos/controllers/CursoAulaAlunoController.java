@@ -1,5 +1,6 @@
 package br.com.foxconcursos.controllers;
 
+import java.io.IOException;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
@@ -35,14 +36,14 @@ public class CursoAulaAlunoController {
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO')")
     @GetMapping("/{cursoId}/start")
-    public ResponseEntity<CursoAlunoResponse> iniciar(@PathParam("cursoId") UUID cursoId) {
+    public ResponseEntity<CursoAlunoResponse> iniciar(@PathParam("cursoId") UUID cursoId) throws IOException {
         CursoAlunoResponse response = this.service.obterCurso(cursoId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO')")
     @GetMapping("/{cursoId}/aula/{aulaId}/")
-    public ResponseEntity<CursoAlunoResponse> mudarAula(@PathParam("cursoId") UUID cursoId, @PathParam("aulaId") UUID aulaId) {
+    public ResponseEntity<CursoAlunoResponse> mudarAula(@PathParam("cursoId") UUID cursoId, @PathParam("aulaId") UUID aulaId) throws IOException {
         CursoAlunoResponse response = this.service.obterCurso(cursoId, aulaId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
