@@ -62,13 +62,10 @@ public class ApostilaController {
         StorageInput input = new StorageInput.Builder()
                 .withFileInputStream(file.getInputStream())
                 .isPublic(true)
-                .withFileName("imagens/" +file.getOriginalFilename())
+                .withFileName(file.getOriginalFilename())
                 .withMimeType(file.getContentType())
                 .withFileSize(file.getSize())
                 .build();
-
-        if (!input.isImage()) 
-            throw new IllegalArgumentException("Tipo de media não permitida.");
         
         StorageOutput output = storageService.upload(input);
         apostila.setImagem(output.getUrl());
@@ -97,13 +94,10 @@ public class ApostilaController {
             StorageInput input = new StorageInput.Builder()
                     .withFileInputStream(file.getInputStream())
                     .isPublic(true)
-                    .withFileName("imagens/" + file.getOriginalFilename())
+                    .withFileName(file.getOriginalFilename())
                     .withMimeType(file.getContentType())
                     .withFileSize(file.getSize())
                     .build();
-
-            if (!input.isImage()) 
-                throw new IllegalArgumentException("Tipo de media não permitida.");
 
             StorageOutput output = storageService.upload(input);
             apostila.setImagem(output.getUrl());

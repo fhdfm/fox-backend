@@ -83,6 +83,8 @@ public class S3Service {
     public S3Response upload(StorageInput object) {
         
         String fileName = object.getFileName();
+        String prefix = object.getPrefix();
+        fileName = prefix + "/" + fileName;
 
         try (InputStream inputStream = object.getFileInputStream()) {
             PutObjectRequest request = PutObjectRequest.builder()
@@ -106,9 +108,14 @@ public class S3Service {
 
     public S3Response uploadLargeFiles(StorageInput input) {
         long startTime = System.currentTimeMillis(); // Registrar o horário de início
+
+        String fileName = input.getFileName();
+        String prefix = input.getPrefix();
+        String fileNameWithPrefix = prefix + fileName;
+
         CreateMultipartUploadResponse createMultipartUploadResponse = this.getClient().createMultipartUpload(b -> b
                 .bucket(bucketName)
-                .key(input.getFileName())
+                .key(fileNameWithPrefix)
                 .contentType(input.getMimeType()));
 
         String uploadId = createMultipartUploadResponse.uploadId();
@@ -134,7 +141,7 @@ public class S3Service {
                 Future<CompletedPart> future = executor.submit(() -> {
                     UploadPartRequest uploadPartRequest = UploadPartRequest.builder()
                             .bucket(bucketName)
-                            .key(input.getFileName())
+                            .key(fileNameWithPrefix)
                             .uploadId(uploadId)
                             .partNumber(currentPartNumber)
                             .build();
@@ -178,7 +185,7 @@ public class S3Service {
         try {
             this.getClient().completeMultipartUpload(b -> b
                     .bucket(this.bucketName)
-                    .key(input.getFileName())
+                    .key(fileNameWithPrefix)
                     .uploadId(uploadId)
                     .multipartUpload(CompletedMultipartUpload.builder()
                             .parts(completedParts)
@@ -196,9 +203,9 @@ public class S3Service {
 
         System.out.println("Tempo total de execução: " + minutes + " minutos e " + seconds + " segundos");
 
-        String fileUrl = String.format("https://%s.s3.amazonaws.com/%s", bucketName, input.getFileName());
+        String fileUrl = String.format("https://%s.s3.amazonaws.com/%s", bucketName, fileNameWithPrefix);
         return S3Response.builder()
-                .key(input.getFileName())
+                .key(fileNameWithPrefix)
                 .url(fileUrl)
                 .mimeType(input.getMimeType())
                 .build();

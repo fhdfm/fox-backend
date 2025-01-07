@@ -66,7 +66,7 @@ public class CursoService {
 
         StorageInput input = new StorageInput.Builder()
                 .withFileInputStream(file.getInputStream())
-                .withFileName("imagens/" + file.getOriginalFilename())
+                .withFileName(file.getOriginalFilename())
                 .withFileSize(file.getSize())
                 .withMimeType(file.getContentType())
                 .isPublic(true)
@@ -94,7 +94,7 @@ public class CursoService {
             StorageInput input = new StorageInput.Builder()
                     .withFileInputStream(file.getInputStream())
                     .withMimeType(file.getContentType())
-                    .withFileName("imagens/" + file.getOriginalFilename())
+                    .withFileName(file.getOriginalFilename())
                     .withFileSize(file.getSize())
                     .isPublic(true)
                     .build();

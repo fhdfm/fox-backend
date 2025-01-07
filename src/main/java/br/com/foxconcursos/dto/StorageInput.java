@@ -1,9 +1,6 @@
 package br.com.foxconcursos.dto;
 
-import java.io.IOException;
 import java.io.InputStream;
-
-import br.com.foxconcursos.util.FileTypeChecker;
 
 public class StorageInput {
 
@@ -43,16 +40,21 @@ public class StorageInput {
         return fileSize;
     }
 
-    public boolean isMovie() throws IOException {
-        return FileTypeChecker.isMovie(fileInputStream);
-    }
+    public String getPrefix() {
+        
+        if (this.mimeType == null)
+            throw new RuntimeException("Não é possível identificar o tipo de arquivo.");
 
-    public boolean isDocument() throws IOException {
-        return FileTypeChecker.isDocument(fileInputStream);
-    }
+        if (this.mimeType.startsWith("application") || this.mimeType.startsWith("text"))
+            return "apostilas/";
 
-    public boolean isImage() throws IOException {
-        return FileTypeChecker.isImage(fileInputStream);
+        if (this.mimeType.startsWith("image"))
+            return "imagens/";
+
+        if (this.mimeType.startsWith("video"))
+            return "videos/";
+        
+        throw new RuntimeException("Tipo de arquivo não identificado.");
     }
 
     public boolean isFileLargerThan5MB() {
