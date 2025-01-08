@@ -3,6 +3,7 @@ package br.com.foxconcursos.repositories;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -18,4 +19,7 @@ public interface AulaConteudoRepository extends CrudRepository<AulaConteudo, UUI
     @Query("SELECT a.curso_id FROM aula_conteudo ac INNER JOIN aulas a ON a.id = ac.aula_id WHERE ac.file_id = :fileId")
     UUID findCursoIdByFileId(@Param("fileId") String fileId);
 
+    @Modifying
+    @Query("DELETE from aula_conteudo WHERE aula_id = :aulaId ")
+    void deleteByAulaId(@Param("aulaId") UUID aulaId);
 }

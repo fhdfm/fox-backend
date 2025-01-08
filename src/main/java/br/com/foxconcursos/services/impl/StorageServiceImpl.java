@@ -8,6 +8,7 @@ import br.com.foxconcursos.dto.S3Response;
 import br.com.foxconcursos.dto.StorageInput;
 import br.com.foxconcursos.dto.StorageOutput;
 import br.com.foxconcursos.services.S3Service;
+import br.com.foxconcursos.services.S3Service.S3File;
 import br.com.foxconcursos.services.StorageService;
 
 @Service
@@ -32,7 +33,18 @@ public class StorageServiceImpl implements StorageService {
     }
 
     @Override
-    public String retrieveMedia(String key) throws IOException {
-        return this.service.getFile(key);
+    public String getLink(String key) throws IOException {
+        return this.service.getLink(key);
     }
+
+    @Override
+    public void delete(String key) {
+        this.service.delete(key);
+    }
+
+    @Override
+    public S3File retrieveMedia(String key) {
+        return this.service.getMedia(key);
+    }
+
 }

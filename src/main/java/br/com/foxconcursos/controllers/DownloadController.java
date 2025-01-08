@@ -1,7 +1,6 @@
 package br.com.foxconcursos.controllers;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.UUID;
 
 import org.springframework.http.HttpHeaders;
@@ -13,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.foxconcursos.services.CursoAlunoService;
+import br.com.foxconcursos.services.S3Service;
 import br.com.foxconcursos.services.StorageService;
 
 @RestController
@@ -29,29 +29,47 @@ public class DownloadController {
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO')")
     @GetMapping("/api/aluno/download/{key}/curso/{cursoId}")
-    public ResponseEntity<Void> downloadAluno(
+    public ResponseEntity<byte[]> downloadAluno(
             @PathVariable String key, @PathVariable UUID cursoId) throws IOException {
         
         this.cursoAlunoService.validarDownload(cursoId, key);
 
-        String url = this.storageService.retrieveMedia(key);
+        try {
+            S3Service.S3File file = this.storageService.retrieveMedia(key);
             
-        HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(URI.create(url)); // Define o redirecionamento para a URL do arquivo
-        
-        return ResponseEntity.status(HttpStatus.FOUND).headers(headers).build();
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + key);
+            headers.add(HttpHeaders.CONTENT_TYPE, file.getContentType());
+            
+            return ResponseEntity.ok()
+                .headers(headers)
+                .contentLength(file.getContent().length)
+                .body(file.getContent());
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")   
     @GetMapping("/api/admin/download/{key}")
-    public ResponseEntity<Void> downloadAdmin(@PathVariable String key) throws IOException {
+    public ResponseEntity<byte[]> downloadAdmin(@PathVariable String key) throws IOException {
         
-        String url = this.storageService.retrieveMedia(key);
+        try {
+            S3Service.S3File file = this.storageService.retrieveMedia(key);
             
-        HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(URI.create(url)); // Define o redirecionamento para a URL do arquivo
-        
-        return ResponseEntity.status(HttpStatus.FOUND).headers(headers).build();
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + key);
+            headers.add(HttpHeaders.CONTENT_TYPE, file.getContentType());
+            
+            return ResponseEntity.ok()
+                .headers(headers)
+                .contentLength(file.getContent().length)
+                .body(file.getContent());
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
 }

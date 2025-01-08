@@ -1,6 +1,7 @@
 package br.com.foxconcursos.services;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -22,6 +23,7 @@ import br.com.foxconcursos.dto.S3Response;
 import br.com.foxconcursos.dto.StorageInput;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.http.SdkHttpClient;
@@ -32,6 +34,7 @@ import software.amazon.awssdk.services.s3.model.CompletedMultipartUpload;
 import software.amazon.awssdk.services.s3.model.CompletedPart;
 import software.amazon.awssdk.services.s3.model.CreateMultipartUploadResponse;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.UploadPartRequest;
 import software.amazon.awssdk.services.s3.model.UploadPartResponse;
@@ -335,7 +338,40 @@ public class S3Service {
     //     }
     // }
 
-    public String getFile(String key) {
+    public S3File getMedia(String key) {
+
+        S3Client client = getClient();
+
+        try (ResponseInputStream<GetObjectResponse> object = client.getObject(GetObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .build())) {
+            
+            String contentType = object.response().contentType();
+            
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = object.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }   
+
+            return new S3File(outputStream.toByteArray(), contentType);
+
+        } catch (IOException e) {
+            throw new RuntimeException("Erro ao fazer o download do arquivo do s3", e);
+        } finally {
+            client.close();
+        }
+    }
+
+    public void delete(String key) {
+        S3Client client = getClient();
+        client.deleteObject(b -> b.bucket(bucketName).key(key));
+        client.close();
+    }
+
+    public String getLink(String key) {
 
         try (S3Presigner presigner = S3Presigner
                 .builder()
@@ -369,5 +405,23 @@ public class S3Service {
     private String getPublicUrl(String bucketName, String key) {
         return String.format("https://%s.s3.amazonaws.com/%s", bucketName, key);
     }
+
+    public static class S3File {
+        private final byte[] content;
+        private final String contentType;
+
+        public S3File(byte[] content, String contentType) {
+            this.content = content;
+            this.contentType = contentType;
+        }
+
+        public byte[] getContent() {
+            return content;
+        }
+
+        public String getContentType() {
+            return contentType;
+        }
+    }    
 
 }

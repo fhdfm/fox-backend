@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -76,6 +77,33 @@ public class AulaController {
                 .status(HttpStatus.OK)
                 .body("Conteudo atualizado com sucesso.");
     }
+
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
+    @DeleteMapping(value = "/api/admin/aula/{aulaId}/conteudo/{conteudoId}",
+        consumes = MediaType.APPLICATION_JSON_VALUE, 
+        produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> deletarConteudo(
+            UUID aulaId, UUID conteudoId) throws Exception {    
+        
+        this.service.deletarConteudo(conteudoId);
+        
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body("Conteudo removido com sucesso.");
+    }
+
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
+    @DeleteMapping(value = "/api/admin/aula/{aulaId}",
+        consumes = MediaType.APPLICATION_JSON_VALUE, 
+        produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> deletarAula(UUID aulaId) throws Exception {    
+        
+        this.service.deletarAula(aulaId);
+        
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body("Aula removida com sucesso.");
+    }    
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @GetMapping(value = "/api/admin/aula", 

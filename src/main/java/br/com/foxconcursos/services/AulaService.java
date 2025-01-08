@@ -50,6 +50,19 @@ public class AulaService {
         return aula.getId();
     }
 
+    @Transactional
+    public void deletarAula(UUID aulaId) {
+
+        List<AulaConteudo> anexos = this.conteudoRepository.findByAulaId(aulaId);
+
+        for (AulaConteudo anexo : anexos) {
+            this.storageService.delete(anexo.getKey());
+        }
+        
+        this.conteudoRepository.deleteByAulaId(aulaId);
+        this.repository.deleteById(aulaId);
+    }
+
     public void atualizarAula(UUID id, AulaRequest request) {
         request.validate();
 
@@ -177,7 +190,7 @@ public class AulaService {
         List<ConteudoResponse> conteudoResponse = new ArrayList<>();
         for (AulaConteudo anexo : anexos) {
             ConteudoResponse content = anexo.toAssembly();
-            String url = this.storageService.retrieveMedia(anexo.getKey());
+            String url = this.storageService.getLink(anexo.getKey());
             content.setUrl(url);
             conteudoResponse.add(content);
         }
@@ -185,6 +198,14 @@ public class AulaService {
         response.setConteudo(conteudoResponse);
 
         return response;
+    }
+
+    @Transactional
+    public void deletarConteudo(UUID id) {
+        AulaConteudo conteudo = this.conteudoRepository.findById(id)
+                .orElseThrow(() -> new IllegalStateException("Conteudo: '" + id + "' não encontrado."));
+        this.storageService.delete(conteudo.getKey());
+        this.conteudoRepository.delete(conteudo);
     }
 
     private String getSqlBase() {
