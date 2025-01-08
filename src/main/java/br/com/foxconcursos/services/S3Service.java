@@ -8,6 +8,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -162,6 +163,8 @@ public class S3Service {
                 executor.shutdownNow();
                 throw new RuntimeException("Timeout during multipart upload.");
             }
+
+            completedParts.sort(Comparator.comparingInt(CompletedPart::partNumber));
 
             this.getClient().completeMultipartUpload(b -> b
                     .bucket(bucketName)
