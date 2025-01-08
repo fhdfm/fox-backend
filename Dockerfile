@@ -34,14 +34,13 @@ COPY --from=build /target/*.jar app.jar
 ENV SPRING_PROFILES_ACTIVE=prod
 
 # Configurar parâmetros da JVM para otimizar memória e desempenho
-ENTRYPOINT ["java", 
-            "-Xms256m", 
-            "-Xmx1536m", 
-            "-XX:+UseG1GC", 
-            "-XX:MaxGCPauseMillis=200", 
-            "-XX:ParallelGCThreads=4", 
-            "-XX:ConcGCThreads=2", 
-            "-XX:-UseSharedSpaces", 
-            "-javaagent:/usr/local/newrelic/newrelic.jar", 
-            "-jar", 
-            "app.jar"]
+ENTRYPOINT java \
+    -Xms256m \
+    -Xmx1536m \
+    -XX:+UseG1GC \
+    -XX:MaxGCPauseMillis=200 \
+    -XX:ParallelGCThreads=4 \
+    -XX:ConcGCThreads=2 \
+    -XX:-UseSharedSpaces \
+    -javaagent:/usr/local/newrelic/newrelic.jar \
+    -jar app.jar
