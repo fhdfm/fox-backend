@@ -75,10 +75,8 @@ public class CursoAlunoService {
                 SELECT 
                     a.id AS id,
                     a.titulo AS titulo,
-                    ass.nome AS assunto,
                     (p.aula_id IS NOT NULL) AS finalizada
                 FROM aulas a
-                INNER JOIN assunto ass ON a.assunto_id = ass.id
                 LEFT JOIN progresso p ON a.id = p.aula_id AND p.usuario_id = ?
                 WHERE a.curso_id = ? 
                 AND a.disciplina_id = ?
@@ -92,7 +90,6 @@ public class CursoAlunoService {
             jdbcTemplate.query(sqlAulas, (rs) -> {
             
                 AulaResponse aulaResponse = new AulaResponse();
-                aulaResponse.setAssunto(rs.getString("assunto"));
                 aulaResponse.setTitulo(rs.getString("titulo"));
                 aulaResponse.setId(rs.getObject("id", UUID.class));
                 aulaResponse.setFinalizada(rs.getBoolean("finalizada"));

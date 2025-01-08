@@ -9,7 +9,6 @@ public class AulaResponse {
     private String titulo;
     private String curso;
     private String disciplina;
-    private String assunto;
     private boolean finalizada;
     private List<ConteudoResponse> conteudo;
 
@@ -45,14 +44,6 @@ public class AulaResponse {
 
     public String getDisciplina() {
         return this.disciplina;
-    }
-
-    public void setAssunto(String assunto) {
-        this.assunto = assunto;
-    }
-
-    public String getAssunto() {
-        return this.assunto;
     }
 
     public void setFinalizada(boolean finalizada) {

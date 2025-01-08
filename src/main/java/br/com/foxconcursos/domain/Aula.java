@@ -15,20 +15,17 @@ public class Aula {
     private UUID id;
     private UUID cursoId;
     private UUID disciplinaId;
-    private UUID assuntoId;
     private String titulo;
     private int ordem;
     @Version
     private int version;
 
-    // Construtor padrão (necessário para o Spring Data JDBC)
     public Aula() {}
 
     // Construtor
-    public Aula(UUID cursoId, UUID disciplinaId, UUID assuntoId, String titulo, int ordem) {
+    public Aula(UUID cursoId, UUID disciplinaId, String titulo, int ordem) {
         this.cursoId = cursoId;
         this.disciplinaId = disciplinaId;
-        this.assuntoId = assuntoId;
         this.titulo = titulo;
         this.ordem = ordem;
     }
@@ -36,7 +33,6 @@ public class Aula {
     public void updateFromRequest(AulaRequest request) {
         this.cursoId = request.getCursoId();
         this.disciplinaId = request.getDisciplinaId();
-        this.assuntoId = request.getAssuntoId();
         this.ordem = request.getOrdem();
         this.titulo = request.getTitulo();
     }
@@ -64,14 +60,6 @@ public class Aula {
 
     public void setDisciplinaId(UUID disciplinaId) {
         this.disciplinaId = disciplinaId;
-    }
-
-    public UUID getAssuntoId() {
-        return assuntoId;
-    }
-
-    public void setAssuntoId(UUID assuntoId) {
-        this.assuntoId = assuntoId;
     }
 
     public String getTitulo() {

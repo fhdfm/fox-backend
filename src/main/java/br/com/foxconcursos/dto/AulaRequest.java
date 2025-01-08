@@ -8,14 +8,13 @@ public class AulaRequest {
     
     private UUID cursoId;
     private UUID disciplinaId;
-    private UUID assuntoId;
     private String titulo;
     private int ordem;
 
     public AulaRequest() {}
 
     public Aula toModel() {
-        return new Aula(cursoId, disciplinaId, assuntoId, titulo, ordem);
+        return new Aula(cursoId, disciplinaId, titulo, ordem);
     }
 
     // Método validate
@@ -25,9 +24,6 @@ public class AulaRequest {
         }
         if (disciplinaId == null) {
             throw new IllegalArgumentException("O campo 'disciplina' é obrigatório.");
-        }
-        if (assuntoId == null) {
-            throw new IllegalArgumentException("O campo 'assunto' é obrigatório.");
         }
         if (titulo == null || titulo.trim().isEmpty()) {
             throw new IllegalArgumentException("O campo 'titulo' é obrigatório.");
@@ -51,14 +47,6 @@ public class AulaRequest {
 
     public void setDisciplinaId(UUID disciplinaId) {
         this.disciplinaId = disciplinaId;
-    }
-
-    public UUID getAssuntoId() {
-        return this.assuntoId;
-    }
-
-    public void setAssuntoId(UUID assuntoId) {
-        this.assuntoId = assuntoId;
     }
 
     public String getTitulo() {
