@@ -9,6 +9,7 @@ public class AulaResponse {
     private String titulo;
     private String curso;
     private String disciplina;
+    private UUID disciplinaId;
     private boolean finalizada;
     private List<ConteudoResponse> conteudo;
 
@@ -60,6 +61,14 @@ public class AulaResponse {
 
     public List<ConteudoResponse> getConteudo() {
         return this.conteudo;
+    }
+
+    public void setDisciplinaId(UUID disciplinaId) {
+        this.disciplinaId = disciplinaId;
+    }
+
+    public UUID getDisciplinaId() {
+        return this.disciplinaId;
     }
 
 }

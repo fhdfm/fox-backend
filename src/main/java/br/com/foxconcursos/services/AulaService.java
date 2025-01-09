@@ -176,6 +176,7 @@ public class AulaService {
                 aula.setTitulo(rs.getString("titulo"));
                 aula.setCurso(rs.getString("curso"));
                 aula.setDisciplina(rs.getString("disciplina"));
+                aula.setDisciplinaId(rs.getObject("disciplina_id", UUID.class));
                 return aula;
             }
             return aula;
@@ -204,7 +205,7 @@ public class AulaService {
     }
 
     private String getSqlBase() {
-        String sql = "select a.id as id, a.titulo as titulo, c.titulo as curso, d.nome ";
+        String sql = "select a.id as id, a.titulo as titulo, c.titulo as curso, d.nome, d.id as disciplina_id ";
             sql += "as disciplina from ";
             sql += "aulas a inner join cursos c on a.curso_id = c.id ";
             sql += "inner join disciplinas d on a.disciplina_id = d.id ";
