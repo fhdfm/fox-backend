@@ -87,6 +87,8 @@ public class CursoService {
 
         validarEntrada(request, false);
 
+        curso.updateFromRequest(request);
+
         if (request.hasUpload()) {
 
             MultipartFile file = request.getImagem();

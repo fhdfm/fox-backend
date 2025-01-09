@@ -43,6 +43,19 @@ public class Curso {
         this.valor = request.getValor();
     }
 
+    public void updateFromRequest(CursoRequest request) {
+        this.titulo = request.getTitulo();
+        this.descricao = request.getDescricao();
+        this.dataInicio = request.getDataInicio();
+        this.dataTermino = request.getDataTermino();
+        this.status = request.getStatus();
+        this.bancaId = request.getBancaId();
+        this.escolaridade = request.getEscolaridade();
+        this.estado = request.getEstado();
+        this.cidade = request.getCidade();
+        this.valor = request.getValor();        
+    }
+
     public UUID getId() {
         return id;
     }
