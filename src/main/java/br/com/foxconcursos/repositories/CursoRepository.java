@@ -22,7 +22,5 @@ public interface CursoRepository extends CustomCrudRepository<Curso, UUID> {
 
     boolean existsById(UUID id);
 
-    List<Curso> findAllByStatus(Status status);
-
-    Boolean existsByTitulo(String titulo);
+    boolean existsByTituloAndIdNot(String titulo, UUID id);
 }
