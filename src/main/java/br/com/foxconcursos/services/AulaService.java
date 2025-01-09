@@ -205,8 +205,8 @@ public class AulaService {
     }
 
     private String getSqlBase() {
-        String sql = "select a.id as id, a.titulo as titulo, c.titulo as curso, d.nome, d.id ";
-            sql += "as disciplina, as disciplina_id from ";
+        String sql = "select a.id as id, a.titulo as titulo, c.titulo as curso, d.nome ";
+            sql += "as disciplina, d.id as disciplina_id from ";
             sql += "aulas a inner join cursos c on a.curso_id = c.id ";
             sql += "inner join disciplinas d on a.disciplina_id = d.id ";
         return sql;
