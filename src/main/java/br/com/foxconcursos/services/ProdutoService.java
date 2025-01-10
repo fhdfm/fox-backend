@@ -237,7 +237,9 @@ public class ProdutoService {
         """;
         
         int qtd = jdbcTemplate.query(sql, (rs) -> {
-            return rs.getInt("qtd");
+            if (rs.next())
+                return rs.getInt("qtd");
+            return 0;
         }, usuarioId, cursoId);
 
         return qtd > 0;
