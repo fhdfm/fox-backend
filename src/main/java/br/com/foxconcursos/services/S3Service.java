@@ -110,32 +110,31 @@ public class S3Service {
 
     public S3Response uploadLargeFiles(StorageInput input) throws IOException {
         long startTime = System.currentTimeMillis();
-
+    
         String fileName = input.getFileName();
         String prefix = input.getPrefix();
         String fileNameWithPrefix = prefix + fileName;
-
+    
         CreateMultipartUploadResponse createMultipartUploadResponse = this.getClient().createMultipartUpload(b -> b
                 .bucket(bucketName)
                 .key(fileNameWithPrefix)
                 .contentType(input.getMimeType()));
-
+    
         String uploadId = createMultipartUploadResponse.uploadId();
-        long contentLength = input.getFileInputStream().available(); // Tamanho do arquivo
-        int partSize = (int) Math.min(20 * 1024 * 1024, Math.max(contentLength / 10000, 5 * 1024 * 1024)); // Tamanho de parte ajustado dinamicamente
+        int partSize = 5 * 1024 * 1024; // 5 MB por parte
         int partNumber = 1;
-
-        ExecutorService executor = Executors.newFixedThreadPool(4); // 4 threads simultâneas
+    
+        ExecutorService executor = Executors.newFixedThreadPool(2); // Máximo de 2 threads
         List<CompletedPart> completedParts = Collections.synchronizedList(new ArrayList<>());
-
+    
         try (InputStream inputStream = input.getFileInputStream()) {
             byte[] buffer = new byte[partSize];
             int bytesRead;
-
+    
             while ((bytesRead = inputStream.read(buffer)) != -1) {
-                final byte[] partData = Arrays.copyOf(buffer, bytesRead);
+                final byte[] partData = Arrays.copyOf(buffer, bytesRead); // Apenas o necessário
                 final int currentPartNumber = partNumber++;
-
+    
                 executor.submit(() -> {
                     try {
                         UploadPartResponse uploadPartResponse = this.getClient().uploadPart(
@@ -145,9 +144,8 @@ public class S3Service {
                                         .uploadId(uploadId)
                                         .partNumber(currentPartNumber)
                                         .build(),
-                                RequestBody.fromBytes(partData)
-                        );
-
+                                RequestBody.fromBytes(partData));
+    
                         completedParts.add(CompletedPart.builder()
                                 .partNumber(currentPartNumber)
                                 .eTag(uploadPartResponse.eTag())
@@ -157,21 +155,21 @@ public class S3Service {
                     }
                 });
             }
-
+    
             executor.shutdown();
             if (!executor.awaitTermination(30, TimeUnit.MINUTES)) {
                 executor.shutdownNow();
                 throw new RuntimeException("Timeout during multipart upload.");
             }
-
+    
             completedParts.sort(Comparator.comparingInt(CompletedPart::partNumber));
-
+    
             this.getClient().completeMultipartUpload(b -> b
                     .bucket(bucketName)
                     .key(fileNameWithPrefix)
                     .uploadId(uploadId)
                     .multipartUpload(CompletedMultipartUpload.builder().parts(completedParts).build()));
-
+    
         } catch (Exception e) {
             this.getClient().abortMultipartUpload(b -> b
                     .bucket(bucketName)
@@ -179,14 +177,14 @@ public class S3Service {
                     .uploadId(uploadId));
             throw new RuntimeException("Failed during multipart upload", e);
         }
-
+    
         long endTime = System.currentTimeMillis();
         long durationMillis = endTime - startTime;
-
+    
         System.out.printf("Upload completed in %d minutes and %d seconds%n",
                 TimeUnit.MILLISECONDS.toMinutes(durationMillis),
                 TimeUnit.MILLISECONDS.toSeconds(durationMillis) % 60);
-
+    
         String fileUrl = String.format("https://%s.s3.amazonaws.com/%s", bucketName, fileNameWithPrefix);
         return S3Response.builder()
                 .key(fileNameWithPrefix)
