@@ -83,6 +83,11 @@ public class CursoAlunoService {
                 LEFT JOIN progresso p ON a.id = p.aula_id AND p.usuario_id = ?
                 WHERE a.curso_id = ? 
                 AND a.disciplina_id = ?
+                AND EXISTS (
+                    SELECT 1
+                    FROM aula_conteudo ac
+                    WHERE ac.aula_id = a.id
+                        AND ac.tipo = 'VIDEO')    
                 ORDER BY a.ordem ASC;        
             """;
 
