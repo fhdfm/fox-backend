@@ -1,29 +1,26 @@
 package br.com.foxconcursos.services;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
+import br.com.foxconcursos.domain.Aula;
+import br.com.foxconcursos.domain.AulaConteudo;
+import br.com.foxconcursos.domain.PerfilUsuario;
+import br.com.foxconcursos.domain.UsuarioLogado;
+import br.com.foxconcursos.dto.*;
+import br.com.foxconcursos.repositories.AulaConteudoRepository;
+import br.com.foxconcursos.repositories.AulaRepository;
+import br.com.foxconcursos.util.SecurityUtil;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import br.com.foxconcursos.domain.Aula;
-import br.com.foxconcursos.domain.AulaConteudo;
-import br.com.foxconcursos.dto.AulaConteudoRequest;
-import br.com.foxconcursos.dto.AulaRequest;
-import br.com.foxconcursos.dto.AulaResponse;
-import br.com.foxconcursos.dto.ConteudoResponse;
-import br.com.foxconcursos.dto.StorageInput;
-import br.com.foxconcursos.dto.StorageOutput;
-import br.com.foxconcursos.repositories.AulaConteudoRepository;
-import br.com.foxconcursos.repositories.AulaRepository;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 public class AulaService {
-    
+
     private static final String NULL_VALUE = "00000000-0000-0000-0000-000000000000";
 
     private final AulaRepository repository;
@@ -31,11 +28,11 @@ public class AulaService {
     private final StorageService storageService;
     private final JdbcTemplate jdbcTemplate;
 
-    public AulaService(AulaRepository repository, 
-            AulaConteudoRepository conteudoRepository, 
-            StorageService storageService, 
-            JdbcTemplate jdbcTemplate) {
-        
+    public AulaService(AulaRepository repository,
+                       AulaConteudoRepository conteudoRepository,
+                       StorageService storageService,
+                       JdbcTemplate jdbcTemplate) {
+
         this.repository = repository;
         this.conteudoRepository = conteudoRepository;
         this.storageService = storageService;
@@ -58,7 +55,7 @@ public class AulaService {
         for (AulaConteudo anexo : anexos) {
             this.storageService.delete(anexo.getKey());
         }
-        
+
         this.conteudoRepository.deleteByAulaId(aulaId);
         this.repository.deleteById(aulaId);
     }
@@ -68,18 +65,18 @@ public class AulaService {
 
         Aula aula = this.repository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("Aula: '" + id + "' não encontrada."));
-        
+
         aula.updateFromRequest(request);
 
         this.repository.save(aula);
     }
 
     @Transactional
-    public UUID criarConteudo(UUID aulaId, AulaConteudoRequest request) 
+    public UUID criarConteudo(UUID aulaId, AulaConteudoRequest request)
             throws Exception {
-        
+
         request.validate(false);
-        
+
         AulaConteudo conteudo = request.toModel();
         conteudo.setAulaId(aulaId);
 
@@ -93,9 +90,9 @@ public class AulaService {
                 .withFileSize(file.getSize())
                 .isPublic(false)
                 .build();
-        
+
         StorageOutput output = this.storageService.upload(input);
-        
+
         conteudo.setKey(output.getKey());
         conteudo.setUrl(output.getUrl());
         conteudo.setMimetype(output.getMimeType());
@@ -105,19 +102,19 @@ public class AulaService {
     }
 
     @Transactional
-    public void atualizarConteudo(UUID aulaId, UUID conteudoId, AulaConteudoRequest request) 
+    public void atualizarConteudo(UUID aulaId, UUID conteudoId, AulaConteudoRequest request)
             throws Exception {
-        
+
         request.validate(true);
 
         AulaConteudo conteudo = this.conteudoRepository.findById(conteudoId).orElseThrow(
                 () -> new IllegalStateException("Conteudo: '" + conteudoId + "' não encontrado."));
-        
+
         conteudo.setTitulo(request.getTitulo());
         conteudo.setTipo(request.getTipo());
 
         if (request.hasMedia()) {
-            
+
             MultipartFile file = request.getFile();
 
             StorageInput input = new StorageInput.Builder()
@@ -138,13 +135,14 @@ public class AulaService {
     }
 
     public List<AulaResponse> buscarPorParametros(String titulo, UUID cursoId, UUID disciplinaId) {
+        UsuarioLogado usuario = SecurityUtil.obterUsuarioLogado();
 
         String sql = getSqlBase();
         sql += " where 1=1 ";
 
-        if (titulo.isEmpty())
+        if (!titulo.isEmpty())
             sql += " and a.titulo like '%" + titulo + "%' ";
-        
+
         if (!cursoId.equals(UUID.fromString(NULL_VALUE)))
             sql += " and c.id = '" + cursoId + "' ";
 
@@ -152,6 +150,10 @@ public class AulaService {
             sql += " and d.id = '" + disciplinaId + "' ";
 
         List<AulaResponse> response = new ArrayList<>();
+
+        if (usuario.getPerfil() == PerfilUsuario.ALUNO) {
+            sql += " and exists (select 1 from aula_conteudo ac where ac.aula_id = a.id) ";
+        }
 
         jdbcTemplate.query(sql, (rs) -> {
             AulaResponse aula = new AulaResponse();
@@ -206,9 +208,9 @@ public class AulaService {
 
     private String getSqlBase() {
         String sql = "select a.id as id, a.titulo as titulo, c.titulo as curso, d.nome ";
-            sql += "as disciplina, d.id as disciplina_id from ";
-            sql += "aulas a inner join cursos c on a.curso_id = c.id ";
-            sql += "inner join disciplinas d on a.disciplina_id = d.id ";
+        sql += "as disciplina, d.id as disciplina_id from ";
+        sql += "aulas a inner join cursos c on a.curso_id = c.id ";
+        sql += "inner join disciplinas d on a.disciplina_id = d.id ";
         return sql;
     }
 
