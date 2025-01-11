@@ -116,7 +116,8 @@ public class CursoAlunoService {
             throw new IllegalStateException("Nenhuma aula encontrada para a primeira disciplina do curso: " + cursoId);
         }
         
-        aulaId = aulasPrimeiraDisciplina.get(0).getId();
+        if (aulaId == null)
+            aulaId = aulasPrimeiraDisciplina.get(0).getId();
 
         response.setAula(obterAula(aulaId));
 
