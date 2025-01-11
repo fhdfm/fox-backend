@@ -96,8 +96,8 @@ public class AulaController {
                 .body("Aula removida com sucesso.");
     }
 
-    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN') or hasAuthority('SCOPE_ROLE_ALUNO')")
-    @GetMapping(value = {"/api/admin/aula","/api/aluno/aula" },
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
+    @GetMapping(value = "/api/admin/aula",
             produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<AulaResponse>> list(
             @RequestParam(required = false, value = "titulo", defaultValue = "") String titulo,
