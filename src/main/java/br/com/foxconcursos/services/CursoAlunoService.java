@@ -70,6 +70,9 @@ public class CursoAlunoService {
             disciplinas.add(disciplinaResponse);
         }, cursoId);
 
+        if (disciplinas.isEmpty()) {
+            throw new IllegalStateException("Nenhuma disciplina encontrada para o curso: " + cursoId);
+        }
 
         String sqlAulas = """
                 SELECT 
@@ -101,8 +104,12 @@ public class CursoAlunoService {
             dr.setAulas(aulasDisciplina);
         }
 
-        if (aulaId == null)
-            aulaId = disciplinas.get(0).getAulas().get(0).getId();
+        List<AulaResponse> aulasPrimeiraDisciplina = disciplinas.get(0).getAulas();
+        if (aulasPrimeiraDisciplina.isEmpty()) {
+            throw new IllegalStateException("Nenhuma aula encontrada para a primeira disciplina do curso: " + cursoId);
+        }
+        
+        aulaId = aulasPrimeiraDisciplina.get(0).getId();
 
         response.setAula(obterAula(aulaId));
 
