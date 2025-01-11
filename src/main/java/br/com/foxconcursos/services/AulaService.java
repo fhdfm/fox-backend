@@ -151,10 +151,6 @@ public class AulaService {
 
         List<AulaResponse> response = new ArrayList<>();
 
-        if (usuario.getPerfil() == PerfilUsuario.ALUNO) {
-            sql += " and exists (select 1 from aula_conteudo ac where ac.aula_id = a.id) ";
-        }
-
         jdbcTemplate.query(sql, (rs) -> {
             AulaResponse aula = new AulaResponse();
             aula.setId(rs.getObject("id", UUID.class));
