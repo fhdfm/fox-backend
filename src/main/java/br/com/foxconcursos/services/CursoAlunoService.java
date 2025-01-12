@@ -97,8 +97,7 @@ public class CursoAlunoService {
                     LEFT JOIN progresso p ON a.id = p.aula_id AND p.usuario_id = ?
                     WHERE a.curso_id = ? 
                     AND a.disciplina_id = ?
-                    
-                    ORDER BY a.ordem ASC;        
+                    ORDER BY a.titulo ASC;        
                 """;
 
         for (DisciplinaAlunoResponse dr : disciplinas) {
