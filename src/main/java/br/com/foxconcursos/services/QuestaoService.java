@@ -69,7 +69,7 @@ public class QuestaoService {
                             STRING_AGG(DISTINCT a2.id || ':' || a2.nome, '###$### ') AS assuntos, 
                             b.nome as banca,
                             em.nome as escola, 
-                            q.periodo
+                            q.periodo,
                 """;
 
         if (isAluno)
@@ -167,7 +167,7 @@ public class QuestaoService {
                     )
                     SELECT 
                         pq.qid, pq.enunciado, pq.numero_exame_oab, pq.ano, pq.uf, pq.escolaridade, pq.cidade,
-                        pq.cargo, pq.disciplina, pq.instituicao, pq.assuntos, pq.banca, pq.escola,
+                        pq.cargo, pq.disciplina, pq.instituicao, pq.assuntos, pq.banca, pq.escola, pq.periodo,
                         pq.comentario_count, pq.tipo_prova_enem, a.id as aid, a.descricao, a.correta, a.letra
                 """;
 
@@ -670,7 +670,7 @@ public class QuestaoService {
                     group by q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, 
                     a.id, a.descricao, a.correta, a.letra, b.id, i.id, c.id, a2.id, d.id, 
                     c.nome, d.nome, i.nome, a2.nome, b.nome, em.nome, q.numero_exame_oab, q.tipo_prova_enem, 
-                    q.periodo
+                    q.periodo 
                 """;
 
         if (isAluno)
