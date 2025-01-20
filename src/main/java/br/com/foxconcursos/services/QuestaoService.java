@@ -324,6 +324,26 @@ public class QuestaoService {
 
     }
 
+    private void validateVestibular(QuestaoRequest request) {
+
+        if (request.getAno() == null && !request.getTipo().isVestibular()) {
+            throw new IllegalArgumentException("Ano é obrigatório.");
+        }
+
+        if (request.getDisciplinaId() == null) {
+            throw new IllegalArgumentException("Disciplina é obrigatória.");
+        }
+
+        if (request.getAssuntoId() == null) {
+            throw new IllegalArgumentException("Assunto é obrigatório.");
+        }
+
+        if (request.getInstituicaoId() == null) {
+            throw new IllegalArgumentException("Instituição é obrigatório.");
+        }
+
+    }
+
     private void validateEnem(QuestaoRequest request) {
 
         if (request.getAno() == null && !request.getTipo().isOAB()) {
@@ -363,10 +383,11 @@ public class QuestaoService {
             validateEnem(request);
         else if (tipo.isMilitar())
             validateMilitar(request);
+        else if (tipo.isVestibular())
+            validateVestibular(request);
         else if (tipo.isOAB())
             validateOab(request);
         else {
-
             if (request.getEnunciado() == null || request.getEnunciado().trim().isEmpty()) {
                 throw new IllegalArgumentException("Enunciado é obrigatória.");
             }

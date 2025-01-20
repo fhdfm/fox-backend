@@ -12,6 +12,8 @@ public class Instituicao {
     private UUID id;
     private String nome;
 
+    private TipoQuestao tipo;
+
     public UUID getId() {
         return id;
     }
@@ -28,4 +30,11 @@ public class Instituicao {
         this.nome = nome;
     }
 
+    public TipoQuestao getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(TipoQuestao tipo) {
+        this.tipo = tipo;
+    }
 }

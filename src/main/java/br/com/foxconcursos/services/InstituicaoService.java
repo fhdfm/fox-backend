@@ -25,10 +25,13 @@ public class InstituicaoService {
         if (instituicao.getNome() == null || instituicao.getNome().isBlank())
             throw new IllegalArgumentException("Informe o nome da instituicao.");
 
+        if (instituicao.getTipo() == null)
+            throw new IllegalArgumentException("Informe o tipo da instituicao.");
+
         UUID id = instituicao.getId();
 
         if (id == null) {
-            if (instituicaoRepository.existsByNome(instituicao.getNome()))
+            if (instituicaoRepository.existsByNomeAndTipo(instituicao.getNome(), instituicao.getTipo().toString()))
                 throw new IllegalArgumentException("Instituicao já cadastrada.");
             return instituicaoRepository.save(instituicao);
         }
@@ -37,10 +40,12 @@ public class InstituicaoService {
                 .orElseThrow(() -> new IllegalArgumentException("Instituicao não encontrada."));
 
         if (!instituicaoDB.getNome().equals(instituicao.getNome())
-                && instituicaoRepository.existsByNome(instituicao.getNome()))
-            throw new IllegalArgumentException("Instituicao já cadastrada.");
+            && !instituicaoDB.getTipo().equals(instituicao.getTipo())
+            && instituicaoRepository.existsByNomeAndTipo(instituicao.getNome(), instituicao.getTipo().toString()))
+            throw new IllegalArgumentException("Instituição já cadastrada.");
 
         instituicaoDB.setNome(instituicao.getNome());
+        instituicaoDB.setTipo(instituicao.getTipo());
 
         return instituicaoRepository.save(instituicao);
     }

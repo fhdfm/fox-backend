@@ -8,6 +8,6 @@ import java.util.UUID;
 
 public interface InstituicaoRepository extends CustomCrudRepository<Instituicao, UUID> {
     
-    Boolean existsByNome(String nome);
+    Boolean existsByNomeAndTipo(String nome, String tipo);
 
 }
