@@ -30,8 +30,7 @@ public class QuestaoResponse {
     private UUID escolaMilitarId;
     private String escolaMilitar;
     private String tipoProvaEnem;
-
-
+    private Integer periodo;
 
     public QuestaoResponse() {  }
 
@@ -233,5 +232,13 @@ public class QuestaoResponse {
 
     public List<AssuntoResponse> getAssuntos() {
         return this.assuntos;
+    }
+
+    public void setPeriodo(Integer periodo) {
+        this.periodo = periodo;
+    }
+
+    public Integer getPeriodo() {
+        return this.periodo;
     }
 }

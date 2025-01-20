@@ -1,22 +1,27 @@
 package br.com.foxconcursos.services;
 
-import br.com.foxconcursos.domain.Aula;
-import br.com.foxconcursos.domain.AulaConteudo;
-import br.com.foxconcursos.domain.PerfilUsuario;
-import br.com.foxconcursos.domain.UsuarioLogado;
-import br.com.foxconcursos.dto.*;
-import br.com.foxconcursos.repositories.AulaConteudoRepository;
-import br.com.foxconcursos.repositories.AulaRepository;
-import br.com.foxconcursos.util.SecurityUtil;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import br.com.foxconcursos.domain.Aula;
+import br.com.foxconcursos.domain.AulaConteudo;
+import br.com.foxconcursos.domain.UsuarioLogado;
+import br.com.foxconcursos.dto.AulaConteudoRequest;
+import br.com.foxconcursos.dto.AulaRequest;
+import br.com.foxconcursos.dto.AulaResponse;
+import br.com.foxconcursos.dto.ConteudoResponse;
+import br.com.foxconcursos.dto.StorageInput;
+import br.com.foxconcursos.dto.StorageOutput;
+import br.com.foxconcursos.repositories.AulaConteudoRepository;
+import br.com.foxconcursos.repositories.AulaRepository;
+import br.com.foxconcursos.util.SecurityUtil;
 
 @Service
 public class AulaService {

@@ -22,6 +22,7 @@ public class QuestaoRequest {
     private String numeroExameOab;
     private UUID escolaMilitarId;
     private String tipoProvaEnem;
+    private Integer periodo;
     private List<AlternativaRequest> alternativas;
 
     public QuestaoRequest() {
@@ -146,6 +147,14 @@ public class QuestaoRequest {
 
     public void setTipoProvaEnem(String tipoProvaEnem) {
         this.tipoProvaEnem = tipoProvaEnem;
+    }
+
+    public void setPeriodo(Integer periodo) {
+        this.periodo = periodo;
+    }
+
+    public Integer getPeriodo() {
+        return this.periodo;
     }
 
 }

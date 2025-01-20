@@ -1,16 +1,32 @@
 package br.com.foxconcursos.services;
 
-import br.com.foxconcursos.domain.*;
-import br.com.foxconcursos.dto.*;
-import br.com.foxconcursos.repositories.AlternativaRepository;
-import br.com.foxconcursos.repositories.QuestaoAssuntoRepository;
-import br.com.foxconcursos.repositories.QuestaoRepository;
-import br.com.foxconcursos.util.SecurityUtil;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import br.com.foxconcursos.domain.Alternativa;
+import br.com.foxconcursos.domain.FiltroQuestao;
+import br.com.foxconcursos.domain.Questao;
+import br.com.foxconcursos.domain.Status;
+import br.com.foxconcursos.domain.TipoQuestao;
+import br.com.foxconcursos.domain.UsuarioLogado;
+import br.com.foxconcursos.dto.AlternativaRequest;
+import br.com.foxconcursos.dto.AlternativaResponse;
+import br.com.foxconcursos.dto.AssuntoResponse;
+import br.com.foxconcursos.dto.QuestaoRequest;
+import br.com.foxconcursos.dto.QuestaoResponse;
+import br.com.foxconcursos.dto.ResultadoResponse;
+import br.com.foxconcursos.repositories.AlternativaRepository;
+import br.com.foxconcursos.repositories.QuestaoAssuntoRepository;
+import br.com.foxconcursos.repositories.QuestaoRepository;
+import br.com.foxconcursos.util.SecurityUtil;
 
 @Service
 public class QuestaoService {
@@ -53,6 +69,7 @@ public class QuestaoService {
                             STRING_AGG(DISTINCT a2.id || ':' || a2.nome, '###$### ') AS assuntos, 
                             b.nome as banca,
                             em.nome as escola, 
+                            q.periodo
                 """;
 
         if (isAluno)
@@ -133,10 +150,14 @@ public class QuestaoService {
             sql += " AND q.tipo_prova_enem = '" + questao.getTipoProvaEnem() + "' ";
         }
 
+        if (questao.getPeriodo() != null && questao.getPeriodo() > 0) {
+            sql += " AND q.periodo = " + questao.getPeriodo() + " ";
+        }
+
         sql += """
                         GROUP BY 
                             q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, q.numero_exame_oab, 
-                            c.nome, d.nome, i.nome, a2.nome, b.nome, em.nome, q.tipo_prova_enem
+                            c.nome, d.nome, i.nome, a2.nome, b.nome, em.nome, q.tipo_prova_enem, q.periodo 
                 """;
 
         if (isAluno)
@@ -184,6 +205,7 @@ public class QuestaoService {
                 qr.setUf(rs.getString("uf"));
                 qr.setDisciplina(rs.getString("disciplina"));
                 qr.setCargo(rs.getString("cargo"));
+                qr.setPeriodo(rs.getInt("periodo"));
 
                 List<AssuntoResponse> assuntosList = new ArrayList<>();
                 String assuntosStr = rs.getString("assuntos");
@@ -281,6 +303,7 @@ public class QuestaoService {
         questao.setNumeroExameOab(request.getNumeroExameOab());
         questao.setEscolaMilitarId(request.getEscolaMilitarId());
         questao.setTipoProvaEnem(request.getTipoProvaEnem());
+        questao.setPeriodo(request.getPeriodo());
 
         this.questaoRepository.save(questao);
 
@@ -322,6 +345,10 @@ public class QuestaoService {
             throw new IllegalArgumentException("Escola militar é obrigatório.");
         }
 
+        if (request.getPeriodo() == null || request.getPeriodo() == 0) {
+            throw new IllegalArgumentException("Período é obrigatório.");
+        }
+
     }
 
     private void validateVestibular(QuestaoRequest request) {
@@ -341,6 +368,10 @@ public class QuestaoService {
         if (request.getInstituicaoId() == null) {
             throw new IllegalArgumentException("Instituição é obrigatório.");
         }
+
+        if (request.getPeriodo() == null || request.getPeriodo() == 0) {
+            throw new IllegalArgumentException("Período é obrigatório.");
+        }        
 
     }
 
@@ -608,7 +639,8 @@ public class QuestaoService {
                                a2.id as a2id,
                                em.nome as escola,
                                q.numero_exame_oab,
-                               q.tipo_prova_enem ,  
+                               q.tipo_prova_enem ,
+                               q.periodo,  
                                STRING_AGG(DISTINCT a2.id || ':' || a2.nome, '###$### ') AS assuntos, 
                 """;
 
@@ -637,7 +669,8 @@ public class QuestaoService {
                     where q.status = 'ATIVO' and q.id = ? 
                     group by q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, 
                     a.id, a.descricao, a.correta, a.letra, b.id, i.id, c.id, a2.id, d.id, 
-                    c.nome, d.nome, i.nome, a2.nome, b.nome, em.nome, q.numero_exame_oab, q.tipo_prova_enem
+                    c.nome, d.nome, i.nome, a2.nome, b.nome, em.nome, q.numero_exame_oab, q.tipo_prova_enem, 
+                    q.periodo
                 """;
 
         if (isAluno)
@@ -676,7 +709,7 @@ public class QuestaoService {
 
                     qr.setNumeroExameOab(rs.getString("numero_exame_oab"));
                     qr.setTipoProvaEnem(rs.getString("tipo_prova_enem"));
-
+                    qr.setPeriodo(rs.getInt("periodo"));
 
                     List<AssuntoResponse> assuntosList = new ArrayList<>();
                     String assuntosStr = rs.getString("assuntos");
@@ -696,7 +729,6 @@ public class QuestaoService {
                         }
                     }
                     qr.setAssuntos(assuntosList);
-
 
                     if (isAluno) {
                         String acerto = rs.getObject("acerto")

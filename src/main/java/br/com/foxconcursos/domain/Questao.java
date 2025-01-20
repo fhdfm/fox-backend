@@ -27,6 +27,7 @@ public class Questao {
     private String numeroExameOab;
     private UUID escolaMilitarId;
     private String tipoProvaEnem;
+    private Integer periodo;
     @Version
     private Integer version;
 
@@ -48,6 +49,15 @@ public class Questao {
         this.tipo = request.getTipo();
         this.escolaMilitarId = request.getEscolaMilitarId();
         this.tipoProvaEnem = request.getTipoProvaEnem();
+        this.periodo = request.getPeriodo();
+    }
+
+    public Integer getPeriodo() {
+        return this.periodo;
+    }
+
+    public void setPeriodo(Integer periodo) {
+        this.periodo = periodo;
     }
 
     public UUID getId() {

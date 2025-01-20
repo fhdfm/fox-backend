@@ -20,6 +20,7 @@ public class FiltroQuestao {
     private String tipoProvaEnem;
     private TipoQuestao tipo;
     private UUID escolaMilitarId;
+    private Integer periodo;
     
     public FiltroQuestao() {
     }
@@ -134,5 +135,13 @@ public class FiltroQuestao {
 
     public void setEscolaMilitarId(UUID escolaMilitarId) {
         this.escolaMilitarId = escolaMilitarId;
+    }
+
+    public Integer getPeriodo() {
+        return periodo;
+    }
+
+    public void setPeriodo(Integer periodo) {
+        this.periodo = periodo;
     }
 }
