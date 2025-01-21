@@ -263,6 +263,14 @@ CREATE TABLE alternativas (
         REFERENCES questoes (id)
 );
 
+CREATE TABLE questao_video (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT null UNIQUE,
+    questao_id UUID NOT NULL REFERENCES questoes(id),
+    video VARCHAR(100) NOT NULL,
+    version INT NOT NULL DEFAULT 0
+);
+
+
 CREATE TABLE comentarios (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
     questao_id UUID NOT NULL,

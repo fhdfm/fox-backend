@@ -31,6 +31,7 @@ public class QuestaoResponse {
     private String escolaMilitar;
     private String tipoProvaEnem;
     private Integer periodo;
+    private QuestaoVideoResponse video;
 
     public QuestaoResponse() {  }
 
@@ -241,4 +242,13 @@ public class QuestaoResponse {
     public Integer getPeriodo() {
         return this.periodo;
     }
+
+    public void setVideo(QuestaoVideoResponse video) {
+        this.video = video;
+    }
+
+    public QuestaoVideoResponse getVideo() {
+        return this.video;
+    }
+
 }

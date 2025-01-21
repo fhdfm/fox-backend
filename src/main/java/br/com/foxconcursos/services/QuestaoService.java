@@ -1,5 +1,6 @@
 package br.com.foxconcursos.services;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -10,10 +11,12 @@ import java.util.UUID;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import br.com.foxconcursos.domain.Alternativa;
 import br.com.foxconcursos.domain.FiltroQuestao;
 import br.com.foxconcursos.domain.Questao;
+import br.com.foxconcursos.domain.QuestaoVideo;
 import br.com.foxconcursos.domain.Status;
 import br.com.foxconcursos.domain.TipoQuestao;
 import br.com.foxconcursos.domain.UsuarioLogado;
@@ -22,30 +25,59 @@ import br.com.foxconcursos.dto.AlternativaResponse;
 import br.com.foxconcursos.dto.AssuntoResponse;
 import br.com.foxconcursos.dto.QuestaoRequest;
 import br.com.foxconcursos.dto.QuestaoResponse;
+import br.com.foxconcursos.dto.QuestaoVideoRequest;
 import br.com.foxconcursos.dto.ResultadoResponse;
+import br.com.foxconcursos.dto.StorageInput;
+import br.com.foxconcursos.dto.StorageOutput;
 import br.com.foxconcursos.repositories.AlternativaRepository;
 import br.com.foxconcursos.repositories.QuestaoAssuntoRepository;
 import br.com.foxconcursos.repositories.QuestaoRepository;
+import br.com.foxconcursos.repositories.QuestaoVideoRepository;
 import br.com.foxconcursos.util.SecurityUtil;
 
 @Service
 public class QuestaoService {
 
+    private final QuestaoVideoRepository questaoVideoRepository;
     private final QuestaoRepository questaoRepository;
     private final AlternativaRepository alternativaRepository;
     private final QuestaoAssuntoRepository questaoAssuntoRepository;
+    private final StorageService storageService;
     private JdbcTemplate jdbcTemplate;
 
     public QuestaoService(QuestaoRepository questaoRepository,
                           AlternativaRepository alternativaRepository,
                           JdbcTemplate jdbcTemplate,
-                          QuestaoAssuntoRepository questaoAssuntoRepository) {
+                          QuestaoAssuntoRepository questaoAssuntoRepository,
+                          StorageService storageService,
+                          QuestaoVideoRepository questaoVideoRepository) {
 
         this.questaoRepository = questaoRepository;
         this.alternativaRepository = alternativaRepository;
         this.jdbcTemplate = jdbcTemplate;
         this.questaoAssuntoRepository = questaoAssuntoRepository;
+        this.storageService = storageService;
+        this.questaoVideoRepository = questaoVideoRepository;
 
+    }
+
+    public void anexarVideo(UUID questaoId, QuestaoVideoRequest request) throws Exception {
+     
+        MultipartFile file = request.getVideo();
+
+        StorageInput input = new StorageInput.Builder()
+            .withFileInputStream(file.getInputStream())
+            .withFileName(file.getOriginalFilename())
+            .withMimeType(file.getContentType())
+            .withFileSize(file.getSize())
+            .isPublic(false)
+            .build();
+
+        StorageOutput output = this.storageService.upload(input);
+
+        QuestaoVideo entity = new QuestaoVideo(questaoId, output.getKey());
+
+        this.questaoVideoRepository.save(entity);
     }
 
     private List<QuestaoResponse> findAll(FiltroQuestao questao, int limit, int offset, boolean rand) {
@@ -748,6 +780,18 @@ public class QuestaoService {
 
             return qr;
         }, id);
+
+        List<QuestaoVideo> videos = this.questaoVideoRepository.findByQuestaoId(id);
+        if (!videos.isEmpty()) {
+            QuestaoVideo questaoVideo = videos.get(0);
+            try {
+                questaoVideo.setVideo(this.storageService.getLink(questaoVideo.getVideo()));
+                questaoResponse.setVideo(questaoVideo.toResponse());
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new RuntimeException("Erro ao gerar link para o vídeo.");
+            }
+        }
 
         return questaoResponse;
     }
