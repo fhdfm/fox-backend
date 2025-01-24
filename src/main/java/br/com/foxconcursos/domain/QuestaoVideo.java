@@ -6,9 +6,9 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Table;
 
-import br.com.foxconcursos.dto.AulaVideoResponse;
+import br.com.foxconcursos.dto.QuestaoVideoResponse;
 
-@Table("aula_video")
+@Table("questao_video")
 public class QuestaoVideo {
 
     @Id
@@ -26,8 +26,8 @@ public class QuestaoVideo {
         this.video = video;
     }
 
-    public AulaVideoResponse toResponse() {
-        return new AulaVideoResponse(id, questaoId, video);
+    public QuestaoVideoResponse toResponse() {
+        return new QuestaoVideoResponse(id, questaoId, video);
     }
 
     // Getters and Setters
