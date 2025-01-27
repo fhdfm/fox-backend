@@ -102,6 +102,7 @@ public class QuestaoService {
                             b.nome as banca,
                             em.nome as escola, 
                             q.periodo,
+                            count(qv.id) as possui_video,
                 """;
 
         if (isAluno)
@@ -119,6 +120,7 @@ public class QuestaoService {
                             LEFT JOIN disciplinas d ON q.disciplina_id = d.id 
                             LEFT JOIN comentarios cm ON cm.questao_id = q.id
                             LEFT JOIN escola_militar em ON q.escola_militar_id = em.id
+                            LEFT JOIN questao_video qv ON qv.questao_id = q.id
                 """;
 
         if (isAluno)
@@ -200,7 +202,8 @@ public class QuestaoService {
                     SELECT 
                         pq.qid, pq.enunciado, pq.numero_exame_oab, pq.ano, pq.uf, pq.escolaridade, pq.cidade,
                         pq.cargo, pq.disciplina, pq.instituicao, pq.assuntos, pq.banca, pq.escola, pq.periodo,
-                        pq.comentario_count, pq.tipo_prova_enem, a.id as aid, a.descricao, a.correta, a.letra
+                        pq.comentario_count, pq.tipo_prova_enem, a.id as aid, a.descricao, a.correta, a.letra, 
+                        pq.possui_video as possui_video 
                 """;
 
         if (isAluno)
@@ -238,7 +241,7 @@ public class QuestaoService {
                 qr.setDisciplina(rs.getString("disciplina"));
                 qr.setCargo(rs.getString("cargo"));
                 qr.setPeriodo(rs.getInt("periodo"));
-
+                qr.setPossuiVideo(rs.getInt("possui_video") > 0 ? true : false);
                 List<AssuntoResponse> assuntosList = new ArrayList<>();
                 String assuntosStr = rs.getString("assuntos");
                 if (assuntosStr != null) {

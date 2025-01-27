@@ -32,6 +32,7 @@ public class QuestaoResponse {
     private String tipoProvaEnem;
     private Integer periodo;
     private QuestaoVideoResponse video;
+    private boolean possuiVideo;
 
     public QuestaoResponse() {  }
 
@@ -249,6 +250,14 @@ public class QuestaoResponse {
 
     public QuestaoVideoResponse getVideo() {
         return this.video;
+    }
+
+    public boolean getPossuiVideo() {
+        return this.possuiVideo;
+    }
+
+    public void setPossuiVideo(boolean possuiVideo) {
+        this.possuiVideo = possuiVideo;
     }
 
 }
