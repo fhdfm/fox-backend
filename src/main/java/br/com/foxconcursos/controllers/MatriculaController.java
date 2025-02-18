@@ -3,6 +3,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -10,14 +11,16 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
 import com.mercadopago.client.preference.PreferenceClient;
 import com.mercadopago.client.preference.PreferenceItemRequest;
 import com.mercadopago.client.preference.PreferenceRequest;
 import com.mercadopago.resources.payment.Payment;
 import com.mercadopago.resources.preference.Preference;
+
 import br.com.foxconcursos.dto.MatriculaRequest;
+import br.com.foxconcursos.dto.MercadoPagoRequest;
 import br.com.foxconcursos.dto.PagamentoRequest;
-import br.com.foxconcursos.dto.TesteMP;
 import br.com.foxconcursos.services.MPService;
 import br.com.foxconcursos.services.MatriculaService;
 @RestController
@@ -33,7 +36,7 @@ public class MatriculaController {
     @PostMapping(path = "/api/teste",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> myeggs(@RequestBody TesteMP testeMP) {
+    public ResponseEntity<String> myeggs(@RequestBody MercadoPagoRequest testeMP) {
         if (testeMP.getData() != null)
             System.out.println(testeMP.getType() + " - " + testeMP.getData().getId() + " " + testeMP.getUserId());
         // testeMP.getData().
