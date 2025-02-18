@@ -37,7 +37,7 @@ public class MercadoPagoService {
                 String value = keyValue[1].trim();
                 if ("ts".equals(key)) {
                     ts = value;
-                } else if ("hash".equals(key)) {
+                } else if ("v1".equals(key)) {
                     hash = value;
                 }
             }
