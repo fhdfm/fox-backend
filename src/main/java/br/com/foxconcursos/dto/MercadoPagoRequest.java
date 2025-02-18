@@ -5,7 +5,7 @@ import java.io.IOException;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class TesteMP {
+public class MercadoPagoRequest {
 
     @JsonProperty("action")
     private String action;
@@ -129,7 +129,7 @@ public class TesteMP {
 
         try {
             // Deserialize JSON to Java object
-            TesteMP paymentUpdate = objectMapper.readValue(jsonString, TesteMP.class);
+            MercadoPagoRequest paymentUpdate = objectMapper.readValue(jsonString, MercadoPagoRequest.class);
 
             // Print the Java object
             System.out.println("Deserialized Java object:");
