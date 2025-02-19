@@ -46,7 +46,7 @@ public class MatriculaService {
     }
 
     @Transactional
-    public UUID matricularContingencia(MatriculaRequest matricula) {
+    public UUID matricular(MatriculaRequest matricula) {
 
         if (matricula.getUsuarioId() == null)
             throw new IllegalArgumentException("Usuário não informado");
@@ -145,53 +145,6 @@ public class MatriculaService {
         
         return matriculaRepository.save(novaMatricula).getId();
 
-    }
-
-    @Transactional
-    public UUID matricular(MatriculaRequest matricula) {
-
-        if (matricula.getUsuarioId() == null)
-            throw new IllegalArgumentException("Usuário não informado");
-        
-        UsuarioResponse usuario = this.usuarioService.findById(matricula.getUsuarioId());
-            
-        if (matricula.getProdutoId() == null)
-            throw new IllegalArgumentException("Produto (curso/simulado) não informado");
-        
-        Object produto = this.cursoService.findById(matricula.getProdutoId());
-        if (produto == null) {
-            produto = this.simuladoService.findById(matricula.getProdutoId());
-        }
-
-        if (produto == null)
-            throw new IllegalArgumentException("Produto (curso/simulado) não inválido");
-
-        Transacao transacao = new Transacao();
-        transacao.setData(LocalDate.now());
-
-        Matricula novaMatricula = new Matricula();
-        
-        novaMatricula.setUsuarioId(usuario.getId());
-        // if (produto instanceof CursoDTO) {
-        //     novaMatricula.setProdutoId(((CursoDTO) produto).getId());
-        //     transacao.setDescricao("Matrícula em: " + ((CursoDTO) produto).getTitulo());
-        //     transacao.setValor(((CursoDTO) produto).getValor());
-        //     novaMatricula.setTipoProduto(TipoProduto.CURSO);
-        // } else {
-        //     novaMatricula.setProdutoId(((SimuladoDTO) produto).getId());
-        //     transacao.setDescricao("Matrícula em: " + ((SimuladoDTO) produto).getTitulo());
-        //     transacao.setValor(((SimuladoDTO) produto).getValor());
-        //     novaMatricula.setTipoProduto(TipoProduto.SIMULADO);
-        // }
-
-        transacao = transacaoService.criarTransacao(transacao);
-
-        novaMatricula.setStatus(transacao.getStatus() 
-            == StatusPagamento.PAGO ? Status.ATIVO : Status.INATIVO);
-        novaMatricula.setTransacaoId(transacao.getId());
-        novaMatricula.setUsuarioId(usuario.getId());
-        
-        return matriculaRepository.save(novaMatricula).getId();
     }
 
     public List<Matricula> findByUsuarioId(UUID usuarioId) {

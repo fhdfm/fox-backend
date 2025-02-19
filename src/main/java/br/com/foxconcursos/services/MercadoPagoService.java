@@ -1,19 +1,42 @@
 package br.com.foxconcursos.services;
 
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.client.RestTemplate;
+
+import com.mercadopago.resources.payment.Payment;
+
+import br.com.foxconcursos.domain.Pagamento;
 
 @Service
 public class MercadoPagoService {
 
+    private final PagamentoService pagamentoService;
+    
     @Value("${integracao.mercadopago.private-key}")
     private String mercadoPagoPrivateKey;
+
+    @Value("${integracao.mercadopago.access-token}")
+    private String accessToken;
+
+    @Value("${integracao.mercadopago.url-consulta-pagamento}")
+    private String urlConsultaPagamento;
+
+    public MercadoPagoService(PagamentoService pagamentoService) {
+        this.pagamentoService = pagamentoService;
+    }
 
     public void processarNotificacao(String xSignature, String xRequestId, String dataId) {
         System.out.println("xSignature: " + xSignature);
@@ -21,6 +44,17 @@ public class MercadoPagoService {
         System.out.println("dataId: " + dataId);
 
         System.out.println("Autenticidade? " + validarAutenticidade(xSignature, xRequestId, dataId));
+
+        Payment payment = this.findByPaymentId(dataId);
+        
+        Pagamento pagamento = new Pagamento();
+        pagamento.setId(UUID.fromString(payment.getExternalReference()));
+        pagamento.setStatus(payment.getStatus());
+        pagamento.setMpId(dataId);
+        pagamento.setData(payment.getDateLastUpdated().toLocalDateTime());
+        pagamento.setValor(payment.getTransactionAmount());
+
+        this.pagamentoService.update(pagamento);
     }
     
     private boolean validarAutenticidade(String xSignature, String xRequestId, String dataId) {
@@ -76,5 +110,29 @@ public class MercadoPagoService {
             hexString.append(String.format("%02x", b));
         }
         return hexString.toString();
+    }
+
+    public Payment findByPaymentId(String paymentId) {
+        RestTemplate restTemplate = new RestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(accessToken);
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<Payment> response = restTemplate.exchange(
+            urlConsultaPagamento,
+            HttpMethod.GET,
+            entity,
+            Payment.class,
+            paymentId    
+        );
+
+        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null)
+            return response.getBody();
+
+
+        throw new RuntimeException("Erro ao consultar o pagamento: " + response.getStatusCode());
     }
 }

@@ -79,7 +79,7 @@ public class MatriculaController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UUID> matricular(@RequestBody MatriculaRequest request) {
-        UUID matriculaId = this.matriculaService.matricularContingencia(request);
+        UUID matriculaId = this.matriculaService.matricular(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(matriculaId);
     }
 }

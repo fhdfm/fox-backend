@@ -414,3 +414,19 @@ CREATE TABLE progresso (
 CREATE INDEX idx_respostas_questao_id ON respostas(questao_id);
 CREATE INDEX idx_respostas_usuario_id ON respostas(usuario_id);
 CREATE INDEX idx_questoes_status ON questoes(status);
+
+CREATE TABLE mercado_pago (
+    id          UUID NOT NULL DEFAULT uuid_generate_v4(),
+    usuario_id  UUID NOT NULL,
+    produto_id  UUID NOT NULL,
+    mp_id       VARCHAR(255),
+    status      VARCHAR(100),
+    data        TIMESTAMP,
+    CONSTRAINT mercado_pago_pkey PRIMARY KEY (id),
+    CONSTRAINT fk_mercado_pago_usuarios 
+      FOREIGN KEY (usuario_id) 
+      REFERENCES usuarios (id),
+    CONSTRAINT fk_mercado_pago_curso_simulado_key
+      FOREIGN KEY (produto_id)
+      REFERENCES curso_simulado_key (id)
+);
