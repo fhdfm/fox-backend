@@ -1,12 +1,16 @@
 package br.com.foxconcursos.services;
 
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -15,8 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
-
-import com.mercadopago.resources.payment.Payment;
 
 import br.com.foxconcursos.domain.Pagamento;
 
@@ -48,20 +50,20 @@ public class MercadoPagoService {
             return;
         }
 
-        Payment payment = this.findByPaymentId(dataId);
+        Map<String, Object> payment = this.findByPaymentId(dataId);
 
-        System.out.println(payment.getExternalReference());
+        System.out.println(payment.get("external_reference"));
 
         Pagamento pagamento = new Pagamento();
-        String externalId = payment.getExternalReference();
+        String externalId = (String) payment.get("external_reference");
         if (externalId == null)
             return;
 
         pagamento.setId(UUID.fromString(externalId));
-        pagamento.setStatus(payment.getStatus());
+        pagamento.setStatus((String)payment.get("status"));
         pagamento.setMpId(dataId);
-        pagamento.setData(payment.getDateLastUpdated().toLocalDateTime());
-        pagamento.setValor(payment.getTransactionAmount());
+        pagamento.setData(((OffsetDateTime)payment.get("date_last_updated")).toLocalDateTime());
+        pagamento.setValor(new BigDecimal("" + payment.get("transaction_amount")));
 
         this.pagamentoService.update(pagamento);
     }
@@ -98,8 +100,10 @@ public class MercadoPagoService {
         System.out.println(hash);
         System.out.println(computedHash);
 
-        if (computedHash.equals(hash))
+        if (computedHash.equals(hash)) {
+            System.out.println("Requisicao validada.");
             return true;
+        }
 
         return false;
     }
@@ -126,7 +130,7 @@ public class MercadoPagoService {
         return hexString.toString();
     }
 
-    public Payment findByPaymentId(String paymentId) {
+    public Map<String, Object> findByPaymentId(String paymentId) {
         RestTemplate restTemplate = new RestTemplate();
 
         HttpHeaders headers = new HttpHeaders();
@@ -135,11 +139,11 @@ public class MercadoPagoService {
 
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
-        ResponseEntity<Payment> response = restTemplate.exchange(
+        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
             urlConsultaPagamento,
             HttpMethod.GET,
             entity,
-            Payment.class,
+            new ParameterizedTypeReference<Map<String, Object>>() {},
             paymentId    
         );
 
