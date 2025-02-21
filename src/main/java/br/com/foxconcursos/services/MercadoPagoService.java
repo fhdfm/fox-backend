@@ -62,7 +62,7 @@ public class MercadoPagoService {
         pagamento.setId(UUID.fromString(externalId));
         pagamento.setStatus((String)payment.get("status"));
         pagamento.setMpId(dataId);
-        pagamento.setData(((OffsetDateTime)payment.get("date_last_updated")).toLocalDateTime());
+        pagamento.setData(OffsetDateTime.parse("" + payment.get("date_last_updated")).toLocalDateTime());
         pagamento.setValor(new BigDecimal("" + payment.get("transaction_amount")));
 
         this.pagamentoService.update(pagamento);
