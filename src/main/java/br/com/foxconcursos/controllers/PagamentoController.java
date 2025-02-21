@@ -1,14 +1,22 @@
 package br.com.foxconcursos.controllers;
 
+import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
+import br.com.foxconcursos.dto.ProdutoMercadoPagoRequest;
+import com.mercadopago.resources.preference.Preference;
+import com.mercadopago.resources.preference.PreferenceBackUrls;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import com.mercadopago.MercadoPagoConfig;
+import com.mercadopago.client.preference.*;
+import com.mercadopago.exceptions.MPException;
 
 import br.com.foxconcursos.services.PagamentoService;
 
@@ -20,12 +28,22 @@ public class PagamentoController {
 
     public PagamentoController(PagamentoService service) {
         this.service = service;
+        MercadoPagoConfig.setAccessToken(ACCESS_TOKEN);
     }
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO') or hasAuthority('SCOPE_ROLE_EXTERNO')")
     @PostMapping
     public ResponseEntity<String> create(@RequestParam(value = "productId", required = false) UUID productId) {
         return ResponseEntity.ok(service.registrarPreCompra(productId));
+    }
+
+    private static final String ACCESS_TOKEN = "APP_USR-4247778987129008-021619-e002a2a551b985ef3ae2329f7a4e3d00-436233504";
+
+    @PostMapping("/pagar")
+    public ResponseEntity<String> createPayment(
+            @RequestBody ProdutoMercadoPagoRequest produto
+    ) {
+        return ResponseEntity.ok(service.pagar(produto));
     }
 
 }

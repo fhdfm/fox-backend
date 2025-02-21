@@ -1,16 +1,27 @@
 package br.com.foxconcursos.services;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
-
+import br.com.foxconcursos.domain.Pagamento;
+import br.com.foxconcursos.domain.TipoProduto;
+import br.com.foxconcursos.domain.Usuario;
+import br.com.foxconcursos.domain.UsuarioLogado;
+import br.com.foxconcursos.dto.MatriculaRequest;
+import br.com.foxconcursos.dto.ProdutoMercadoPagoRequest;
+import br.com.foxconcursos.repositories.ApostilaRepository;
+import br.com.foxconcursos.repositories.CursoRepository;
+import br.com.foxconcursos.repositories.PagamentoRepository;
+import br.com.foxconcursos.repositories.UsuarioRepository;
+import br.com.foxconcursos.util.SecurityUtil;
+import com.mercadopago.client.common.AddressRequest;
+import com.mercadopago.client.preference.*;
+import com.mercadopago.resources.preference.Preference;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.com.foxconcursos.domain.Pagamento;
-import br.com.foxconcursos.domain.UsuarioLogado;
-import br.com.foxconcursos.dto.MatriculaRequest;
-import br.com.foxconcursos.repositories.PagamentoRepository;
-import br.com.foxconcursos.util.SecurityUtil;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class PagamentoService {
@@ -19,9 +30,22 @@ public class PagamentoService {
 
     private final MatriculaService matriculaService;
 
-    public PagamentoService(PagamentoRepository repository, MatriculaService matriculaService) {
+    private final CursoRepository cursoRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final ApostilaRepository apostilaRepository;
+
+    public PagamentoService(
+            PagamentoRepository repository,
+            MatriculaService matriculaService,
+            UsuarioRepository usuarioRepository ,
+            CursoRepository cursoRepository,
+            ApostilaRepository apostilaRepository
+    ) {
         this.repository = repository;
         this.matriculaService = matriculaService;
+        this.usuarioRepository = usuarioRepository;
+        this.cursoRepository = cursoRepository;
+        this.apostilaRepository = apostilaRepository;
     }
 
     public String registrarPreCompra(UUID productId) {
@@ -55,5 +79,47 @@ public class PagamentoService {
             this.matriculaService.matricular(matriculaRequest);
         }
     }
-    
+
+    public String pagar(ProdutoMercadoPagoRequest produto) {
+        try {
+            Optional<Usuario> usuario = usuarioRepository.findById(SecurityUtil.obterUsuarioLogado().getId());
+
+            PreferenceClient client = new PreferenceClient();
+
+            // CASO PRECISE ---------------------------------------
+//            PreferenceReceiverAddressRequest addressRequest = PreferenceReceiverAddressRequest.builder()
+//                    .streetName("")
+//                    .cityName("")
+//                    .streetNumber("")
+//                    .build();
+//            PreferenceShipmentsRequest preferenceShipmentsRequest =  PreferenceShipmentsRequest.builder()
+//                    .receiverAddress(addressRequest)
+//                    .build();
+            // CASO PRECISE ---------------------------------------
+
+            PreferenceItemRequest itemRequest = PreferenceItemRequest.builder()
+                    .title(produto.getTitulo())
+                    .quantity(1)
+                    .unitPrice(BigDecimal.valueOf(produto.getValor()))
+                    .build();
+
+            PreferencePayerRequest payerRequest = PreferencePayerRequest.builder()
+                    .email(usuario.get().getEmail())
+                    .build();
+
+            PreferenceRequest preferenceRequest = PreferenceRequest.builder()
+                    .items(Collections.singletonList(itemRequest))
+                    .payer(payerRequest)
+//                    .shipments(preferenceShipmentsRequest)
+                    .build();
+
+            Preference preference = client.create(preferenceRequest);
+
+            return preference.getInitPoint();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Erro ao criar pagamento";
+        }
+    }
+
 }
