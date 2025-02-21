@@ -43,16 +43,16 @@ public class MercadoPagoService {
     public void processarNotificacao(String xSignature, String xRequestId, String dataId) {
 
         if (!validarAutenticidade(xSignature, xRequestId, dataId)) {
-            System.out.println("xSignature: " + xSignature);
-            System.out.println("xRequestId: " + xRequestId);
-            System.out.println("dataId: " + dataId);
+            //System.out.println("xSignature: " + xSignature);
+            //System.out.println("xRequestId: " + xRequestId);
+            //System.out.println("dataId: " + dataId);
             System.out.println("Requisição não validada.");
             return;
         }
 
         Map<String, Object> payment = this.findByPaymentId(dataId);
 
-        System.out.println(payment.get("external_reference"));
+        //System.out.println(payment.get("external_reference"));
 
         Pagamento pagamento = new Pagamento();
         String externalId = (String) payment.get("external_reference");
@@ -96,9 +96,6 @@ public class MercadoPagoService {
         System.out.println(manifest);
 
         String computedHash = computeHmacSha256(manifest);
-        
-        System.out.println(hash);
-        System.out.println(computedHash);
 
         if (computedHash.equals(hash)) {
             System.out.println("Requisicao validada.");
