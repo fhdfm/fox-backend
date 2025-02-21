@@ -91,6 +91,8 @@ public class MercadoPagoService {
         
         String manifest = String.format("id:%s;request-id:%s;ts:%s;", dataId, xRequestId, ts);
 
+        System.out.println(manifest);
+
         String computedHash = computeHmacSha256(manifest);
         
         System.out.println(hash);
