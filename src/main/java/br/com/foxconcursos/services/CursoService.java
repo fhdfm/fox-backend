@@ -114,7 +114,7 @@ public class CursoService {
             throw new IllegalArgumentException("Título é requerido.");
         }
 
-        if (cursoRepository.existsByTituloAndIdNot(request.getTitulo(), request.getId())) {
+        if (request.getId() != null && cursoRepository.existsByTituloAndIdNot(request.getTitulo(), request.getId())) {
             throw new IllegalArgumentException("Já existe um curso com este título.");
         }
 

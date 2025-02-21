@@ -110,7 +110,7 @@ public class PagamentoService {
             PreferenceRequest preferenceRequest = PreferenceRequest.builder()
                     .items(Collections.singletonList(itemRequest))
                     .payer(payerRequest)
-//                    .shipments(preferenceShipmentsRequest)
+                    .externalReference(registrarPreCompra(produto.getUuid()))
                     .build();
 
             Preference preference = client.create(preferenceRequest);
