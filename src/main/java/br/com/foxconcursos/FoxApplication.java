@@ -10,8 +10,7 @@ public class FoxApplication {
 
 	public static void main(String[] args) {
 
-		MercadoPagoConfig.setAccessToken(
-			"TEST-5958924722908086-052113-41484799dceaa43dab1ab0f839f2ae83-104350301");
+		MercadoPagoConfig.setAccessToken("APP_USR-7357929501968350-021813-53a43513983b5adf10dceddb0196baf5-2274204587");
 
 		SpringApplication.run(FoxApplication.class, args);
 	}
