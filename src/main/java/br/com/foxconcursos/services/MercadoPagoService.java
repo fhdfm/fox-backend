@@ -46,6 +46,8 @@ public class MercadoPagoService {
         System.out.println("Autenticidade? " + validarAutenticidade(xSignature, xRequestId, dataId));
 
         Payment payment = this.findByPaymentId(dataId);
+
+        System.out.println(payment);
         
         Pagamento pagamento = new Pagamento();
         pagamento.setId(UUID.fromString(payment.getExternalReference()));
@@ -84,6 +86,9 @@ public class MercadoPagoService {
 
         String computedHash = computeHmacSha256(manifest);
         
+        System.out.println(hash);
+        System.out.println(computedHash);
+
         if (computedHash.equals(hash))
             return true;
 
