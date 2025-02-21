@@ -43,18 +43,20 @@ public class MercadoPagoService {
         System.out.println("xRequestId: " + xRequestId);
         System.out.println("dataId: " + dataId);
 
-        System.out.println("Autenticidade? " + validarAutenticidade(xSignature, xRequestId, dataId));
-
         Payment payment = this.findByPaymentId(dataId);
 
-        System.out.println(payment);
-        
+        System.out.println(payment.getExternalReference());
+
         Pagamento pagamento = new Pagamento();
         pagamento.setId(UUID.fromString(payment.getExternalReference()));
         pagamento.setStatus(payment.getStatus());
         pagamento.setMpId(dataId);
         pagamento.setData(payment.getDateLastUpdated().toLocalDateTime());
         pagamento.setValor(payment.getTransactionAmount());
+
+        if (!validarAutenticidade(xSignature, xRequestId, dataId)) {
+            return;
+        }
 
         this.pagamentoService.update(pagamento);
     }
@@ -140,4 +142,5 @@ public class MercadoPagoService {
 
         throw new RuntimeException("Erro ao consultar o pagamento: " + response.getStatusCode());
     }
+
 }
