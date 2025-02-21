@@ -3,6 +3,7 @@ package br.com.foxconcursos.controllers;
 import java.util.UUID;
 
 import br.com.foxconcursos.dto.ProdutoMercadoPagoRequest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,8 +17,8 @@ import br.com.foxconcursos.services.PagamentoService;
 @RequestMapping(path = "/api/aluno/pagamento", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 public class PagamentoController {
 
-    private static final String ACCESS_TOKEN = "APP_USR-4247778987129008-021619-e002a2a551b985ef3ae2329f7a4e3d00-436233504";
-
+    @Value("${integracao.mercadopago.access-token}")
+    private String ACCESS_TOKEN;
     private final PagamentoService service;
 
     public PagamentoController(PagamentoService service) {
