@@ -39,24 +39,29 @@ public class MercadoPagoService {
     }
 
     public void processarNotificacao(String xSignature, String xRequestId, String dataId) {
-        System.out.println("xSignature: " + xSignature);
-        System.out.println("xRequestId: " + xRequestId);
-        System.out.println("dataId: " + dataId);
+
+        if (!validarAutenticidade(xSignature, xRequestId, dataId)) {
+            System.out.println("xSignature: " + xSignature);
+            System.out.println("xRequestId: " + xRequestId);
+            System.out.println("dataId: " + dataId);
+            System.out.println("Requisição não validada.");
+            return;
+        }
 
         Payment payment = this.findByPaymentId(dataId);
 
         System.out.println(payment.getExternalReference());
 
         Pagamento pagamento = new Pagamento();
-        pagamento.setId(UUID.fromString(payment.getExternalReference()));
+        String externalId = payment.getExternalReference();
+        if (externalId == null)
+            return;
+
+        pagamento.setId(UUID.fromString(externalId));
         pagamento.setStatus(payment.getStatus());
         pagamento.setMpId(dataId);
         pagamento.setData(payment.getDateLastUpdated().toLocalDateTime());
         pagamento.setValor(payment.getTransactionAmount());
-
-        if (!validarAutenticidade(xSignature, xRequestId, dataId)) {
-            return;
-        }
 
         this.pagamentoService.update(pagamento);
     }
