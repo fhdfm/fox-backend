@@ -11,6 +11,9 @@ public class ProdutoMercadoPagoRequest {
     private TipoProduto tipo;
     private int periodo;
 
+    public ProdutoMercadoPagoRequest() {
+    }
+
     public UUID getUuid() {
         return uuid;
     }

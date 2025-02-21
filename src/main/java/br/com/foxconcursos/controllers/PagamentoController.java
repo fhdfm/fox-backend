@@ -28,7 +28,8 @@ public class PagamentoController {
 
     public PagamentoController(PagamentoService service) {
         this.service = service;
-        MercadoPagoConfig.setAccessToken(ACCESS_TOKEN);
+//        MercadoPagoConfig.setAccessToken(ACCESS_TOKEN);
+        MercadoPagoConfig.setAccessToken(ACCESS_TOKEN_TESTE);
     }
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO') or hasAuthority('SCOPE_ROLE_EXTERNO')")
@@ -37,7 +38,8 @@ public class PagamentoController {
         return ResponseEntity.ok(service.registrarPreCompra(productId));
     }
 
-    private static final String ACCESS_TOKEN = "APP_USR-4247778987129008-021619-e002a2a551b985ef3ae2329f7a4e3d00-436233504";
+//    private static final String ACCESS_TOKEN = "APP_USR-4247778987129008-021619-e002a2a551b985ef3ae2329f7a4e3d00-436233504";
+    private static final String ACCESS_TOKEN_TESTE = "APP_USR-7357929501968350-021813-53a43513983b5adf10dceddb0196baf5-2274204587";
 
     @PostMapping("/pagar")
     public ResponseEntity<String> createPayment(
