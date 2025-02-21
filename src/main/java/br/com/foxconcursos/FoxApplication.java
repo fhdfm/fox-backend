@@ -1,18 +1,26 @@
 package br.com.foxconcursos;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ConfigurableApplicationContext;
 
 import com.mercadopago.MercadoPagoConfig;
 
 @SpringBootApplication
 public class FoxApplication {
 
-	public static void main(String[] args) {
+    @Value("${integracao.mercadopago.access-token}")
+    private String accessToken;
 
-		MercadoPagoConfig.setAccessToken("APP_USR-7357929501968350-021813-53a43513983b5adf10dceddb0196baf5-2274204587");
-
-		SpringApplication.run(FoxApplication.class, args);
-	}
-
+    public static void main(String[] args) {
+        // Inicializa o contexto do Spring
+        ConfigurableApplicationContext context = SpringApplication.run(FoxApplication.class, args);
+        
+        // Recupera a instância do FoxApplication para acessar a propriedade injetada
+        FoxApplication app = context.getBean(FoxApplication.class);
+        
+        // Agora você pode acessar o accessToken e passá-lo para a configuração
+        MercadoPagoConfig.setAccessToken(app.accessToken);
+    }
 }
