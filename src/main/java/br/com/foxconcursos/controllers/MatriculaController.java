@@ -4,13 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import br.com.foxconcursos.domain.Usuario;
+import br.com.foxconcursos.dto.UsuarioResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.mercadopago.client.preference.PreferenceClient;
 import com.mercadopago.client.preference.PreferenceItemRequest;
@@ -81,5 +83,11 @@ public class MatriculaController {
     public ResponseEntity<UUID> matricular(@RequestBody MatriculaRequest request) {
         UUID matriculaId = this.matriculaService.matricular(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(matriculaId);
+    }
+
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
+    @GetMapping(value = "/api/admin/matricula/alunos-matriculados/{cursoId}")
+    public ResponseEntity<Page<Usuario>> buscarMatriculados(@PathVariable UUID cursoId, Pageable pageable) {
+        return ResponseEntity.ok(this.matriculaService.buscarUsuariosPorProdutoId(cursoId, pageable));
     }
 }

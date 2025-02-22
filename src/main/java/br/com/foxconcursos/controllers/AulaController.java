@@ -1,8 +1,10 @@
 package br.com.foxconcursos.controllers;
 
+import br.com.foxconcursos.domain.AulaConteudo;
 import br.com.foxconcursos.dto.AulaConteudoRequest;
 import br.com.foxconcursos.dto.AulaRequest;
 import br.com.foxconcursos.dto.AulaResponse;
+import br.com.foxconcursos.dto.VideoAulaResponse;
 import br.com.foxconcursos.services.AulaService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -106,6 +108,14 @@ public class AulaController {
 
         return ResponseEntity.status(HttpStatus.OK).body(
                 this.service.buscarPorParametros(titulo, cursoId, disciplinaId));
+    }
+
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
+    @GetMapping(value = "/api/admin/aula/video-aulas")
+    public ResponseEntity<List<AulaConteudo>> buscarVideoAulasCadastradas() {
+
+        return ResponseEntity.status(HttpStatus.OK).body(
+                this.service.buscarVideoAulasCadastradas());
     }
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")

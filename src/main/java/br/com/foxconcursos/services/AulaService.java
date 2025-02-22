@@ -1,27 +1,21 @@
 package br.com.foxconcursos.services;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
+import br.com.foxconcursos.domain.Aula;
+import br.com.foxconcursos.domain.AulaConteudo;
+import br.com.foxconcursos.domain.UsuarioLogado;
+import br.com.foxconcursos.dto.*;
+import br.com.foxconcursos.repositories.AulaConteudoRepository;
+import br.com.foxconcursos.repositories.AulaRepository;
+import br.com.foxconcursos.util.SecurityUtil;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import br.com.foxconcursos.domain.Aula;
-import br.com.foxconcursos.domain.AulaConteudo;
-import br.com.foxconcursos.domain.UsuarioLogado;
-import br.com.foxconcursos.dto.AulaConteudoRequest;
-import br.com.foxconcursos.dto.AulaRequest;
-import br.com.foxconcursos.dto.AulaResponse;
-import br.com.foxconcursos.dto.ConteudoResponse;
-import br.com.foxconcursos.dto.StorageInput;
-import br.com.foxconcursos.dto.StorageOutput;
-import br.com.foxconcursos.repositories.AulaConteudoRepository;
-import br.com.foxconcursos.repositories.AulaRepository;
-import br.com.foxconcursos.util.SecurityUtil;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 public class AulaService {
@@ -219,4 +213,19 @@ public class AulaService {
         return this.conteudoRepository.findCursoIdByFileId(fileId);
     }
 
+    public List<AulaConteudo> buscarVideoAulasCadastradas() {
+        String sql = "SELECT id, titulo, url, key FROM aula_conteudo WHERE tipo = 'VIDEO'";
+
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+            AulaConteudo aula = new AulaConteudo();
+            if (rs.next()) {
+                aula.setAulaId(rs.getObject("id", UUID.class));
+                aula.setTitulo(rs.getString("titulo"));
+                aula.setKey(rs.getString("key"));
+                aula.setUrl(rs.getString("url"));
+                return aula;
+            }
+            return aula;
+        });
+    }
 }
