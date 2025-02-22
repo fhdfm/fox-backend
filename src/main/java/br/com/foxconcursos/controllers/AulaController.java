@@ -4,7 +4,6 @@ import br.com.foxconcursos.domain.AulaConteudo;
 import br.com.foxconcursos.dto.AulaConteudoRequest;
 import br.com.foxconcursos.dto.AulaRequest;
 import br.com.foxconcursos.dto.AulaResponse;
-import br.com.foxconcursos.dto.VideoAulaResponse;
 import br.com.foxconcursos.services.AulaService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
