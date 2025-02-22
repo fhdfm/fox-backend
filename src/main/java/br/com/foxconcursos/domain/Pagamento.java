@@ -9,49 +9,45 @@ import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
-/**
- * Entidade que representa a tabela "mercado_pago".
- */
-@Table("mercado_pago")  // Nome da tabela no banco
+@Table("mercado_pago")
 public class Pagamento {
 
     @Id
-    private UUID id;  // PK com UUID
+    private UUID id;
 
-    // Por padrão, Spring Data JDBC deriva o nome da coluna de "usuarioId" -> "usuario_id"
-    // Mas se quiser garantir explicitamente:
     @Column("usuario_id")
     private UUID usuarioId;
 
     @Column("produto_id")
     private UUID produtoId;
 
-    // Pode usar @Column("mp_id") para garantir. Se não usar, Spring Data JDBC converte mpId -> mp_id
     private String mpId;
 
     private String status;
 
-    // Mapeado como TIMESTAMP (ou TIMESTAMPTZ) no banco
+    private int periodo;
+
+    private TipoProduto tipo;
+
     private LocalDateTime data;
 
     @Transient
     private BigDecimal valor;
 
-    // Construtor padrão (obrigatório para frameworks)
     public Pagamento() {
     }
 
-    // (Opcional) Construtor completo para facilitar criação de objetos
-    public Pagamento(UUID id, UUID usuarioId, UUID produtoId, String mpId, String status, LocalDateTime data) {
+    public Pagamento(UUID id, UUID usuarioId, UUID produtoId, String mpId, String status, int periodo, TipoProduto tipo, LocalDateTime data, BigDecimal valor) {
         this.id = id;
         this.usuarioId = usuarioId;
         this.produtoId = produtoId;
         this.mpId = mpId;
         this.status = status;
+        this.periodo = periodo;
+        this.tipo = tipo;
         this.data = data;
+        this.valor = valor;
     }
-
-    // Getters e Setters (ou use Lombok @Data, se preferir)
 
     public UUID getId() {
         return id;
@@ -93,6 +89,22 @@ public class Pagamento {
         this.status = status;
     }
 
+    public int getPeriodo() {
+        return periodo;
+    }
+
+    public void setPeriodo(int periodo) {
+        this.periodo = periodo;
+    }
+
+    public TipoProduto getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(TipoProduto tipo) {
+        this.tipo = tipo;
+    }
+
     public LocalDateTime getData() {
         return data;
     }
@@ -101,16 +113,15 @@ public class Pagamento {
         this.data = data;
     }
 
-    public boolean isAprovado() {
-        return "approved".equals(status);
+    public BigDecimal getValor() {
+        return valor;
     }
 
     public void setValor(BigDecimal valor) {
         this.valor = valor;
     }
 
-    public BigDecimal getValor() {
-        return this.valor;
+    public boolean isAprovado() {
+        return "approved".equals(status);
     }
-
 }

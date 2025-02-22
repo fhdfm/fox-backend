@@ -85,7 +85,7 @@ public class S3Service {
         
         String fileName = object.getFileName();
         String prefix = object.getPrefix();
-        fileName = prefix + "/" + fileName;
+        fileName = prefix + fileName;
 
         try (InputStream inputStream = object.getFileInputStream()) {
             PutObjectRequest request = PutObjectRequest.builder()

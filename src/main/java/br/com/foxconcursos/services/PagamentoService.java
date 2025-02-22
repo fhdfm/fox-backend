@@ -48,9 +48,14 @@ public class PagamentoService {
         this.apostilaRepository = apostilaRepository;
     }
 
-    public String registrarPreCompra(UUID productId) {
+    public String registrarPreCompra(ProdutoMercadoPagoRequest produto) {
         Pagamento pagamento = new Pagamento();
-        pagamento.setProdutoId(productId);
+        pagamento.setProdutoId(produto.getUuid());
+        pagamento.setTipo(produto.getTipo());
+
+        if(produto.getTipo().equals(TipoProduto.QUESTOES)){
+            pagamento.setPeriodo(produto.getPeriodo());
+        }
 
         UsuarioLogado currentUser = SecurityUtil.obterUsuarioLogado();
 
@@ -74,8 +79,8 @@ public class PagamentoService {
             matriculaRequest.setProdutoId(payment.getProdutoId());
             matriculaRequest.setUsuarioId(payment.getUsuarioId());
             matriculaRequest.setValor(pagamento.getValor());
-            if (payment.getProdutoId().toString().startsWith("000000"))
-                matriculaRequest.setDataFim(LocalDateTime.now().plusMonths(3));
+            if (payment.getTipo().equals(TipoProduto.QUESTOES))
+                matriculaRequest.setDataFim(LocalDateTime.now().plusMonths(pagamento.getPeriodo()));
             this.matriculaService.matricular(matriculaRequest);
         }
     }
@@ -110,7 +115,7 @@ public class PagamentoService {
             PreferenceRequest preferenceRequest = PreferenceRequest.builder()
                     .items(Collections.singletonList(itemRequest))
                     .payer(payerRequest)
-                    .externalReference(registrarPreCompra(produto.getUuid()))
+                    .externalReference(registrarPreCompra(produto))
                     .build();
 
             Preference preference = client.create(preferenceRequest);
