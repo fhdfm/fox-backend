@@ -5,10 +5,13 @@ import org.springframework.web.multipart.MultipartFile;
 import br.com.foxconcursos.domain.AulaConteudo;
 import br.com.foxconcursos.domain.TipoArquivo;
 
+import java.util.UUID;
+
 public class AulaConteudoRequest {
 
     private TipoArquivo tipo;
     private String titulo;
+    private UUID videoId;
     private MultipartFile file;
 
     // Construtor padrão
@@ -61,6 +64,14 @@ public class AulaConteudoRequest {
 
     public void setFile(MultipartFile file) {
         this.file = file;
+    }
+
+    public UUID getVideoId() {
+        return videoId;
+    }
+
+    public void setVideoId(UUID videoId) {
+        this.videoId = videoId;
     }
 
     public boolean hasMedia() {

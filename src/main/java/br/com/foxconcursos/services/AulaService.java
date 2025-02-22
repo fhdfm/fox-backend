@@ -78,11 +78,27 @@ public class AulaService {
 
         AulaConteudo conteudo = request.toModel();
         conteudo.setAulaId(aulaId);
+        if (request.getVideoId() == null) {
+            StorageOutput output = uploadArquivo(request.getFile());
 
-        MultipartFile file = request.getFile();
+            conteudo.setKey(output.getKey());
+            conteudo.setUrl(output.getUrl());
+            conteudo.setMimetype(output.getMimeType());
+        } else {
+            AulaConteudo response = this.conteudoRepository.findById(request.getVideoId())
+                    .orElseThrow(() -> new IllegalArgumentException("Conteúdo não encontrado para URL ID: " + request.getVideoId()));
 
+            conteudo.setKey(response.getKey());
+            conteudo.setUrl(response.getUrl());
+            conteudo.setMimetype(response.getMimetype());
+        }
 
-        StorageInput input = new StorageInput.Builder()
+        this.conteudoRepository.save(conteudo);
+        return conteudo.getId();
+    }
+
+    private StorageOutput uploadArquivo(final MultipartFile file) throws Exception {
+        final StorageInput input = new StorageInput.Builder()
                 .withFileInputStream(file.getInputStream())
                 .withFileName(file.getOriginalFilename())
                 .withMimeType(file.getContentType())
@@ -90,14 +106,7 @@ public class AulaService {
                 .isPublic(false)
                 .build();
 
-        StorageOutput output = this.storageService.upload(input);
-
-        conteudo.setKey(output.getKey());
-        conteudo.setUrl(output.getUrl());
-        conteudo.setMimetype(output.getMimeType());
-
-        this.conteudoRepository.save(conteudo);
-        return conteudo.getId();
+        return this.storageService.upload(input);
     }
 
     @Transactional
@@ -112,24 +121,20 @@ public class AulaService {
         conteudo.setTitulo(request.getTitulo());
         conteudo.setTipo(request.getTipo());
 
-        if (request.hasMedia()) {
+        if (request.hasMedia() && request.getVideoId() == null) {
+            StorageOutput output = uploadArquivo(request.getFile());
 
-            MultipartFile file = request.getFile();
-
-            StorageInput input = new StorageInput.Builder()
-                    .withFileInputStream(file.getInputStream())
-                    .withFileName(file.getOriginalFilename())
-                    .withMimeType(file.getContentType())
-                    .withFileSize(file.getSize())
-                    .isPublic(false)
-                    .build();
-
-            StorageOutput output = this.storageService.upload(input);
             conteudo.setKey(output.getKey());
             conteudo.setUrl(output.getUrl());
             conteudo.setMimetype(output.getMimeType());
-        }
+        } else {
+            AulaConteudo response = this.conteudoRepository.findById(request.getVideoId())
+                    .orElseThrow(() -> new IllegalArgumentException("Conteúdo não encontrado para URL ID: " + request.getVideoId()));
 
+            conteudo.setKey(response.getKey());
+            conteudo.setUrl(response.getUrl());
+            conteudo.setMimetype(response.getMimetype());
+        }
         this.conteudoRepository.save(conteudo);
     }
 
