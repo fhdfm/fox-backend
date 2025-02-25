@@ -1,7 +1,9 @@
 package br.com.foxconcursos.dto;
 
+import br.com.foxconcursos.domain.Endereco;
 import br.com.foxconcursos.domain.TipoProduto;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 public class ProdutoMercadoPagoRequest {
@@ -9,7 +11,9 @@ public class ProdutoMercadoPagoRequest {
     private String titulo;
     private Double valor;
     private TipoProduto tipo;
+    private double taxaFrete;
     private int periodo;
+    private Endereco endereco;
 
     public ProdutoMercadoPagoRequest() {
     }
@@ -55,5 +59,21 @@ public class ProdutoMercadoPagoRequest {
             throw new IllegalArgumentException("O período deve estar entre 1 e 12 meses.");
         }
         this.periodo = periodo;
+    }
+
+    public Endereco getEndereco() {
+        return endereco;
+    }
+
+    public void setEndereco(Endereco endereco) {
+        this.endereco = endereco;
+    }
+
+    public double getTaxaFrete() {
+        return taxaFrete;
+    }
+
+    public void setTaxaFrete(double taxaFrete) {
+        this.taxaFrete = taxaFrete;
     }
 }

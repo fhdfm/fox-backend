@@ -120,6 +120,34 @@ CREATE TABLE respostas_simulado_questao
     FOREIGN KEY (item_questao_id) REFERENCES itens_questao_simulado (id)
 );
 
+CREATE TABLE enderecos
+(
+    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+    logradouro  VARCHAR(255) NOT NULL,
+    numero      VARCHAR(10)  NOT NULL,
+    complemento VARCHAR(255),
+    bairro      VARCHAR(255) NOT NULL,
+    cidade      VARCHAR(255) NOT NULL,
+    estado      VARCHAR(2)   NOT NULL,
+    cep         VARCHAR(8)   NOT NULL,
+    usuario_id  UUID         NOT NULL
+);
+
+CREATE TABLE taxas_estados (
+                               id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                               estado VARCHAR(2) NOT NULL UNIQUE,
+                               valor DECIMAL(10,2) NOT NULL
+);
+
+CREATE TABLE taxas_cidades (
+                               id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                               estado VARCHAR(2) NOT NULL,
+                               cidade VARCHAR(255) NOT NULL,
+                               valor DECIMAL(10,2) NOT NULL,
+                               FOREIGN KEY (estado) REFERENCES taxas_estados(estado) ON DELETE CASCADE,
+                               UNIQUE (estado, cidade)
+);
+
 CREATE TABLE curso_simulado_key
 (
     id UUID NOT NULL UNIQUE

@@ -1,13 +1,13 @@
 package br.com.foxconcursos.domain;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.UUID;
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Table("mercado_pago")
 public class Pagamento {
@@ -20,29 +20,43 @@ public class Pagamento {
 
     @Column("produto_id")
     private UUID produtoId;
-
     private String mpId;
-
     private String status;
+    private String titulo;
+    private boolean produtoEnviado = false;
 
+    private boolean paraEntrega = false;
     private int periodo;
-
     private TipoProduto tipo;
-
     private LocalDateTime data;
-
     @Transient
     private BigDecimal valor;
 
     public Pagamento() {
     }
 
-    public Pagamento(UUID id, UUID usuarioId, UUID produtoId, String mpId, String status, int periodo, TipoProduto tipo, LocalDateTime data, BigDecimal valor) {
+    public Pagamento(
+            UUID id,
+            UUID usuarioId,
+            UUID produtoId,
+            String mpId,
+            String status,
+            String titulo,
+            boolean produtoEnviado,
+            boolean paraEntrega,
+            int periodo,
+            TipoProduto tipo,
+            LocalDateTime data,
+            BigDecimal valor
+    ) {
         this.id = id;
         this.usuarioId = usuarioId;
         this.produtoId = produtoId;
         this.mpId = mpId;
         this.status = status;
+        this.titulo = titulo;
+        this.produtoEnviado = produtoEnviado;
+        this.paraEntrega = paraEntrega;
         this.periodo = periodo;
         this.tipo = tipo;
         this.data = data;
@@ -89,6 +103,30 @@ public class Pagamento {
         this.status = status;
     }
 
+    public String getTitulo() {
+        return titulo;
+    }
+
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
+    }
+
+    public boolean isProdutoEnviado() {
+        return produtoEnviado;
+    }
+
+    public void setProdutoEnviado(boolean produtoEnviado) {
+        this.produtoEnviado = produtoEnviado;
+    }
+
+    public boolean isParaEntrega() {
+        return paraEntrega;
+    }
+
+    public void setParaEntrega(boolean paraEntrega) {
+        this.paraEntrega = paraEntrega;
+    }
+
     public int getPeriodo() {
         return periodo;
     }
@@ -124,4 +162,6 @@ public class Pagamento {
     public boolean isAprovado() {
         return "approved".equals(status);
     }
+
+
 }

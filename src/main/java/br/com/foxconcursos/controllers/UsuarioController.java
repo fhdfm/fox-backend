@@ -66,13 +66,6 @@ public class UsuarioController {
                 .body(this.recuperarPasswordService.recuperarPassword(user));
     }
 
-    @PostMapping(value = "/api/sac", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> sacEmail(@RequestBody SACRequest sac) throws Exception {
-
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(this.recuperarPasswordService.enviarEmailSAC(sac));
-    }
-
     @PostMapping(value = "/api/reset-password", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> resetPassword(@RequestBody AlterarPasswordRequest request) {
 

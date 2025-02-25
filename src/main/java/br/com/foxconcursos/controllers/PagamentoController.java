@@ -1,7 +1,5 @@
 package br.com.foxconcursos.controllers;
 
-import java.util.UUID;
-
 import br.com.foxconcursos.dto.ProdutoMercadoPagoRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -31,7 +29,7 @@ public class PagamentoController {
     public ResponseEntity<String> createPayment(
             @RequestBody ProdutoMercadoPagoRequest produto
     ) {
-        return ResponseEntity.ok(service.pagar(produto));
+        return ResponseEntity.ok(service.createPayment(produto));
     }
 
 }

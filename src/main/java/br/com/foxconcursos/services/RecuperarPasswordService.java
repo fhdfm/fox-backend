@@ -2,7 +2,6 @@ package br.com.foxconcursos.services;
 
 import br.com.foxconcursos.domain.Password;
 import br.com.foxconcursos.domain.Usuario;
-import br.com.foxconcursos.dto.SACRequest;
 import br.com.foxconcursos.events.TokenEvent;
 import br.com.foxconcursos.repositories.PasswordRepository;
 import org.springframework.context.ApplicationEventPublisher;
@@ -169,76 +168,6 @@ public class RecuperarPasswordService {
 
     public void deleteByUserId(UUID targetId) {
         this.repository.deleteByUsuarioId(targetId);
-    }
-
-
-    public String enviarEmailSAC(SACRequest sacRequest) throws Exception {
-
-        try {
-            this.emailService.sendEmailSAC(
-                    sacRequest.getEmail(),
-                    sacRequest.getProduto(), gerarConteudoEmailSAC(
-                            sacRequest.getNome(),
-                            sacRequest.getEmail(),
-                            sacRequest.getCelular(),
-                            sacRequest.getProduto(),
-                            sacRequest.getCidadeCargo(),
-                            sacRequest.getEndereco(),
-                            sacRequest.getObservacoes()
-                    )
-            );
-            return "Email enviado ";
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new IllegalArgumentException("Erro ao enviar e-mail.");
-        }
-    }
-
-    public String gerarConteudoEmailSAC(String nome, String email, String celular, String compra, String cidadeCargo, String endereco, String observacoes) {
-        return """
-                <!DOCTYPE html>
-                <html lang="pt-br">
-                <head>
-                    <meta charset="UTF-8"/>
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-                    <style>
-                        body,
-                        html {
-                            margin: 0;
-                            padding: 0;
-                            font-family: Arial, sans-serif;
-                        }
-                        .content {
-                            font-size: 16px;
-                            color: #333;
-                        }
-                        .highlight {
-                            font-weight: bold;
-                        }
-                    </style>
-                </head>
-                <body>
-                <div class="content">
-                    <h2>Solicitação SAC</h2>
-                    <p><span class="highlight">Nome:</span> {NOME}</p>
-                    <p><span class="highlight">E-mail:</span> {EMAIL}</p>
-                    <p><span class="highlight">Celular:</span> {CELULAR}</p>
-                    <p><span class="highlight">Produto Comprado:</span> {COMPRA}</p>
-                    <p><span class="highlight">Cidade e Cargo:</span> {CIDADE_CARGO}</p>
-                    <p><span class="highlight">Endereço de Entrega:</span> {ENDERECO}</p>
-                    <p><span class="highlight">Observações:</span> {OBSERVACOES}</p>
-                </div>
-                </body>
-                </html>
-                """
-                .replace("{NOME}", nome)
-                .replace("{EMAIL}", email)
-                .replace("{CELULAR}", celular)
-                .replace("{COMPRA}", compra)
-                .replace("{CIDADE_CARGO}", cidadeCargo)
-                .replace("{ENDERECO}", endereco)
-                .replace("{OBSERVACOES}", observacoes);
     }
 
 }
