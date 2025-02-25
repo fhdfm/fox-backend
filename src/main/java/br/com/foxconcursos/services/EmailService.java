@@ -53,7 +53,7 @@ public class EmailService {
     }
 
     public void enviarEmailPagamentoAprovado(String emailAluno, String nomeAluno, String produto, TipoProduto tipo, Endereco endereco) {
-        String emailAdmin = "foxnaval@hotmail.com";
+        String emailAdmin = "foxnaval9@gmail.com";
         String assunto = "Pagamento aprovado!";
 
         // E-mail para o aluno
