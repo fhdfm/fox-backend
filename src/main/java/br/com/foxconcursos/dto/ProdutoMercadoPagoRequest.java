@@ -55,7 +55,7 @@ public class ProdutoMercadoPagoRequest {
     }
 
     public void setPeriodo(int periodo) {
-        if (periodo < 1 || periodo > 12) {
+        if ((periodo < 1 || periodo > 12) && getTipo() == TipoProduto.QUESTOES ) {
             throw new IllegalArgumentException("O período deve estar entre 1 e 12 meses.");
         }
         this.periodo = periodo;

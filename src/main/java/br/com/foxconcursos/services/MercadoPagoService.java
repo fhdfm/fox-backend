@@ -3,6 +3,7 @@ package br.com.foxconcursos.services;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
+import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
 
@@ -41,6 +42,7 @@ public class MercadoPagoService {
     }
 
     public void processarNotificacao(String xSignature, String xRequestId, String dataId) {
+        System.out.println("0_" + new Date());
 
         if (!validarAutenticidade(xSignature, xRequestId, dataId)) {
             //System.out.println("xSignature: " + xSignature);
@@ -52,7 +54,7 @@ public class MercadoPagoService {
 
         Map<String, Object> payment = this.findByPaymentId(dataId);
 
-        //System.out.println(payment.get("external_reference"));
+        System.out.println(payment.get("1_" + new Date()));
 
         Pagamento pagamento = new Pagamento();
         String externalId = (String) payment.get("external_reference");
@@ -64,6 +66,7 @@ public class MercadoPagoService {
         pagamento.setMpId(dataId);
         pagamento.setData(OffsetDateTime.parse("" + payment.get("date_last_updated")).toLocalDateTime());
         pagamento.setValor(new BigDecimal("" + payment.get("transaction_amount")));
+        System.out.println("2_" + new Date());
 
         this.pagamentoService.update(pagamento);
     }

@@ -17,6 +17,7 @@ public class ProdutoCursoResponse extends ProdutoResponse {
     private Escolaridade escolaridade;
     private Date dataInicio;
     private Date dataTermino;
+    private String imagem;
     private Status status;
     private BigDecimal valor;
     private List<ProdutoSimuladoResponse> simulados; 
@@ -37,6 +38,7 @@ public class ProdutoCursoResponse extends ProdutoResponse {
             this.dataTermino = FoxUtils.convertLocalDateToDate(curso.getDataTermino());
         this.status = curso.getStatus();
         this.valor = curso.getValor();
+        this.imagem = curso.getImagem();
     }
 
     public String getTitulo() {
@@ -109,5 +111,13 @@ public class ProdutoCursoResponse extends ProdutoResponse {
 
     public void setBancoQuestao(ProdutoBancoQuestaoResponse bq) {
         this.bancoQuestao = bq;
+    }
+
+    public String getImagem() {
+        return imagem;
+    }
+
+    public void setImagem(String imagem) {
+        this.imagem = imagem;
     }
 }

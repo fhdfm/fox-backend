@@ -67,7 +67,7 @@ public class CursoController {
         return ResponseEntity.status(HttpStatus.OK).body("Curso deletado com sucesso.");
     }
 
-    @GetMapping(value = {"/api/cursos", "/api/admin/cursos"})
+    @GetMapping(value = {"/public/cursos", "/api/admin/cursos"})
     public ResponseEntity<Page<CursoResponse>> findAll(@RequestParam(required = false) String filter, Pageable pageable) throws Exception {
         return ResponseEntity.ok(this.cursoService.findAll(pageable, filter));
     }

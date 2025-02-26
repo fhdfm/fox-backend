@@ -52,6 +52,7 @@ public class ProdutoService {
                 ProdutoCursoResponse produto = new ProdutoCursoResponse();
                 produto.setId(UUID.fromString(rs.getString("id")));
                 produto.setTipoProduto(TipoProduto.CURSO);
+                produto.setImagem(rs.getString("imagem"));
                 produto.setTitulo(rs.getString("titulo"));
                 produto.setBanca(rs.getString("nome"));
                 String escolaridadeStr = rs.getString("escolaridade");

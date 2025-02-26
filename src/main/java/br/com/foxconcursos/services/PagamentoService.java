@@ -17,8 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Optional;
+import java.util.Date;
 import java.util.UUID;
 
 @Service
@@ -45,7 +44,7 @@ public class PagamentoService {
         this.enderecoService = enderecoService;
     }
 
-    public String registrarPreCompra(ProdutoMercadoPagoRequest produto,Usuario usuario ) {
+    public String registrarPreCompra(ProdutoMercadoPagoRequest produto, Usuario usuario) {
         Pagamento pagamento = new Pagamento();
         pagamento.setTipo(produto.getTipo());
 
@@ -86,13 +85,14 @@ public class PagamentoService {
         payment.setMpId(pagamento.getMpId());
         this.repository.save(payment);
 
-        enviarEmail(payment);
+        enviarEmail(payment, false);
+        System.out.println("3_" + new Date());
 
         if (payment.isAprovado()) {
+            System.out.println("APROVADO_" + new Date());
 
-
+            enviarEmail(payment, true);
             if (pagamento.getTipo().equals(TipoProduto.APOSTILA)) {
-//            ENVIAR EMAIL DE APOSITLA COM ENDERECO
             } else {
                 // enviar email confirmacao
                 MatriculaRequest matriculaRequest = new MatriculaRequest();
@@ -106,7 +106,7 @@ public class PagamentoService {
         }
     }
 
-    public void enviarEmail(Pagamento pagamentoRequest) {
+    public void enviarEmail(Pagamento pagamentoRequest, boolean aprovado) {
         Usuario usuario = usuarioRepository.findById(pagamentoRequest.getUsuarioId()).orElse(null);
         Pagamento pagamento = repository.findById(pagamentoRequest.getId()).orElse(null);
 
@@ -119,7 +119,11 @@ public class PagamentoService {
             endereco = enderecoService.buscarPorId(pagamentoRequest.getId());
         }
 
-        emailService.enviarEmailPagamentoAprovado(usuario.getEmail(), usuario.getNome(), pagamento.getTitulo(), pagamento.getTipo(), endereco);
+        if (aprovado) {
+            emailService.enviarEmailPagamentoAprovado(usuario.getEmail(), usuario.getNome(), pagamento.getTitulo(), pagamento.getTipo(), endereco);
+        } else {
+            emailService.enviarEmailPagamentoProcessando(usuario.getEmail(), usuario.getNome(), pagamento.getTitulo());
+        }
     }
 
     public String createPayment(ProdutoMercadoPagoRequest produto) {

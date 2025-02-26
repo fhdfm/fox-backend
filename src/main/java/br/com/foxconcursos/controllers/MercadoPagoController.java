@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.foxconcursos.services.MercadoPagoService;
 
+import java.util.Date;
+
 @RestController
 public class MercadoPagoController {
 
@@ -30,7 +32,8 @@ public class MercadoPagoController {
             new ResponseEntity<>(
                 "Parametros obrigatórios não recebidos.", 
                 HttpStatus.BAD_REQUEST);
-        
+        System.out.println("INICIO_" + new Date());
+
         service.processarNotificacao(xSignature, xRequestId, dataId);
         return ResponseEntity.ok("Notificação recebida com sucesso.");
     }
