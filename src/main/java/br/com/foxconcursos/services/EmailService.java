@@ -69,7 +69,12 @@ public class EmailService {
                 + "<p>Email: <strong>" + emailAluno + "</strong></p>"
                 + "<p>Produto: <strong>" + produto + "</strong></p>";
 
-        if (tipo == TipoProduto.APOSTILA && endereco != null) {
+        System.out.println("ENVIO DE EMAIL");
+        System.out.println(endereco);
+        System.out.println(tipo);
+        System.out.println("ENVIO DE EMAIL");
+
+        if (tipo.equals(TipoProduto.APOSTILA)  && endereco != null) {
             mensagemAdmin += "<h3>📦 Dados para Entrega:</h3>"
                     + "<p><strong>Endereço:</strong> " + endereco.getLogradouro() + ", " + endereco.getNumero() + "</p>"
                     + (endereco.getComplemento() != null ? "<p><strong>Complemento:</strong> " + endereco.getComplemento() + "</p>" : "")
