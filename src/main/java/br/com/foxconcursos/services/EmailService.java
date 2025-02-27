@@ -31,7 +31,7 @@ public class EmailService {
     }
 
     public void enviarEmailPagamentoProcessando(String emailAluno, String nomeAluno, String produto) {
-        String emailAdmin = "foxnaval@hotmail.com";
+        String emailAdmin = "foxnaval9@gmail.com";
         String assunto = "Seu pagamento está em processamento";
 
         String mensagemAluno = "<h2>Olá, " + nomeAluno + "!</h2>"
