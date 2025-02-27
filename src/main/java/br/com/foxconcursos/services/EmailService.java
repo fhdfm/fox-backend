@@ -66,6 +66,7 @@ public class EmailService {
         String mensagemAdmin = "<h2>Pagamento Aprovado</h2>"
                 + "<p>Um pagamento foi aprovado.</p>"
                 + "<p>Aluno: <strong>" + nomeAluno + "</strong></p>"
+                + "<p>Email: <strong>" + emailAluno + "</strong></p>"
                 + "<p>Produto: <strong>" + produto + "</strong></p>";
 
         if (tipo == TipoProduto.APOSTILA && endereco != null) {
