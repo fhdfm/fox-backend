@@ -76,7 +76,9 @@ public class PagamentoService {
     @Transactional
     public void update(Pagamento pagamento) {
         Pagamento payment = this.repository.findById(pagamento.getId()).orElse(null);
-        System.out.println("payment:" + payment);
+        System.out.println("payment");
+        System.out.println(payment);
+        System.out.println("-------------");
         if (payment == null) {
             payment = new Pagamento();
         }
@@ -117,11 +119,17 @@ public class PagamentoService {
 
         Endereco endereco = null;
 
-        System.out.println("pagamentoRequest" + pagamentoRequest);
+        System.out.println("pagamentoRequest");
+        System.out.println( pagamentoRequest);
+        System.out.println("-------------------");
 
         if (pagamentoRequest.getTipo().equals(TipoProduto.APOSTILA)) {
             endereco = enderecoService.buscarPorId(pagamentoRequest.getId());
         }
+
+        System.out.println("ENDERECO");
+        System.out.println(endereco);
+        System.out.println("-------------------");
 
         if (aprovado) {
             emailService.enviarEmailPagamentoAprovado(usuario.getEmail(), usuario.getNome(), pagamento.getTitulo(), pagamento.getTipo(), endereco);
