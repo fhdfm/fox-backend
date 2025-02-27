@@ -18,7 +18,7 @@ public class EnderecoService {
     }
 
     public Endereco buscarPorId(UUID id) {
-        return enderecoRepository.findById(id).orElse(null);
+        return enderecoRepository.findByUsuarioId(id);
     }
 
     public  Endereco  buscarPorUsuarioId(UUID usuarioId) {

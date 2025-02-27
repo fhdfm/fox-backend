@@ -122,9 +122,12 @@ public class PagamentoService {
         System.out.println("pagamentoRequest");
         System.out.println( pagamentoRequest);
         System.out.println("-------------------");
+        System.out.println("tipo");
+        System.out.println( pagamentoRequest.getTipo());
+        System.out.println("-------------------");
 
         if (pagamentoRequest.getTipo().equals(TipoProduto.APOSTILA)) {
-            endereco = enderecoService.buscarPorId(pagamentoRequest.getId());
+            endereco = enderecoService.buscarPorId(pagamentoRequest.getUsuarioId());
         }
 
         System.out.println("ENDERECO");

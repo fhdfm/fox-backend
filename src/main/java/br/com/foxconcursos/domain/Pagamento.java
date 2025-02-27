@@ -35,6 +35,24 @@ public class Pagamento {
     public Pagamento() {
     }
 
+    @Override
+    public String toString() {
+        return "Pagamento{" +
+                "id=" + id +
+                ", usuarioId=" + usuarioId +
+                ", produtoId=" + produtoId +
+                ", mpId='" + mpId + '\'' +
+                ", status='" + status + '\'' +
+                ", titulo='" + titulo + '\'' +
+                ", produtoEnviado=" + produtoEnviado +
+                ", paraEntrega=" + paraEntrega +
+                ", periodo=" + periodo +
+                ", tipo=" + tipo +
+                ", data=" + data +
+                ", valor=" + valor +
+                '}';
+    }
+
     public Pagamento(
             UUID id,
             UUID usuarioId,
