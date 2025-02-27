@@ -68,7 +68,6 @@ public class EmailService {
                 + "<p>Aluno: <strong>" + nomeAluno + "</strong></p>"
                 + "<p>Produto: <strong>" + produto + "</strong></p>";
 
-        // Se for um pagamento de APOSTILA, adicionamos os dados de entrega
         if (tipo == TipoProduto.APOSTILA && endereco != null) {
             mensagemAdmin += "<h3>📦 Dados para Entrega:</h3>"
                     + "<p><strong>Endereço:</strong> " + endereco.getLogradouro() + ", " + endereco.getNumero() + "</p>"

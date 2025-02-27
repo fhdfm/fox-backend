@@ -76,6 +76,7 @@ public class PagamentoService {
     @Transactional
     public void update(Pagamento pagamento) {
         Pagamento payment = this.repository.findById(pagamento.getId()).orElse(null);
+        System.out.println("payment:" + payment);
         if (payment == null) {
             payment = new Pagamento();
         }
@@ -115,6 +116,9 @@ public class PagamentoService {
         }
 
         Endereco endereco = null;
+
+        System.out.println("pagamentoRequest" + pagamentoRequest);
+
         if (pagamentoRequest.getTipo().equals(TipoProduto.APOSTILA)) {
             endereco = enderecoService.buscarPorId(pagamentoRequest.getId());
         }
@@ -162,35 +166,5 @@ public class PagamentoService {
         }
     }
 
-
-//    public String createPayment(ProdutoMercadoPagoRequest produto) {
-//        try {
-//            Usuario usuario = usuarioRepository.findById(SecurityUtil.obterUsuarioLogado().getId()).orElse(null);
-//            PreferenceClient client = new PreferenceClient();
-//
-//            PreferenceItemRequest itemRequest = PreferenceItemRequest.builder()
-//                    .title(produto.getTitulo())
-//                    .quantity(1)
-//                    .unitPrice(BigDecimal.valueOf(produto.getValor()))
-//                    .build();
-//
-//            PreferencePayerRequest payerRequest = PreferencePayerRequest.builder()
-//                    .email(usuario.getEmail())
-//                    .build();
-//
-//            PreferenceRequest preferenceRequest = PreferenceRequest.builder()
-//                    .items(Collections.singletonList(itemRequest))
-//                    .payer(payerRequest)
-//                    .externalReference(registrarPreCompra(produto, usuario))
-//                    .build();
-//
-//            Preference preference = client.create(preferenceRequest);
-//
-//            return preference.getInitPoint();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return "Erro ao criar pagamento";
-//        }
-//    }
 
 }
