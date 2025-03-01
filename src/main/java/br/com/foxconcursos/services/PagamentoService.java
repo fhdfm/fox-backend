@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.UUID;
 
 @Service
@@ -53,7 +52,7 @@ public class PagamentoService {
             pagamento.setPeriodo(produto.getPeriodo());
             pagamento.setTitulo("Banco de questões: " + produto.getPeriodo() + "mês(es)");
         } else {
-            if (produto.getTipo().equals(TipoProduto.APOSTILA)) {
+            if (produto.getTipo().equals(TipoProduto.APOSTILA) && produto.getEndereco() != null) {
                 produto.getEndereco().setUsuarioId(usuario.getId());
                 salvarEnderecoUsuario(produto.getEndereco());
             }
@@ -90,9 +89,9 @@ public class PagamentoService {
         if (payment.isAprovado()) {
 
             enviarEmail(payment, true);
-            if (pagamento.getTipo().equals(TipoProduto.APOSTILA)) {
-            } else {
+            if (pagamento.getTipo() != TipoProduto.APOSTILA) {
                 // enviar email confirmacao
+                System.out.println("ENTROU NA MATRICULA");
                 MatriculaRequest matriculaRequest = new MatriculaRequest();
                 matriculaRequest.setProdutoId(payment.getProdutoId());
                 matriculaRequest.setUsuarioId(payment.getUsuarioId());
