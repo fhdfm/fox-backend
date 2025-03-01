@@ -42,7 +42,6 @@ public class MercadoPagoService {
     }
 
     public void processarNotificacao(String xSignature, String xRequestId, String dataId) {
-        System.out.println("0_" + new Date());
 
         if (!validarAutenticidade(xSignature, xRequestId, dataId)) {
             //System.out.println("xSignature: " + xSignature);

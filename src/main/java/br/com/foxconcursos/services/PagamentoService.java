@@ -76,9 +76,7 @@ public class PagamentoService {
     @Transactional
     public void update(Pagamento pagamento) {
         Pagamento payment = this.repository.findById(pagamento.getId()).orElse(null);
-        System.out.println("payment");
-        System.out.println(payment);
-        System.out.println("-------------");
+
         if (payment == null) {
             payment = new Pagamento();
         }
@@ -88,11 +86,8 @@ public class PagamentoService {
         payment.setMpId(pagamento.getMpId());
         this.repository.save(payment);
 
-        enviarEmail(payment, false);
-        System.out.println("3_" + new Date());
 
         if (payment.isAprovado()) {
-            System.out.println("APROVADO_" + new Date());
 
             enviarEmail(payment, true);
             if (pagamento.getTipo().equals(TipoProduto.APOSTILA)) {
@@ -102,10 +97,15 @@ public class PagamentoService {
                 matriculaRequest.setProdutoId(payment.getProdutoId());
                 matriculaRequest.setUsuarioId(payment.getUsuarioId());
                 matriculaRequest.setValor(pagamento.getValor());
-                if (payment.getTipo().equals(TipoProduto.QUESTOES))
+                System.out.println("111111");
+                if (payment.getTipo().equals(TipoProduto.QUESTOES)) {
+                    System.out.println("22222");
                     matriculaRequest.setDataFim(LocalDateTime.now().plusMonths(pagamento.getPeriodo()));
+                }
                 this.matriculaService.matricular(matriculaRequest);
             }
+        } else {
+            enviarEmail(payment, false);
         }
     }
 
@@ -120,10 +120,10 @@ public class PagamentoService {
         Endereco endereco = null;
 
         System.out.println("pagamentoRequest");
-        System.out.println( pagamentoRequest);
+        System.out.println(pagamentoRequest);
         System.out.println("-------------------");
         System.out.println("tipo");
-        System.out.println( pagamentoRequest.getTipo());
+        System.out.println(pagamentoRequest.getTipo());
         System.out.println("-------------------");
 
         if (pagamentoRequest.getTipo().equals(TipoProduto.APOSTILA)) {

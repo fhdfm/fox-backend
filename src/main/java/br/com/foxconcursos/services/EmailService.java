@@ -18,7 +18,6 @@ public class EmailService {
 
     public void sendEmail(String destinatario, String assunto,
                           String textoEmHtml) throws Exception {
-        System.out.println("Função envia email");
         MimeMessage message = this.mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
@@ -29,7 +28,6 @@ public class EmailService {
 
         this.mailSender.send(message);
 
-        System.out.println("FIM - Função envia email");
     }
 
     public void enviarEmailPagamentoProcessando(String emailAluno, String nomeAluno, String produto) {
@@ -71,13 +69,7 @@ public class EmailService {
                 + "<p>Email: <strong>" + emailAluno + "</strong></p>"
                 + "<p>Produto: <strong>" + produto + "</strong></p>";
 
-        System.out.println("ENVIO DE EMAIL");
-        System.out.println(endereco);
-        System.out.println(tipo);
-        System.out.println("ENVIO DE EMAIL");
-
         if (tipo != null && tipo == TipoProduto.APOSTILA && endereco != null) {
-            System.out.println("ENVIAR ENDERECO");
             mensagemAdmin += "<h3>📦 Dados para Entrega:</h3>"
                     + "<p><strong>Endereço:</strong> " + endereco.getLogradouro() + ", " + endereco.getNumero() + "</p>"
                     + (endereco.getComplemento() != null ? "<p><strong>Complemento:</strong> " + endereco.getComplemento() + "</p>" : "")

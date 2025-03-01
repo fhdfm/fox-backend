@@ -32,7 +32,6 @@ public class MercadoPagoController {
             new ResponseEntity<>(
                 "Parametros obrigatórios não recebidos.", 
                 HttpStatus.BAD_REQUEST);
-        System.out.println("INICIO_" + new Date());
 
         service.processarNotificacao(xSignature, xRequestId, dataId);
         return ResponseEntity.ok("Notificação recebida com sucesso.");
