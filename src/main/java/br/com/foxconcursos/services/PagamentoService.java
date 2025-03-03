@@ -98,6 +98,8 @@ public class PagamentoService {
                     System.out.println("Periodo");
                     System.out.println(pagamento.getPeriodo());
                     matriculaRequest.setDataFim(LocalDateTime.now().plusMonths(pagamento.getPeriodo()));
+                    System.out.println("data fim");
+                    System.out.println(matriculaRequest.getDataFim());
                 }
                 this.matriculaService.matricular(matriculaRequest);
             }

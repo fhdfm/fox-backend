@@ -83,6 +83,7 @@ public class MatriculaService {
 
         System.out.println("Data fim:");
         System.out.println(matricula.getDataFim());
+        System.out.println(hoje);
 
         if (hoje.isAfter(matricula.getDataFim())) {
             throw new IllegalArgumentException("Data Inicio não pode ser maior que Data Fim.");
