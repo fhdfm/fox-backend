@@ -91,14 +91,11 @@ public class PagamentoService {
             enviarEmail(payment, true);
             if (pagamento.getTipo() != TipoProduto.APOSTILA) {
                 // enviar email confirmacao
-                System.out.println("ENTROU NA MATRICULA");
                 MatriculaRequest matriculaRequest = new MatriculaRequest();
                 matriculaRequest.setProdutoId(payment.getProdutoId());
                 matriculaRequest.setUsuarioId(payment.getUsuarioId());
                 matriculaRequest.setValor(pagamento.getValor());
-                System.out.println("111111");
                 if (payment.getTipo().equals(TipoProduto.QUESTOES)) {
-                    System.out.println("22222");
                     matriculaRequest.setDataFim(LocalDateTime.now().plusMonths(pagamento.getPeriodo()));
                 }
                 this.matriculaService.matricular(matriculaRequest);

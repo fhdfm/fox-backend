@@ -10,7 +10,6 @@ public class MatriculaRequest {
 
     private UUID produtoId; // curso ou simulado
     private UUID usuarioId;
-
     private LocalDateTime dataFim;
     private BigDecimal valor;
 

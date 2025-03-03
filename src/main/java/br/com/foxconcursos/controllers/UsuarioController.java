@@ -3,11 +3,11 @@ package br.com.foxconcursos.controllers;
 import br.com.foxconcursos.domain.Usuario;
 import br.com.foxconcursos.dto.AlterarPasswordRequest;
 import br.com.foxconcursos.dto.ProdutoResponse;
-import br.com.foxconcursos.dto.SACRequest;
 import br.com.foxconcursos.dto.UsuarioResponse;
 import br.com.foxconcursos.services.ProdutoService;
 import br.com.foxconcursos.services.RecuperarPasswordService;
 import br.com.foxconcursos.services.impl.UsuarioServiceImpl;
+import br.com.foxconcursos.util.ApiReturn;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -39,11 +39,9 @@ public class UsuarioController {
     }
 
     @PostMapping(value = "/api/signup", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UUID> create(@RequestBody Usuario user) {
-
+    public ResponseEntity<ApiReturn<UUID>> create(@RequestBody Usuario user) {
         Usuario savedUser = this.service.save(user);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedUser.getId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiReturn.of(savedUser.getId()));
     }
 
     @DeleteMapping(value = "/api/admin/usuarios/{id}")
