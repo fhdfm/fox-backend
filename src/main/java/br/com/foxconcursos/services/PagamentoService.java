@@ -79,6 +79,8 @@ public class PagamentoService {
         if (payment == null) {
             payment = new Pagamento();
         }
+        System.out.println(pagamento.getStatus());
+        System.out.println(payment);
 
         payment.setStatus(pagamento.getStatus());
         payment.setData(pagamento.getData());
@@ -89,6 +91,12 @@ public class PagamentoService {
         if (payment.isAprovado()) {
 
             enviarEmail(payment, true);
+            System.out.println("Tipo");
+            System.out.println(pagamento.getTipo());
+            System.out.println(pagamento.getTipo() != TipoProduto.APOSTILA);
+            System.out.println(!pagamento.getTipo().equals(TipoProduto.APOSTILA));
+            System.out.println("----------");
+
             if (pagamento.getTipo() != TipoProduto.APOSTILA) {
                 MatriculaRequest matriculaRequest = new MatriculaRequest();
                 matriculaRequest.setProdutoId(payment.getProdutoId());
