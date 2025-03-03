@@ -90,12 +90,13 @@ public class PagamentoService {
 
             enviarEmail(payment, true);
             if (pagamento.getTipo() != TipoProduto.APOSTILA) {
-                // enviar email confirmacao
                 MatriculaRequest matriculaRequest = new MatriculaRequest();
                 matriculaRequest.setProdutoId(payment.getProdutoId());
                 matriculaRequest.setUsuarioId(payment.getUsuarioId());
                 matriculaRequest.setValor(pagamento.getValor());
                 if (payment.getTipo().equals(TipoProduto.QUESTOES)) {
+                    System.out.println("Periodo");
+                    System.out.println(pagamento.getPeriodo());
                     matriculaRequest.setDataFim(LocalDateTime.now().plusMonths(pagamento.getPeriodo()));
                 }
                 this.matriculaService.matricular(matriculaRequest);

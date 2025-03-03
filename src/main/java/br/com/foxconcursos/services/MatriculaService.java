@@ -81,6 +81,9 @@ public class MatriculaService {
             throw new IllegalArgumentException("Data fim é obrigatória.");
         }
 
+        System.out.println("Data fim:");
+        System.out.println(matricula.getDataFim());
+
         if (hoje.isAfter(matricula.getDataFim())) {
             throw new IllegalArgumentException("Data Inicio não pode ser maior que Data Fim.");
         }
