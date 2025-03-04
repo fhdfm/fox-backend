@@ -97,7 +97,7 @@ public class PagamentoService {
             System.out.println(!pagamento.getTipo().equals(TipoProduto.APOSTILA));
             System.out.println("----------");
 
-            if (pagamento.getTipo() != TipoProduto.APOSTILA) {
+            if (pagamento.getTipo() != null && pagamento.getTipo() != TipoProduto.APOSTILA) {
                 MatriculaRequest matriculaRequest = new MatriculaRequest();
                 matriculaRequest.setProdutoId(payment.getProdutoId());
                 matriculaRequest.setUsuarioId(payment.getUsuarioId());

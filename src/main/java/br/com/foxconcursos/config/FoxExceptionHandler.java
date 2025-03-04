@@ -4,11 +4,13 @@ import java.sql.SQLException;
 
 import br.com.foxconcursos.exception.FoxException;
 import br.com.foxconcursos.exception.NoContentException;
+import br.com.foxconcursos.exception.NotFoundException;
 import br.com.foxconcursos.util.ApiReturn;
 import br.com.foxconcursos.util.LogUtil;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -63,6 +65,11 @@ public class FoxExceptionHandler {
         LogUtil.log(ex.getClazz(), LogUtil.LogType.INFO, ex);
 
         return new ResponseEntity<>(apiReturn, status);
+    }
+
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<ApiReturn<?>> handleNotFoundUserException(UsernameNotFoundException ex) {
+        return handleFoxException(FoxException.ofValidation("Usuário não encontrado"));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

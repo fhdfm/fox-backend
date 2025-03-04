@@ -4,6 +4,7 @@ import br.com.foxconcursos.domain.*;
 import br.com.foxconcursos.dto.UsuarioResponse;
 import br.com.foxconcursos.events.TokenEvent;
 import br.com.foxconcursos.exception.FoxException;
+import br.com.foxconcursos.exception.UsuarioNaoEncontradoException;
 import br.com.foxconcursos.repositories.UsuarioRepository;
 import br.com.foxconcursos.services.RecuperarPasswordService;
 import br.com.foxconcursos.util.FoxUtils;
@@ -13,6 +14,7 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -41,11 +43,11 @@ public class UsuarioServiceImpl implements UserDetailsService {
     }
 
     @Override
-    public UsuarioLogado loadUserByUsername(String email) throws UsernameNotFoundException {
+    public UsuarioLogado loadUserByUsername(String email) throws AuthenticationException {
 
         UsuarioLogado user = this.usuarioRepository.findByEmail(email)
                 .map(UsuarioLogado::new)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado."));
+                .orElseThrow(() -> new UsuarioNaoEncontradoException("Usuário não encontrado."));
 
         if (!user.isEnabled())
             throw new DisabledException("Usuário: " + email + " está desabilitado.");
