@@ -178,6 +178,7 @@ public class MatriculaService {
             Usuario usuario = new Usuario();
             usuario.setId(UUID.fromString(rs.getString("id")));
             usuario.setEmail(rs.getString("email"));
+            usuario.setTelefone(rs.getString("telefone"));
             usuario.setNome(rs.getString("nome"));
             return usuario;
         };
