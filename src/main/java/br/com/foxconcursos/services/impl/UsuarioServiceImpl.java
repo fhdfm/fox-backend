@@ -73,6 +73,7 @@ public class UsuarioServiceImpl implements UserDetailsService {
             throw new IllegalArgumentException("CPF já cadastrado.");
 
         newUsuario.setCpf(usuario.getCpf());
+        newUsuario.setTelefone(usuario.getTelefone());
 
         newUsuario.setPassword(
                 this.encoder.encode(
@@ -128,6 +129,9 @@ public class UsuarioServiceImpl implements UserDetailsService {
 
         if (usuario.getCpf() == null || usuario.getCpf().isBlank())
             throw new IllegalArgumentException("CPF é obrigatório.");
+
+        if (usuario.getTelefone() == null || usuario.getTelefone().isBlank())
+            throw new IllegalArgumentException("Telefone é obrigatório.");
         else
             usuario.setCpf(FoxUtils.validarCpf(usuario.getCpf()));
     }
