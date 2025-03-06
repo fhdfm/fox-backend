@@ -50,6 +50,7 @@ public class AulaService {
     public void deletarAula(UUID aulaId) {
 
         List<AulaConteudo> anexos = this.conteudoRepository.findByAulaId(aulaId);
+        this.excluirProgresso(aulaId);
 
         for (AulaConteudo anexo : anexos) {
             this.storageService.delete(anexo.getKey());
@@ -57,6 +58,12 @@ public class AulaService {
 
         this.conteudoRepository.deleteByAulaId(aulaId);
         this.repository.deleteById(aulaId);
+    }
+
+    public void excluirProgresso(UUID aulaId) {
+        String sql = "DELETE FROM progresso WHERE aula_id = ?";
+
+        jdbcTemplate.update(sql, aulaId);
     }
 
     public void atualizarAula(UUID id, AulaRequest request) {
@@ -85,7 +92,7 @@ public class AulaService {
             conteudo.setUrl(output.getUrl());
             conteudo.setMimetype(output.getMimeType());
         } else {
-            AulaConteudo response = this.conteudoRepository.findById(request.getVideoId())
+            AulaConteudo response = this.conteudoRepository.findById(UUID.fromString(request.getVideoId()))
                     .orElseThrow(() -> new IllegalArgumentException("Conteúdo não encontrado para URL ID: " + request.getVideoId()));
 
             conteudo.setKey(response.getKey());
@@ -128,7 +135,7 @@ public class AulaService {
             conteudo.setUrl(output.getUrl());
             conteudo.setMimetype(output.getMimeType());
         } else {
-            AulaConteudo response = this.conteudoRepository.findById(request.getVideoId())
+            AulaConteudo response = this.conteudoRepository.findById(UUID.fromString(request.getVideoId()))
                     .orElseThrow(() -> new IllegalArgumentException("Conteúdo não encontrado para URL ID: " + request.getVideoId()));
 
             conteudo.setKey(response.getKey());
@@ -223,14 +230,18 @@ public class AulaService {
 
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
             AulaConteudo aula = new AulaConteudo();
-            if (rs.next()) {
-                aula.setAulaId(rs.getObject("id", UUID.class));
-                aula.setTitulo(rs.getString("titulo"));
-                aula.setKey(rs.getString("key"));
-                aula.setUrl(rs.getString("url"));
-                return aula;
+            String aulaKey = rs.getString("key");
+            aula.setId(rs.getObject("id", UUID.class));
+            aula.setTitulo(rs.getString("titulo"));
+
+            try {
+                aula.setUrl(storageService.getLink(aulaKey));
+            } catch (IOException e) {
+                throw new RuntimeException("Erro ao obter o link do vídeo", e);
             }
+
             return aula;
         });
     }
+
 }

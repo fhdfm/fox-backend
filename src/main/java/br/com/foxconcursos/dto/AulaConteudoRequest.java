@@ -11,7 +11,7 @@ public class AulaConteudoRequest {
 
     private TipoArquivo tipo;
     private String titulo;
-    private UUID videoId;
+    private String videoId;
     private MultipartFile file;
 
     // Construtor padrão
@@ -33,7 +33,7 @@ public class AulaConteudoRequest {
 
         // Validação condicional para `video` e `apostila`
         if (!isUpdate) { // Apenas em criação
-            if (tipo == TipoArquivo.VIDEO && file == null) {
+            if (tipo == TipoArquivo.VIDEO && file == null && videoId == null) {
                 throw new IllegalArgumentException("O campo 'video' é obrigatório para o tipo 'VIDEO'.");
             }
             if (tipo == TipoArquivo.APOSTILA && file == null) {
@@ -66,11 +66,11 @@ public class AulaConteudoRequest {
         this.file = file;
     }
 
-    public UUID getVideoId() {
+    public String getVideoId() {
         return videoId;
     }
 
-    public void setVideoId(UUID videoId) {
+    public void setVideoId(String videoId) {
         this.videoId = videoId;
     }
 
