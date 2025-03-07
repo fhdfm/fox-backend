@@ -226,7 +226,13 @@ public class AulaService {
     }
 
     public List<AulaConteudo> buscarVideoAulasCadastradas() {
-        String sql = "SELECT id, titulo, url, key FROM aula_conteudo WHERE tipo = 'VIDEO'";
+        String sql = "SELECT key, " +
+                "               (ARRAY_AGG(id))[1] AS id, " +
+                "               (ARRAY_AGG(url))[1] AS url, " +
+                "               (ARRAY_AGG(titulo))[1] AS titulo " +
+                "        FROM aula_conteudo " +
+                "        WHERE tipo = 'VIDEO' " +
+                "        GROUP BY key";
 
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
             AulaConteudo aula = new AulaConteudo();
