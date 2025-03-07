@@ -121,11 +121,11 @@ public class CursoAlunoService {
         response.setDisciplinas(disciplinas);
 
         List<AulaResponse> aulasPrimeiraDisciplina = disciplinas.get(0).getAulas();
-        if (aulasPrimeiraDisciplina.isEmpty()) {
-            throw new IllegalStateException("Nenhuma aula encontrada para a primeira disciplina do curso: " + cursoId);
-        }
+//        if (aulasPrimeiraDisciplina.isEmpty()) {
+//            throw new IllegalStateException("Nenhuma aula encontrada para a primeira disciplina do curso: " + cursoId);
+//        }
 
-        if (aulaId == null)
+        if (aulaId == null && !aulasPrimeiraDisciplina.isEmpty())
             aulaId = aulasPrimeiraDisciplina.get(0).getId();
 
         response.setAula(obterAula(aulaId));
