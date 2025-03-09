@@ -115,6 +115,7 @@ public class PagamentoService {
 //                    .unitPrice(BigDecimal.valueOf(1))
                     .unitPrice(BigDecimal.valueOf(produto.getValor()))
                     .build();
+//            teste
 
             PreferenceItemRequest itemFrete = PreferenceItemRequest.builder()
                     .title("Taxa de Frete")
