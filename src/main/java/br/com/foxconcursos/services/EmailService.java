@@ -30,31 +30,32 @@ public class EmailService {
 
     }
 
-    public void enviarEmailPagamentoProcessando(String emailAluno, String nomeAluno, String produto) {
-        String emailAdmin = "foxnaval9@gmail.com";
-        String assunto = "Seu pagamento está em processamento";
+//    public void enviarEmailPagamentoProcessando(String emailAluno, String nomeAluno, String produto) {
+//        String emailAdmin = "foxnaval9@gmail.com";
+//        String assunto = "Seu pagamento está em processamento";
+//
+//        String mensagemAluno = "<h2>Olá, " + nomeAluno + "!</h2>"
+//                + "<p>Seu pagamento para o produto <strong>" + produto + "</strong> está sendo processado.</p>"
+//                + "<p>Em breve, você receberá uma atualização sobre a aprovação do seu pagamento.</p>"
+//                + "<p>Atenciosamente,<br/>Equipe Curso Fox</p>";
+//
+//        String mensagemAdmin = "<h2>Pagamento em Processamento</h2>"
+//                + "<p>Um novo pagamento está sendo processado.</p>"
+//                + "<p>Aluno: <strong>" + nomeAluno + "</strong></p>"
+//                + "<p>Produto: <strong>" + produto + "</strong></p>";
+//
+//        try {
+//            sendEmail(emailAluno, assunto, mensagemAluno);
+//            sendEmail(emailAdmin, "Novo pagamento em processamento", mensagemAdmin);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
 
-        String mensagemAluno = "<h2>Olá, " + nomeAluno + "!</h2>"
-                + "<p>Seu pagamento para o produto <strong>" + produto + "</strong> está sendo processado.</p>"
-                + "<p>Em breve, você receberá uma atualização sobre a aprovação do seu pagamento.</p>"
-                + "<p>Atenciosamente,<br/>Equipe Curso Fox</p>";
-
-        String mensagemAdmin = "<h2>Pagamento em Processamento</h2>"
-                + "<p>Um novo pagamento está sendo processado.</p>"
-                + "<p>Aluno: <strong>" + nomeAluno + "</strong></p>"
-                + "<p>Produto: <strong>" + produto + "</strong></p>";
-
-        try {
-            sendEmail(emailAluno, assunto, mensagemAluno);
-            sendEmail(emailAdmin, "Novo pagamento em processamento", mensagemAdmin);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void enviarEmailPagamentoAprovado(String emailAluno, String nomeAluno, String produto, TipoProduto tipo, Endereco endereco) {
+    public void enviarEmailPagamentoAprovado(String emailAluno, String nomeAluno, String produto, TipoProduto tipo, Endereco endereco, String mpId) {
         String emailAdmin = "foxnaval9@gmail.com";
         String assunto = "Pagamento aprovado!";
+        String assuntoAdmin = "Pagamento aprovado! - " + mpId;
 
         // E-mail para o aluno
         String mensagemAluno = "<h2>Parabéns, " + nomeAluno + "!</h2>"
@@ -80,7 +81,7 @@ public class EmailService {
 
         try {
             sendEmail(emailAluno, assunto, mensagemAluno);
-            sendEmail(emailAdmin, "Pagamento aprovado", mensagemAdmin);
+            sendEmail(emailAdmin, assuntoAdmin, mensagemAdmin);
         } catch (Exception e) {
             e.printStackTrace();
         }

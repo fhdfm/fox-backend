@@ -76,4 +76,5 @@ public class ProdutoMercadoPagoRequest {
     public void setTaxaFrete(double taxaFrete) {
         this.taxaFrete = taxaFrete;
     }
+
 }

@@ -1,12 +1,11 @@
 package br.com.foxconcursos.domain;
 
-import java.util.UUID;
-
+import br.com.foxconcursos.dto.ConteudoResponse;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Table;
 
-import br.com.foxconcursos.dto.ConteudoResponse;
+import java.util.UUID;
 
 @Table("aula_conteudo")
 public class AulaConteudo {
@@ -19,21 +18,24 @@ public class AulaConteudo {
     private String url;
     private String key;
     private String mimetype;
+    private String vimeo;
 
     @Version
     private int version;
 
     // Construtor padrão
-    public AulaConteudo() {}
+    public AulaConteudo() {
+    }
 
     // Construtor com campos principais
-    public AulaConteudo(UUID id, UUID aulaId, TipoArquivo tipo, String titulo, String url, String key, String mimetype) {
+    public AulaConteudo(UUID id, UUID aulaId, TipoArquivo tipo, String titulo, String url, String key, String mimetype, String vimeo) {
         this.id = id;
         this.aulaId = aulaId;
         this.tipo = tipo;
         this.titulo = titulo;
         this.url = url;
         this.key = key;
+        this.vimeo = vimeo;
         this.mimetype = mimetype;
     }
 
@@ -44,7 +46,7 @@ public class AulaConteudo {
 
     // Método para conversão para DTO (ConteudoResponse)
     public ConteudoResponse toAssembly() {
-        return new ConteudoResponse(id, aulaId, tipo, titulo, url, key, mimetype);
+        return new ConteudoResponse(id, aulaId, tipo, titulo, url, key, mimetype, vimeo);
     }
 
     // Getters e Setters
@@ -110,5 +112,13 @@ public class AulaConteudo {
 
     public void setVersion(int version) {
         this.version = version;
+    }
+
+    public String getVimeo() {
+        return vimeo;
+    }
+
+    public void setVimeo(String vimeo) {
+        this.vimeo = vimeo;
     }
 }

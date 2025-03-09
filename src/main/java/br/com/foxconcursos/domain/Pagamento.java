@@ -23,6 +23,7 @@ public class Pagamento {
     private String mpId;
     private String status;
     private String titulo;
+    private String telefone;
     private boolean produtoEnviado = false;
 
     private boolean paraEntrega = false;
@@ -48,6 +49,7 @@ public class Pagamento {
                 ", paraEntrega=" + paraEntrega +
                 ", periodo=" + periodo +
                 ", tipo=" + tipo +
+                ", telefone=" + telefone +
                 ", data=" + data +
                 ", valor=" + valor +
                 '}';
@@ -59,6 +61,7 @@ public class Pagamento {
             UUID produtoId,
             String mpId,
             String status,
+            String telefone,
             String titulo,
             boolean produtoEnviado,
             boolean paraEntrega,
@@ -78,6 +81,7 @@ public class Pagamento {
         this.periodo = periodo;
         this.tipo = tipo;
         this.data = data;
+        this.telefone = telefone;
         this.valor = valor;
     }
 
@@ -182,4 +186,11 @@ public class Pagamento {
     }
 
 
+    public void setTelefone(String telefone) {
+        this.telefone = telefone;
+    }
+
+    public String getTelefone() {
+        return telefone;
+    }
 }

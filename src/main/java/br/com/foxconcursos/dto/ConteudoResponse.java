@@ -10,6 +10,7 @@ public class ConteudoResponse {
     private UUID aulaId;
     private TipoArquivo tipo;
     private String titulo;
+    private String vimeo;
     private String url;
     private String key;
     private String mimetype;
@@ -18,13 +19,14 @@ public class ConteudoResponse {
     public ConteudoResponse() {}
 
     // Construtor com campos principais
-    public ConteudoResponse(UUID id, UUID aulaId, TipoArquivo tipo, String titulo, String url, String key, String mimetype) {
+    public ConteudoResponse(UUID id, UUID aulaId, TipoArquivo tipo, String titulo, String url, String key, String mimetype,String vimeo) {
         this.id = id;
         this.aulaId = aulaId;
         this.tipo = tipo;
         this.titulo = titulo;
         this.url = url;
         this.key = key;
+        this.vimeo = vimeo;
         this.mimetype = mimetype;
     }
 
@@ -95,4 +97,11 @@ public class ConteudoResponse {
         this.mimetype = mimetype;
     }
 
+    public String getVimeo() {
+        return vimeo;
+    }
+
+    public void setVimeo(String vimeo) {
+        this.vimeo = vimeo;
+    }
 }

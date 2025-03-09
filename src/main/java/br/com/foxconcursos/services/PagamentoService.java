@@ -1,7 +1,6 @@
 package br.com.foxconcursos.services;
 
 import br.com.foxconcursos.domain.*;
-import br.com.foxconcursos.dto.MatriculaRequest;
 import br.com.foxconcursos.dto.ProdutoMercadoPagoRequest;
 import br.com.foxconcursos.repositories.PagamentoRepository;
 import br.com.foxconcursos.repositories.UsuarioRepository;
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.UUID;
 
@@ -46,11 +44,12 @@ public class PagamentoService {
     public String registrarPreCompra(ProdutoMercadoPagoRequest produto, Usuario usuario) {
         Pagamento pagamento = new Pagamento();
         pagamento.setTipo(produto.getTipo());
+        pagamento.setTelefone(usuario.getTelefone());
 
         if (produto.getTipo().equals(TipoProduto.QUESTOES)) {
             pagamento.setProdutoId(UUID.fromString("00000000-0000-0000-0000-000000000000"));
             pagamento.setPeriodo(produto.getPeriodo());
-            pagamento.setTitulo("Banco de questões: " + produto.getPeriodo() + "mês(es)");
+            pagamento.setTitulo("Banco de questões: " + produto.getPeriodo() + " mês(es)");
         } else {
             if (produto.getTipo().equals(TipoProduto.APOSTILA) && produto.getEndereco() != null) {
                 produto.getEndereco().setUsuarioId(usuario.getId());
@@ -79,44 +78,16 @@ public class PagamentoService {
         if (payment == null) {
             payment = new Pagamento();
         }
-        System.out.println(pagamento.getStatus());
-        System.out.println(payment);
 
         payment.setStatus(pagamento.getStatus());
-        payment.setData(pagamento.getData());
         payment.setMpId(pagamento.getMpId());
+
+
         this.repository.save(payment);
 
-
-        if (payment.isAprovado()) {
-
-            enviarEmail(payment, true);
-            System.out.println("Tipo");
-            System.out.println(pagamento.getTipo());
-            System.out.println(pagamento.getTipo() != TipoProduto.APOSTILA);
-            System.out.println(!pagamento.getTipo().equals(TipoProduto.APOSTILA));
-            System.out.println("----------");
-
-            if (pagamento.getTipo() != null && pagamento.getTipo() != TipoProduto.APOSTILA) {
-                MatriculaRequest matriculaRequest = new MatriculaRequest();
-                matriculaRequest.setProdutoId(payment.getProdutoId());
-                matriculaRequest.setUsuarioId(payment.getUsuarioId());
-                matriculaRequest.setValor(pagamento.getValor());
-                if (payment.getTipo().equals(TipoProduto.QUESTOES)) {
-                    System.out.println("Periodo");
-                    System.out.println(pagamento.getPeriodo());
-                    matriculaRequest.setDataFim(LocalDateTime.now().plusMonths(pagamento.getPeriodo()));
-                    System.out.println("data fim");
-                    System.out.println(matriculaRequest.getDataFim());
-                }
-                this.matriculaService.matricular(matriculaRequest);
-            }
-        } else {
-            enviarEmail(payment, false);
-        }
     }
 
-    public void enviarEmail(Pagamento pagamentoRequest, boolean aprovado) {
+    public void enviarEmail(Pagamento pagamentoRequest) {
         Usuario usuario = usuarioRepository.findById(pagamentoRequest.getUsuarioId()).orElse(null);
         Pagamento pagamento = repository.findById(pagamentoRequest.getId()).orElse(null);
 
@@ -126,26 +97,11 @@ public class PagamentoService {
 
         Endereco endereco = null;
 
-        System.out.println("pagamentoRequest");
-        System.out.println(pagamentoRequest);
-        System.out.println("-------------------");
-        System.out.println("tipo");
-        System.out.println(pagamentoRequest.getTipo());
-        System.out.println("-------------------");
-
         if (pagamentoRequest.getTipo().equals(TipoProduto.APOSTILA)) {
             endereco = enderecoService.buscarPorId(pagamentoRequest.getUsuarioId());
         }
 
-        System.out.println("ENDERECO");
-        System.out.println(endereco);
-        System.out.println("-------------------");
-
-        if (aprovado) {
-            emailService.enviarEmailPagamentoAprovado(usuario.getEmail(), usuario.getNome(), pagamento.getTitulo(), pagamento.getTipo(), endereco);
-        } else {
-            emailService.enviarEmailPagamentoProcessando(usuario.getEmail(), usuario.getNome(), pagamento.getTitulo());
-        }
+//        emailService.enviarEmailPagamentoAprovado(usuario.getEmail(), usuario.getNome(), pagamento.getTitulo(), pagamento.getTipo(), endereco);
     }
 
     public String createPayment(ProdutoMercadoPagoRequest produto) {
@@ -156,6 +112,7 @@ public class PagamentoService {
             PreferenceItemRequest itemProduto = PreferenceItemRequest.builder()
                     .title(produto.getTitulo())
                     .quantity(1)
+//                    .unitPrice(BigDecimal.valueOf(1))
                     .unitPrice(BigDecimal.valueOf(produto.getValor()))
                     .build();
 
@@ -182,6 +139,10 @@ public class PagamentoService {
             e.printStackTrace();
             return "Erro ao criar pagamento";
         }
+    }
+
+    public boolean existsPagamento(String dataId){
+        return repository.existsByMpId(dataId);
     }
 
 

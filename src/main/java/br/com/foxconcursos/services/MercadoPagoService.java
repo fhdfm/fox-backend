@@ -1,33 +1,25 @@
 package br.com.foxconcursos.services;
 
-import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-import java.time.OffsetDateTime;
-import java.util.Date;
-import java.util.Map;
-import java.util.UUID;
-
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-
+import br.com.foxconcursos.domain.Pagamento;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
-import br.com.foxconcursos.domain.Pagamento;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class MercadoPagoService {
 
     private final PagamentoService pagamentoService;
-    
+
     @Value("${integracao.mercadopago.private-key}")
     private String mercadoPagoPrivateKey;
 
@@ -41,10 +33,16 @@ public class MercadoPagoService {
         this.pagamentoService = pagamentoService;
     }
 
+    @Transactional
     public void processarNotificacao(String xSignature, String xRequestId, String dataId) {
 
         if (!validarAutenticidade(xSignature, xRequestId, dataId)) {
             System.out.println("Requisição não validada.");
+            return;
+        }
+
+        if (pagamentoService.existsPagamento(dataId)) {
+            System.out.println("pagamento ja existe: " + dataId);
             return;
         }
 
@@ -56,18 +54,19 @@ public class MercadoPagoService {
             return;
 
         pagamento.setId(UUID.fromString(externalId));
-        pagamento.setStatus((String)payment.get("status"));
+//        pagamento.setStatus((String)payment.get("status"));
+        pagamento.setStatus("pending");
         pagamento.setMpId(dataId);
-        pagamento.setData(OffsetDateTime.parse("" + payment.get("date_last_updated")).toLocalDateTime());
-        pagamento.setValor(new BigDecimal("" + payment.get("transaction_amount")));
+//        pagamento.setData(OffsetDateTime.parse("" + payment.get("date_last_updated")).toLocalDateTime());
+//        pagamento.setValor(new BigDecimal("" + payment.get("transaction_amount")));
 
         this.pagamentoService.update(pagamento);
     }
-    
+
     private boolean validarAutenticidade(String xSignature, String xRequestId, String dataId) {
-        
+
         String[] parts = xSignature.split(",");
-        
+
         String ts = null;
         String hash = null;
 
@@ -86,7 +85,7 @@ public class MercadoPagoService {
 
         if (!StringUtils.hasText(ts) || !StringUtils.hasText(hash))
             throw new IllegalArgumentException("[x-signature] está incompleto ou incorreto");
-        
+
         String manifest = String.format("id:%s;request-id:%s;ts:%s;", dataId, xRequestId, ts);
 
         System.out.println(manifest);
@@ -100,7 +99,7 @@ public class MercadoPagoService {
 
         return false;
     }
-        
+
     private String computeHmacSha256(String manifest) {
 
         try {
@@ -114,7 +113,7 @@ public class MercadoPagoService {
             throw new RuntimeException("Falha ao gerar HMAC-SHA256", e);
         }
     }
-    
+
     private String bytesToHex(byte[] bytes) {
         StringBuilder hexString = new StringBuilder();
         for (byte b : bytes) {
@@ -133,11 +132,12 @@ public class MercadoPagoService {
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
         ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
-            urlConsultaPagamento,
-            HttpMethod.GET,
-            entity,
-            new ParameterizedTypeReference<Map<String, Object>>() {},
-            paymentId    
+                urlConsultaPagamento,
+                HttpMethod.GET,
+                entity,
+                new ParameterizedTypeReference<Map<String, Object>>() {
+                },
+                paymentId
         );
 
         if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null)
