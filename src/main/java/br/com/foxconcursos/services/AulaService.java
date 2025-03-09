@@ -2,7 +2,6 @@ package br.com.foxconcursos.services;
 
 import br.com.foxconcursos.domain.Aula;
 import br.com.foxconcursos.domain.AulaConteudo;
-import br.com.foxconcursos.domain.TipoArquivo;
 import br.com.foxconcursos.domain.UsuarioLogado;
 import br.com.foxconcursos.dto.*;
 import br.com.foxconcursos.repositories.AulaConteudoRepository;
@@ -196,12 +195,12 @@ public class AulaService {
         List<ConteudoResponse> conteudoResponse = new ArrayList<>();
         for (AulaConteudo anexo : anexos) {
             ConteudoResponse content = anexo.toAssembly();
-            if (anexo.getVimeo() == null) {
-                String url = this.storageService.getLink(anexo.getKey());
-                content.setUrl(url);
-            }else{
-                content.setVimeo(anexo.getVimeo());
-            }
+//            if (anexo.getVimeo() == null) {
+            String url = this.storageService.getLink(anexo.getKey());
+            content.setUrl(url);
+//            }else{
+//                content.setVimeo(anexo.getVimeo());
+//            }
 
             conteudoResponse.add(content);
         }
