@@ -112,10 +112,8 @@ public class PagamentoService {
             PreferenceItemRequest itemProduto = PreferenceItemRequest.builder()
                     .title(produto.getTitulo())
                     .quantity(1)
-//                    .unitPrice(BigDecimal.valueOf(1))
                     .unitPrice(BigDecimal.valueOf(produto.getValor()))
                     .build();
-//            teste
 
             PreferenceItemRequest itemFrete = PreferenceItemRequest.builder()
                     .title("Taxa de Frete")

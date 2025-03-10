@@ -48,7 +48,7 @@ public class MatriculaScheduler {
     @Scheduled(cron = "0 0/5 * * * ?")
     public void executarTarefa() {
         List<Pagamento> listaCompras = pagamentoRepository
-                .findByStatusAndMpIdIsNotNullAndTipoNot("pending", TipoProduto.APOSTILA);
+                .findByStatusAndMpIdIsNotNull("pending");
 
         if (listaCompras.isEmpty()) {
             logger.info("Nenhum pagamento pendente encontrado para processar.");
@@ -71,16 +71,17 @@ public class MatriculaScheduler {
         Map<String, Object> payment = mercadoPagoService.findByPaymentId(pagamento.getMpId());
         String status = (String) payment.get("status");
 
-        if ("approved".equals(status)) {
-            logger.info("Pagamento {} aprovado. Iniciando processamento de matrícula.", pagamento.getMpId());
-            pagamento.setData(
-                    OffsetDateTime.parse("" + payment.get("date_last_updated"))
-                            .toLocalDateTime()
-            );
-            pagamento.setValor(new BigDecimal("" + payment.get("transaction_amount")));
-            pagamento.setStatus("approved");
+        pagamento.setData(
+                OffsetDateTime.parse("" + payment.get("date_last_updated"))
+                        .toLocalDateTime()
+        );
+        pagamento.setValor(new BigDecimal("" + payment.get("transaction_amount")));
+        pagamento.setStatus(status);
 
-            pagamentoRepository.save(pagamento);
+        pagamentoRepository.save(pagamento);
+
+        if ("approved".equals(status) && pagamento.getTipo() != TipoProduto.APOSTILA) {
+            logger.info("Pagamento {} aprovado. Iniciando processamento de matrícula.", pagamento.getMpId());
 
             MatriculaRequest matriculaRequest = new MatriculaRequest();
             matriculaRequest.setUsuarioId(pagamento.getUsuarioId());
@@ -95,11 +96,11 @@ public class MatriculaScheduler {
             Usuario usuario = usuarioRepository.findById(pagamento.getUsuarioId())
                     .orElseThrow(() -> new UsuarioNaoEncontradoException("Usuário não encontrado."));
 
-            emailService.enviarEmailPagamentoAprovado(usuario.getEmail(), usuario.getNome(), pagamento.getTitulo(), pagamento.getTipo(), null, pagamento.getMpId());
+            emailService.enviarEmailPagamentoAprovado(usuario.getEmail(), usuario.getNome(), pagamento.getTitulo(), pagamento.getTipo(), null, pagamento.getMpId(), usuario.getTelefone());
 
             logger.info("Matrícula realizada com sucesso para pagamento {}.", pagamento.getMpId());
         } else {
-            logger.info("Pagamento {} não aprovado. Status atual: {}", pagamento.getMpId(), status);
+            logger.info("Pagamento {} != approved. Status atual: {}", pagamento.getMpId(), status);
         }
     }
 

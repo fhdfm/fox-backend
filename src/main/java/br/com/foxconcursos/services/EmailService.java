@@ -52,7 +52,7 @@ public class EmailService {
 //        }
 //    }
 
-    public void enviarEmailPagamentoAprovado(String emailAluno, String nomeAluno, String produto, TipoProduto tipo, Endereco endereco, String mpId) {
+    public void enviarEmailPagamentoAprovado(String emailAluno, String nomeAluno, String produto, TipoProduto tipo, Endereco endereco, String mpId, String telefone) {
         String emailAdmin = "foxnaval9@gmail.com";
         String assunto = "Pagamento aprovado!";
         String assuntoAdmin = "Pagamento aprovado! - " + mpId;
@@ -68,11 +68,13 @@ public class EmailService {
                 + "<p>Um pagamento foi aprovado.</p>"
                 + "<p>Aluno: <strong>" + nomeAluno + "</strong></p>"
                 + "<p>Email: <strong>" + emailAluno + "</strong></p>"
-                + "<p>Produto: <strong>" + produto + "</strong></p>";
+                + "<p>Produto: <strong>" + produto + "</strong></p>"
+                + "<p>Telefone: <strong>" + telefone + "</strong></p>";
 
         if (tipo != null && tipo == TipoProduto.APOSTILA && endereco != null) {
             mensagemAdmin += "<h3>📦 Dados para Entrega:</h3>"
                     + "<p><strong>Endereço:</strong> " + endereco.getLogradouro() + ", " + endereco.getNumero() + "</p>"
+                    + "<p>Telefone: <strong>" + telefone + "</strong></p>"
                     + (endereco.getComplemento() != null ? "<p><strong>Complemento:</strong> " + endereco.getComplemento() + "</p>" : "")
                     + "<p><strong>Bairro:</strong> " + endereco.getBairro() + "</p>"
                     + "<p><strong>Cidade:</strong> " + endereco.getCidade() + " - " + endereco.getEstado() + "</p>"
