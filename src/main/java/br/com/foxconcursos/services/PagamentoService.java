@@ -5,10 +5,7 @@ import br.com.foxconcursos.dto.ProdutoMercadoPagoRequest;
 import br.com.foxconcursos.repositories.PagamentoRepository;
 import br.com.foxconcursos.repositories.UsuarioRepository;
 import br.com.foxconcursos.util.SecurityUtil;
-import com.mercadopago.client.preference.PreferenceClient;
-import com.mercadopago.client.preference.PreferenceItemRequest;
-import com.mercadopago.client.preference.PreferencePayerRequest;
-import com.mercadopago.client.preference.PreferenceRequest;
+import com.mercadopago.client.preference.*;
 import com.mercadopago.resources.preference.Preference;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -110,8 +107,11 @@ public class PagamentoService {
             PreferenceClient client = new PreferenceClient();
 
             PreferenceItemRequest itemProduto = PreferenceItemRequest.builder()
+                    .id(produto.getUuid().toString())
                     .title(produto.getTitulo())
+                    .description(produto.getTitulo())
                     .quantity(1)
+                    .categoryId("services")
                     .unitPrice(BigDecimal.valueOf(produto.getValor()))
                     .build();
 
@@ -122,12 +122,22 @@ public class PagamentoService {
                     .build();
 
             PreferencePayerRequest payerRequest = PreferencePayerRequest.builder()
+                    .name(usuario.getNome())
                     .email(usuario.getEmail())
                     .build();
 
             PreferenceRequest preferenceRequest = PreferenceRequest.builder()
                     .items(Arrays.asList(itemProduto, itemFrete))
                     .payer(payerRequest)
+                    .backUrls(PreferenceBackUrlsRequest.builder()
+                            .success("https://www.foxconcursos.com.br/auth")
+                            .failure("https://www.foxconcursos.com.br/auth")
+                            .pending("https://www.foxconcursos.com.br/auth")
+                            .build()
+                    )
+                    .autoReturn("approved")
+                    .statementDescriptor("Fox Cursos: " + produto.getTitulo())
+                    .notificationUrl("https://fox-backend.onrender.com/mp")
                     .externalReference(registrarPreCompra(produto, usuario))
                     .build();
 
