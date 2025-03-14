@@ -1,10 +1,14 @@
 package br.com.foxconcursos.services;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.function.Function;
-
+import br.com.foxconcursos.domain.Banca;
+import br.com.foxconcursos.domain.Curso;
+import br.com.foxconcursos.domain.Simulado;
+import br.com.foxconcursos.domain.Status;
+import br.com.foxconcursos.dto.*;
+import br.com.foxconcursos.repositories.CursoRepository;
+import br.com.foxconcursos.repositories.SimuladoRepository;
+import br.com.foxconcursos.util.FoxUtils;
+import br.com.foxconcursos.util.SecurityUtil;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
@@ -12,23 +16,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import br.com.foxconcursos.domain.Banca;
-import br.com.foxconcursos.domain.Curso;
-import br.com.foxconcursos.domain.Simulado;
-import br.com.foxconcursos.domain.Status;
-import br.com.foxconcursos.dto.CursoRequest;
-import br.com.foxconcursos.dto.CursoResponse;
-import br.com.foxconcursos.dto.ProdutoCursoResponse;
-import br.com.foxconcursos.dto.StorageInput;
-import br.com.foxconcursos.dto.StorageOutput;
-import br.com.foxconcursos.repositories.CursoRepository;
-import br.com.foxconcursos.repositories.SimuladoRepository;
-import br.com.foxconcursos.util.FoxUtils;
-import br.com.foxconcursos.util.SecurityUtil;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Function;
 
 @Service
 public class CursoService {
-    
+
     private final CursoRepository cursoRepository;
     private final BancaService bancaService;
     private final DisciplinaService disciplinaService;
@@ -36,9 +31,9 @@ public class CursoService {
 
     private final StorageService storageService;
 
-    public CursoService(CursoRepository cursoRepository, BancaService bancaService, 
-        DisciplinaService disciplinaService, SimuladoRepository simuladoRepository, 
-        StorageService storageService) {
+    public CursoService(CursoRepository cursoRepository, BancaService bancaService,
+                        DisciplinaService disciplinaService, SimuladoRepository simuladoRepository,
+                        StorageService storageService) {
         this.cursoRepository = cursoRepository;
         this.bancaService = bancaService;
         this.disciplinaService = disciplinaService;
@@ -173,14 +168,15 @@ public class CursoService {
         return result;
     }
 
-    public List<Simulado> findSimuladosNaoMatriculadosByCursoId(UUID cursoId){
-        return simuladoRepository.findSimuladosNaoMatriculadosByCursoId(cursoId, SecurityUtil.obterUsuarioLogado().getId() );
+    public List<Simulado> findSimuladosNaoMatriculadosByCursoId(UUID cursoId) {
+        return simuladoRepository.findSimuladosNaoMatriculadosByCursoId(cursoId, SecurityUtil.obterUsuarioLogado().getId());
     }
 
-    public List<Simulado> findSimuladosByCursoIdAndUsuarioId(UUID cursoId){
-        return simuladoRepository.findSimuladosByCursoIdAndUsuarioId(cursoId, SecurityUtil.obterUsuarioLogado().getId() );
+    public List<Simulado> findSimuladosByCursoIdAndUsuarioId(UUID cursoId) {
+        return simuladoRepository.findSimuladosByCursoIdAndUsuarioId(cursoId, SecurityUtil.obterUsuarioLogado().getId());
     }
-    public List<Simulado> findSimuladosByCursoId(UUID cursoId){
+
+    public List<Simulado> findSimuladosByCursoId(UUID cursoId) {
         return simuladoRepository.findByCursoId(cursoId);
     }
 

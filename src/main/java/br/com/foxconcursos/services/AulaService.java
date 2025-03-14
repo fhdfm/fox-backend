@@ -1,8 +1,6 @@
 package br.com.foxconcursos.services;
 
-import br.com.foxconcursos.domain.Aula;
-import br.com.foxconcursos.domain.AulaConteudo;
-import br.com.foxconcursos.domain.UsuarioLogado;
+import br.com.foxconcursos.domain.*;
 import br.com.foxconcursos.dto.*;
 import br.com.foxconcursos.repositories.AulaConteudoRepository;
 import br.com.foxconcursos.repositories.AulaRepository;
@@ -104,6 +102,19 @@ public class AulaService {
         return conteudo.getId();
     }
 
+    @Transactional
+    public UUID criarConteudoVimeo(UUID aulaId, String iframe)
+            throws Exception {
+
+        AulaConteudo conteudo = new AulaConteudo();
+        conteudo.setAulaId(aulaId);
+        conteudo.setVimeo(iframe);
+        conteudo.setTipo(TipoArquivo.VIDEO);
+
+        this.conteudoRepository.save(conteudo);
+        return conteudo.getId();
+    }
+
     private StorageOutput uploadArquivo(final MultipartFile file) throws Exception {
         final StorageInput input = new StorageInput.Builder()
                 .withFileInputStream(file.getInputStream())
@@ -195,8 +206,10 @@ public class AulaService {
         List<ConteudoResponse> conteudoResponse = new ArrayList<>();
         for (AulaConteudo anexo : anexos) {
             ConteudoResponse content = anexo.toAssembly();
-            String url = this.storageService.getLink(anexo.getKey());
-            content.setUrl(url);
+            if (anexo.getKey() != null) {
+                String url = this.storageService.getLink(anexo.getKey());
+                content.setUrl(url);
+            }
             content.setVimeo(anexo.getVimeo());
             conteudoResponse.add(content);
         }
@@ -229,23 +242,18 @@ public class AulaService {
     public List<AulaConteudo> buscarVideoAulasCadastradas() {
         String sql = "SELECT key, " +
                 "               (ARRAY_AGG(id))[1] AS id, " +
-                "               (ARRAY_AGG(url))[1] AS url, " +
+                "               (ARRAY_AGG(vimeo))[1] AS vimeo, " +
                 "               (ARRAY_AGG(titulo))[1] AS titulo " +
                 "        FROM aula_conteudo " +
                 "        WHERE tipo = 'VIDEO' " +
+                "        AND vimeo is not null " +
                 "        GROUP BY key";
 
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
             AulaConteudo aula = new AulaConteudo();
-            String aulaKey = rs.getString("key");
+            aula.setUrl(rs.getString("key"));
             aula.setId(rs.getObject("id", UUID.class));
             aula.setTitulo(rs.getString("titulo"));
-
-            try {
-                aula.setUrl(storageService.getLink(aulaKey));
-            } catch (IOException e) {
-                throw new RuntimeException("Erro ao obter o link do vídeo", e);
-            }
 
             return aula;
         });
