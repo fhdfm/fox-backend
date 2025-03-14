@@ -1,6 +1,9 @@
 package br.com.foxconcursos.services;
 
-import br.com.foxconcursos.domain.*;
+import br.com.foxconcursos.domain.Aula;
+import br.com.foxconcursos.domain.AulaConteudo;
+import br.com.foxconcursos.domain.TipoArquivo;
+import br.com.foxconcursos.domain.UsuarioLogado;
 import br.com.foxconcursos.dto.*;
 import br.com.foxconcursos.repositories.AulaConteudoRepository;
 import br.com.foxconcursos.repositories.AulaRepository;
@@ -223,7 +226,9 @@ public class AulaService {
     public void deletarConteudo(UUID id) {
         AulaConteudo conteudo = this.conteudoRepository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("Conteudo: '" + id + "' não encontrado."));
-        this.storageService.delete(conteudo.getKey());
+        if (conteudo.getKey() != null) {
+            this.storageService.delete(conteudo.getKey());
+        }
         this.conteudoRepository.delete(conteudo);
     }
 
