@@ -256,7 +256,8 @@ public class AulaService {
 
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
             AulaConteudo aula = new AulaConteudo();
-            aula.setUrl(rs.getString("key"));
+//            aula.setUrl(rs.getString("key"));
+            aula.setVimeo(rs.getString("vimeo"));
             aula.setId(rs.getObject("id", UUID.class));
             aula.setTitulo(rs.getString("titulo"));
 
