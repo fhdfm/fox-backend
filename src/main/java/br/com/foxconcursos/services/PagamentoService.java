@@ -1,18 +1,38 @@
 package br.com.foxconcursos.services;
 
-import br.com.foxconcursos.domain.*;
-import br.com.foxconcursos.dto.ProdutoMercadoPagoRequest;
-import br.com.foxconcursos.repositories.PagamentoRepository;
-import br.com.foxconcursos.repositories.UsuarioRepository;
-import br.com.foxconcursos.util.SecurityUtil;
-import com.mercadopago.client.preference.*;
-import com.mercadopago.resources.preference.Preference;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.UUID;
+import com.mercadopago.client.preference.PreferenceBackUrlsRequest;
+import com.mercadopago.client.preference.PreferenceClient;
+import com.mercadopago.client.preference.PreferenceItemRequest;
+import com.mercadopago.client.preference.PreferencePayerRequest;
+import com.mercadopago.client.preference.PreferenceRequest;
+import com.mercadopago.resources.preference.Preference;
+
+import br.com.foxconcursos.domain.Endereco;
+import br.com.foxconcursos.domain.Pagamento;
+import br.com.foxconcursos.domain.TipoProduto;
+import br.com.foxconcursos.domain.Usuario;
+import br.com.foxconcursos.domain.UsuarioLogado;
+import br.com.foxconcursos.dto.ProdutoMercadoPagoRequest;
+import br.com.foxconcursos.dto.VendasFilterResquest;
+import br.com.foxconcursos.dto.VendasResponse;
+import br.com.foxconcursos.repositories.PagamentoRepository;
+import br.com.foxconcursos.repositories.UsuarioRepository;
+import br.com.foxconcursos.repositories.VendasRowMapper;
+import br.com.foxconcursos.util.SecurityUtil;
 
 @Service
 public class PagamentoService {
@@ -22,6 +42,7 @@ public class PagamentoService {
     private final UsuarioRepository usuarioRepository;
     private final EnderecoService enderecoService;
     private final EmailService emailService;
+    private final JdbcTemplate jdbcTemplate;
 
 
     public PagamentoService(
@@ -29,13 +50,15 @@ public class PagamentoService {
             MatriculaService matriculaService,
             UsuarioRepository usuarioRepository,
             EnderecoService enderecoService,
-            EmailService emailService
+            EmailService emailService,
+            JdbcTemplate jdbcTemplate
     ) {
         this.repository = repository;
         this.matriculaService = matriculaService;
         this.usuarioRepository = usuarioRepository;
         this.emailService = emailService;
         this.enderecoService = enderecoService;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     public String registrarPreCompra(ProdutoMercadoPagoRequest produto, Usuario usuario) {
@@ -152,6 +175,134 @@ public class PagamentoService {
 
     public boolean existsPagamento(String dataId){
         return repository.existsByMpId(dataId);
+    }
+
+    public Page<VendasResponse> findByParameters(VendasFilterResquest request, Pageable pageable) {
+        
+        String sqlBase = """
+            select v.id, v.usuario_id, u.nome, v.produto_id, v.mp_id, v.data, v.periodo, 
+                   v.tipo, v.titulo, v.para_entrega, v.produto_enviado, v.telefone 
+            from mercado_pago v inner join usuarios u on u.id = v.usuario_id
+            where v.status = 'approved'
+        """;
+        
+        StringBuilder sql = new StringBuilder(sqlBase);
+
+        List<Object> params = new ArrayList<>();
+        UUID usuarioId = request.getUsuario();
+        if (usuarioId != null) {
+            sql.append(" and v.usuario_id = ?");
+            params.add(usuarioId);
+        }
+
+        UUID produtoId = request.getProduto();
+        if (produtoId != null) {
+            sql.append(" and v.produto_id = ?");
+            params.add(produtoId);
+        }
+
+        LocalDateTime dataInicio = request.getDataInicio();
+        if (dataInicio != null) {
+            sql.append(" and v.data >= ?");
+            params.add(dataInicio);
+        }
+
+        LocalDateTime dataFim = request.getDataFim();
+        if (dataFim != null) {
+            sql.append(" and v.data <= ?");
+            params.add(dataFim);
+        }
+
+        TipoProduto tipo = request.getTipo();
+        if (tipo != null) {
+            sql.append(" and v.tipo = ?");
+            params.add(tipo);
+
+            if (tipo.equals(TipoProduto.APOSTILA)) {
+                
+                Boolean entrega = request.isEntrega();
+                if (entrega != null) {
+                    sql.append(" and v.para_entrega = ?");
+                    params.add(request.isEntrega());
+                }
+
+                Boolean enviado = request.isEnviado();
+                if (enviado != null) {
+                    sql.append(" and v.produto_enviado = ?");
+                    params.add(request.isEnviado());
+                }
+            }
+        }
+
+        String orderClause = "";
+        if (pageable.getSort().isSorted()) {
+            orderClause = " order by ";
+            List<String> orders = new ArrayList<>();
+            pageable.getSort().forEach(order -> {
+                orders.add(order.getProperty() + " " + order.getDirection().name());
+            });
+            orderClause += String.join(", ", orders);
+        }
+
+        String paginatedQuery = sql.toString() + orderClause + " limit ? offset ?";
+        params.add(pageable.getPageSize());
+        params.add(pageable.getOffset());
+
+        List<VendasResponse> vendas = jdbcTemplate.query(
+                    paginatedQuery, 
+                    new VendasRowMapper(),
+                    params.toArray());
+        
+        StringBuilder sqlCountQuery = 
+            new StringBuilder("select count(*) from mercado_pago where status = 'approved' ");
+        
+        List<Object> countParams = new ArrayList<>();
+
+        if (usuarioId != null) {
+            sqlCountQuery.append(" and v.usuario_id = ?");
+            countParams.add(usuarioId);
+        }
+
+        if (produtoId != null) {
+            sqlCountQuery.append(" and v.produto_id = ?");
+            countParams.add(produtoId);
+        }
+
+        if (dataInicio != null) {
+            sqlCountQuery.append(" and v.data >= ?");
+            countParams.add(dataInicio);
+        }
+
+        if (dataFim != null) {
+            sqlCountQuery.append(" and v.data <= ?");
+            countParams.add(dataFim);
+        }
+
+        if (tipo != null) {
+            sqlCountQuery.append(" and v.tipo = ?");
+            countParams.add(tipo);
+
+            if (tipo.equals(TipoProduto.APOSTILA)) {
+                
+                Boolean entrega = request.isEntrega();
+                if (entrega != null) {
+                    sqlCountQuery.append(" and v.para_entrega = ?");
+                    countParams.add(request.isEntrega());
+                }
+
+                Boolean enviado = request.isEnviado();
+                if (enviado != null) {
+                    sqlCountQuery.append(" and v.produto_enviado = ?");
+                    countParams.add(request.isEnviado());
+                }
+            }
+        }        
+        
+        Integer total = jdbcTemplate.queryForObject(sqlCountQuery.toString(), 
+                                        Integer.class, 
+                                        countParams.toArray());
+
+        return new PageImpl<>(vendas, pageable, total);
     }
 
 

@@ -10,8 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.foxconcursos.services.MercadoPagoService;
 
-import java.util.Date;
-
 @RestController
 public class MercadoPagoController {
 

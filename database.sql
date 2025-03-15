@@ -457,7 +457,8 @@ CREATE TABLE aula_conteudo
     titulo   VARCHAR(100) NOT NULL,                                       -- Título do conteúdo
     url      VARCHAR(200) NOT NULL,                                       -- URL do conteúdo
     key      VARCHAR(100) NOT NULL,                                       -- Chave do arquivo no S3
-    mimetype VARCHAR(50)  NOT NULL,                                       -- Tipo MIME do conteúdo
+    mimetype VARCHAR(50)  NOT NULL,                                       -- Tipo MIME do 
+    vimeo    TEXT,
     version  INT          NOT NULL DEFAULT 0                              -- Controle de versão, valor padrão = 0
 );
 
