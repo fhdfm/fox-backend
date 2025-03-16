@@ -1,15 +1,14 @@
 package br.com.foxconcursos.repositories;
 
+import br.com.foxconcursos.dto.VendasResponse;
+import org.springframework.jdbc.core.RowMapper;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.UUID;
-
-import org.springframework.jdbc.core.RowMapper;
-
-import br.com.foxconcursos.dto.VendasResponse;
 
 public class VendasRowMapper implements RowMapper<VendasResponse> {
 
@@ -24,7 +23,7 @@ public class VendasRowMapper implements RowMapper<VendasResponse> {
         venda.setMercadoPagoId(rs.getString("mp_id"));
 //        Date data = rs.getDate("data");
 //        venda.setData(data);
-        
+
         String tipo = rs.getString("tipo");
         venda.setTipo(tipo);
 
@@ -32,13 +31,12 @@ public class VendasRowMapper implements RowMapper<VendasResponse> {
                 ? rs.getTimestamp("data").toLocalDateTime()
                 : null;
 
+        venda.setData(data.toString());
+
         if ("QUESTOES".equals(tipo) && data != null) {
             int periodo = rs.getInt("periodo");
 
-            // Adicionando meses diretamente na variável de data
             LocalDateTime expiracao = data.plusMonths(periodo);
-
-            // Convertendo corretamente para Date
             venda.setDataExpiracao(Date.from(expiracao.atZone(ZoneId.systemDefault()).toInstant()));
         }
 

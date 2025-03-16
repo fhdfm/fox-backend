@@ -11,7 +11,7 @@ public class VendasResponse {
     private UUID produtoId;
     private String produtoNome;
     private String mercadoPagoId;
-    private Date data;
+    private String data;
     private Date dataExpiracao;
     private boolean entrega;
     private boolean enviado;
@@ -69,11 +69,11 @@ public class VendasResponse {
         this.mercadoPagoId = mercadoPagoId;
     }
 
-    public Date getData() {
+    public String getData() {
         return data;
     }
 
-    public void setData(Date data) {
+    public void setData(String data) {
         this.data = data;
     }
 

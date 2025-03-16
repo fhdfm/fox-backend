@@ -236,7 +236,7 @@ public class PagamentoService {
             });
             orderClause += String.join(", ", orders);
         }
-
+        sql.append(" ORDER BY v.data DESC");
         String paginatedQuery = sql.toString() + orderClause + " limit ? offset ?";
         params.add(pageable.getPageSize());
         params.add(pageable.getOffset());
