@@ -7,7 +7,7 @@ import br.com.foxconcursos.domain.TipoProduto;
 
 public class VendasFilterResquest {
     
-    private UUID usuario;
+    private String nomeUsuario;
     private UUID produto;
     private LocalDateTime dataInicio;
     private LocalDateTime dataFim;
@@ -18,12 +18,12 @@ public class VendasFilterResquest {
     public VendasFilterResquest() {
     }
 
-    public UUID getUsuario() {
-        return usuario;
+    public String getNomeUsuario() {
+        return nomeUsuario;
     }
 
-    public void setUsuario(UUID usuario) {
-        this.usuario = usuario;
+    public void setNomeUsuario(String nomeUsuario) {
+        this.nomeUsuario = nomeUsuario;
     }
 
     public UUID getProduto() {

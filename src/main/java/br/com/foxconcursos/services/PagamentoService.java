@@ -1,38 +1,31 @@
 package br.com.foxconcursos.services;
 
+import br.com.foxconcursos.domain.*;
+import br.com.foxconcursos.dto.ProdutoMercadoPagoRequest;
+import br.com.foxconcursos.dto.VendasFilterResquest;
+import br.com.foxconcursos.dto.VendasResponse;
+import br.com.foxconcursos.dto.VendasStatusUpdateRequest;
+import br.com.foxconcursos.repositories.PagamentoRepository;
+import br.com.foxconcursos.repositories.UsuarioRepository;
+import br.com.foxconcursos.repositories.VendasRowMapper;
+import br.com.foxconcursos.util.SecurityUtil;
+import com.mercadopago.client.preference.*;
+import com.mercadopago.resources.preference.Preference;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.mercadopago.client.preference.PreferenceBackUrlsRequest;
-import com.mercadopago.client.preference.PreferenceClient;
-import com.mercadopago.client.preference.PreferenceItemRequest;
-import com.mercadopago.client.preference.PreferencePayerRequest;
-import com.mercadopago.client.preference.PreferenceRequest;
-import com.mercadopago.resources.preference.Preference;
-
-import br.com.foxconcursos.domain.Endereco;
-import br.com.foxconcursos.domain.Pagamento;
-import br.com.foxconcursos.domain.TipoProduto;
-import br.com.foxconcursos.domain.Usuario;
-import br.com.foxconcursos.domain.UsuarioLogado;
-import br.com.foxconcursos.dto.ProdutoMercadoPagoRequest;
-import br.com.foxconcursos.dto.VendasFilterResquest;
-import br.com.foxconcursos.dto.VendasResponse;
-import br.com.foxconcursos.repositories.PagamentoRepository;
-import br.com.foxconcursos.repositories.UsuarioRepository;
-import br.com.foxconcursos.repositories.VendasRowMapper;
-import br.com.foxconcursos.util.SecurityUtil;
 
 @Service
 public class PagamentoService {
@@ -49,8 +42,7 @@ public class PagamentoService {
             PagamentoRepository repository,
             MatriculaService matriculaService,
             UsuarioRepository usuarioRepository,
-            EnderecoService enderecoService,
-            EmailService emailService,
+            EnderecoService enderecoService, EmailService emailService,
             JdbcTemplate jdbcTemplate
     ) {
         this.repository = repository;
@@ -73,6 +65,7 @@ public class PagamentoService {
         } else {
             if (produto.getTipo().equals(TipoProduto.APOSTILA) && produto.getEndereco() != null) {
                 produto.getEndereco().setUsuarioId(usuario.getId());
+                pagamento.setParaEntrega(true);
                 salvarEnderecoUsuario(produto.getEndereco());
             }
             pagamento.setTitulo(produto.getTitulo());
@@ -173,26 +166,27 @@ public class PagamentoService {
         }
     }
 
-    public boolean existsPagamento(String dataId){
+    public boolean existsPagamento(String dataId) {
         return repository.existsByMpId(dataId);
     }
 
     public Page<VendasResponse> findByParameters(VendasFilterResquest request, Pageable pageable) {
-        
-        String sqlBase = """
-            select v.id, v.usuario_id, u.nome, v.produto_id, v.mp_id, v.data, v.periodo, 
-                   v.tipo, v.titulo, v.para_entrega, v.produto_enviado, v.telefone 
-            from mercado_pago v inner join usuarios u on u.id = v.usuario_id
-            where v.status = 'approved'
-        """;
-        
-        StringBuilder sql = new StringBuilder(sqlBase);
 
+        String sqlBase = """
+                    select v.id, v.usuario_id, u.nome, v.produto_id, v.mp_id, v.data, v.periodo, 
+                           v.tipo, v.titulo, v.para_entrega, v.produto_enviado, v.telefone 
+                    from mercado_pago v 
+                    inner join usuarios u on u.id = v.usuario_id
+                    where v.status = 'approved'
+                """;
+
+        StringBuilder sql = new StringBuilder(sqlBase);
         List<Object> params = new ArrayList<>();
-        UUID usuarioId = request.getUsuario();
-        if (usuarioId != null) {
-            sql.append(" and v.usuario_id = ?");
-            params.add(usuarioId);
+
+        String nomeUsuario = request.getNomeUsuario();
+        if (nomeUsuario != null && !nomeUsuario.isEmpty()) {
+            sql.append(" and LOWER(u.nome) LIKE LOWER(?)");
+            params.add("%" + nomeUsuario + "%"); // Pesquisa parcial no nome do usuário
         }
 
         UUID produtoId = request.getProduto();
@@ -216,20 +210,19 @@ public class PagamentoService {
         TipoProduto tipo = request.getTipo();
         if (tipo != null) {
             sql.append(" and v.tipo = ?");
-            params.add(tipo);
+            params.add(tipo.name());
 
             if (tipo.equals(TipoProduto.APOSTILA)) {
-                
                 Boolean entrega = request.isEntrega();
                 if (entrega != null) {
                     sql.append(" and v.para_entrega = ?");
-                    params.add(request.isEntrega());
+                    params.add(entrega);
                 }
 
                 Boolean enviado = request.isEnviado();
                 if (enviado != null) {
                     sql.append(" and v.produto_enviado = ?");
-                    params.add(request.isEnviado());
+                    params.add(enviado);
                 }
             }
         }
@@ -249,18 +242,17 @@ public class PagamentoService {
         params.add(pageable.getOffset());
 
         List<VendasResponse> vendas = jdbcTemplate.query(
-                    paginatedQuery, 
-                    new VendasRowMapper(),
-                    params.toArray());
-        
-        StringBuilder sqlCountQuery = 
-            new StringBuilder("select count(*) from mercado_pago where status = 'approved' ");
-        
+                paginatedQuery,
+                new VendasRowMapper(),
+                params.toArray());
+
+        StringBuilder sqlCountQuery = new StringBuilder("select count(*) from mercado_pago v inner join usuarios u on u.id = v.usuario_id where v.status = 'approved'");
+
         List<Object> countParams = new ArrayList<>();
 
-        if (usuarioId != null) {
-            sqlCountQuery.append(" and v.usuario_id = ?");
-            countParams.add(usuarioId);
+        if (nomeUsuario != null && !nomeUsuario.isEmpty()) {
+            sqlCountQuery.append(" and LOWER(u.nome) LIKE LOWER(?)");
+            countParams.add("%" + nomeUsuario + "%");
         }
 
         if (produtoId != null) {
@@ -280,29 +272,37 @@ public class PagamentoService {
 
         if (tipo != null) {
             sqlCountQuery.append(" and v.tipo = ?");
-            countParams.add(tipo);
+            countParams.add(tipo.name());
 
             if (tipo.equals(TipoProduto.APOSTILA)) {
-                
                 Boolean entrega = request.isEntrega();
                 if (entrega != null) {
                     sqlCountQuery.append(" and v.para_entrega = ?");
-                    countParams.add(request.isEntrega());
+                    countParams.add(entrega);
                 }
 
                 Boolean enviado = request.isEnviado();
                 if (enviado != null) {
                     sqlCountQuery.append(" and v.produto_enviado = ?");
-                    countParams.add(request.isEnviado());
+                    countParams.add(enviado);
                 }
             }
-        }        
-        
-        Integer total = jdbcTemplate.queryForObject(sqlCountQuery.toString(), 
-                                        Integer.class, 
-                                        countParams.toArray());
+        }
+
+        Integer total = jdbcTemplate.queryForObject(sqlCountQuery.toString(), Integer.class, countParams.toArray());
 
         return new PageImpl<>(vendas, pageable, total);
+    }
+
+    @Transactional
+    public void atualizarStatusVenda(VendasStatusUpdateRequest request) {
+        Pagamento pagamento = repository.findById(request.getVendaId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Venda com o ID: " + request.getVendaId() + " não foi encontrada."));
+
+        pagamento.setProdutoEnviado(request.getEnviado());
+
+        repository.save(pagamento);
     }
 
 

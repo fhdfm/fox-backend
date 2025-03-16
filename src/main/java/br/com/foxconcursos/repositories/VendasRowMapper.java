@@ -3,6 +3,7 @@ package br.com.foxconcursos.repositories;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.UUID;
 
@@ -21,19 +22,26 @@ public class VendasRowMapper implements RowMapper<VendasResponse> {
         venda.setProdutoId(rs.getObject("produto_id", UUID.class));
         venda.setProdutoNome(rs.getString("titulo"));
         venda.setMercadoPagoId(rs.getString("mp_id"));
-        Date data = rs.getDate("data");
-        venda.setData(data);
+//        Date data = rs.getDate("data");
+//        venda.setData(data);
         
         String tipo = rs.getString("tipo");
         venda.setTipo(tipo);
-        
-        if ("QUESTOES".equals(tipo)) {
+
+        LocalDateTime data = rs.getTimestamp("data") != null
+                ? rs.getTimestamp("data").toLocalDateTime()
+                : null;
+
+        if ("QUESTOES".equals(tipo) && data != null) {
             int periodo = rs.getInt("periodo");
-            LocalDateTime expiracao = data.toInstant()
-                    .atZone(java.time.ZoneId.systemDefault())
-                    .toLocalDateTime();
-            venda.setDataExpiracao(Date.from(expiracao.plusMonths(periodo).atZone(java.time.ZoneId.systemDefault()).toInstant()));
+
+            // Adicionando meses diretamente na variável de data
+            LocalDateTime expiracao = data.plusMonths(periodo);
+
+            // Convertendo corretamente para Date
+            venda.setDataExpiracao(Date.from(expiracao.atZone(ZoneId.systemDefault()).toInstant()));
         }
+
 
         venda.setTelefone(rs.getString("telefone"));
 
