@@ -106,12 +106,13 @@ public class AulaService {
     }
 
     @Transactional
-    public UUID criarConteudoVimeo(UUID aulaId, String iframe)
+    public UUID criarConteudoVimeo(UUID aulaId, VimeoRequest vimeo)
             throws Exception {
 
         AulaConteudo conteudo = new AulaConteudo();
         conteudo.setAulaId(aulaId);
-        conteudo.setVimeo(iframe);
+        conteudo.setTitulo(vimeo.getTitulo());
+        conteudo.setVimeo(vimeo.getIframe());
         conteudo.setTipo(TipoArquivo.VIDEO);
 
         this.conteudoRepository.save(conteudo);
@@ -245,14 +246,14 @@ public class AulaService {
     }
 
     public List<AulaConteudo> buscarVideoAulasCadastradas() {
-        String sql = "SELECT key, " +
-                "               (ARRAY_AGG(id))[1] AS id, " +
+        String sql = "SELECT  (ARRAY_AGG(id))[1] AS id, " +
                 "               (ARRAY_AGG(vimeo))[1] AS vimeo, " +
                 "               (ARRAY_AGG(titulo))[1] AS titulo " +
                 "        FROM aula_conteudo " +
                 "        WHERE tipo = 'VIDEO' " +
                 "        AND vimeo is not null " +
-                "        GROUP BY key";
+                "        GROUP BY titulo" +
+                "        ORDER BY titulo";
 
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
             AulaConteudo aula = new AulaConteudo();

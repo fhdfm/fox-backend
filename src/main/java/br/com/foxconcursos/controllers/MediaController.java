@@ -1,5 +1,6 @@
 package br.com.foxconcursos.controllers;
 
+import br.com.foxconcursos.dto.VimeoRequest;
 import br.com.foxconcursos.services.AulaService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -67,9 +68,9 @@ public class MediaController {
     @PostMapping(value = "/salvar/{aulaId}")
     public ResponseEntity<?> salvarIframe(
             @PathVariable UUID aulaId,
-            @RequestBody String iframe
+            @RequestBody VimeoRequest vimeo
     ) throws Exception {
-            return ResponseEntity.ok(aulaService.criarConteudoVimeo(aulaId, iframe));
+            return ResponseEntity.ok(aulaService.criarConteudoVimeo(aulaId, vimeo));
     }
 
     @GetMapping("/video/{videoUri}")
