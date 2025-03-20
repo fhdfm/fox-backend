@@ -23,11 +23,10 @@ public class StorageServiceImpl implements StorageService {
     @Override
     public StorageOutput upload(StorageInput object) throws Exception {
         
-        S3Response response;
-        if (object.isFileLargerThan5MB())
-            response = this.service.uploadLargeFiles(object);
-        else
-            response = this.service.upload(object);
+        if ("videos/".startsWith(object.getPrefix()))
+            throw new IllegalArgumentException("Não é permitido upload de vídeos");
+
+        S3Response response = this.service.upload(object);
 
         return response.get();
     }
