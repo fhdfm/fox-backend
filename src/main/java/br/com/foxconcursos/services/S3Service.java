@@ -35,6 +35,7 @@ public class S3Service {
     @Value("${cloudflare.r2.endpoint}")
     private String endpoint;
 
+
     private S3Client getClient() {
         S3Client s3Client = S3Client.builder()
             .region(Region.of("us-east-1"))
@@ -147,9 +148,9 @@ public class S3Service {
             bucketName = "publico";
         }
 
-
         try (S3Presigner presigner = S3Presigner
                 .builder()
+                .endpointOverride(URI.create(this.endpoint))
                 .region(Region.of("east-us-1"))
                 .credentialsProvider(
                     StaticCredentialsProvider.create(
