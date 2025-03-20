@@ -210,7 +210,7 @@ public class AulaService {
         List<ConteudoResponse> conteudoResponse = new ArrayList<>();
         for (AulaConteudo anexo : anexos) {
             ConteudoResponse content = anexo.toAssembly();
-            if (anexo.getKey() != null) {
+            if (anexo.getKey() != null && anexo.getKey().toLowerCase().startsWith("apostilas")) {
                 String url = this.storageService.getLink(anexo.getKey());
                 content.setUrl(url);
             }
@@ -227,7 +227,7 @@ public class AulaService {
     public void deletarConteudo(UUID id) {
         AulaConteudo conteudo = this.conteudoRepository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("Conteudo: '" + id + "' não encontrado."));
-        if (conteudo.getKey() != null) {
+        if (conteudo.getKey() != null && conteudo.getKey().toLowerCase().startsWith("apostilas")){
             this.storageService.delete(conteudo.getKey());
         }
         this.conteudoRepository.delete(conteudo);
