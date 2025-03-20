@@ -53,7 +53,7 @@ public class S3Service {
 
         String bucketName = null;
         if (prefix.startsWith("apostilas/")) {
-            bucketName = "privado";
+            bucketName = "private";
         }
 
         if (prefix.startsWith("imagens/")) {
@@ -87,7 +87,7 @@ public class S3Service {
 
         String bucketName = null;
         if (key.startsWith("apostilas/")) {
-            bucketName = "privado";
+            bucketName = "private";
         }
 
         if (key.startsWith("imagens/")) {
@@ -121,7 +121,7 @@ public class S3Service {
 
         String bucketName = "";
         if (key.startsWith("apostilas/")) {
-            bucketName = "privado";
+            bucketName = "private";
         }
 
         if (key.startsWith("imagens/")) {
@@ -141,7 +141,7 @@ public class S3Service {
 
         String bucketName = null;
         if (key.startsWith("apostilas/")) {
-            bucketName = "privado";
+            bucketName = "private";
         }
 
         if (key.startsWith("imagens/")) {
