@@ -151,7 +151,7 @@ public class S3Service {
         try (S3Presigner presigner = S3Presigner
                 .builder()
                 .endpointOverride(URI.create(this.endpoint))
-                .region(Region.of("east-us-1"))
+                .region(Region.of("us-east-1"))
                 .credentialsProvider(
                     StaticCredentialsProvider.create(
                         AwsBasicCredentials.create(accessKey, secretKey)))
