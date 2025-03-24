@@ -1,6 +1,7 @@
 package br.com.foxconcursos.controllers;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.http.HttpHeaders;
@@ -25,6 +26,20 @@ public class DownloadController {
     public DownloadController(StorageService storageService, CursoAlunoService cursoAlunoService) {
         this.storageService = storageService;
         this.cursoAlunoService = cursoAlunoService;
+    }
+
+    @GetMapping("/api/download/{key}/curso/{cursoId}")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN') or hasAuthority('SCOPE_ROLE_ALUNO')")
+    public ResponseEntity<String> download(@PathVariable String key, @PathVariable UUID cursoId) throws IOException {
+        
+        if (Objects.equals(key, "null"))
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Arquivo não encontrado.");
+
+        this.cursoAlunoService.validarDownload(cursoId, key);
+
+        String link = this.storageService.getLink(key);
+
+        return ResponseEntity.ok(link);
     }
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO')")
