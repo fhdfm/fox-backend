@@ -247,8 +247,8 @@ public class AulaService {
         return sql;
     }
 
-    public UUID findCursoIdByFileId(String fileId) {
-        return this.conteudoRepository.findCursoIdByFileId(fileId);
+    public UUID findCursoIdByFileId(String key) {
+        return this.conteudoRepository.findCursoIdByFileId(key);
     }
 
     public List<AulaConteudo> buscarVideoAulasCadastradas() {

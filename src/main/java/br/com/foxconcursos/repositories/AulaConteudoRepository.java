@@ -16,7 +16,7 @@ public interface AulaConteudoRepository extends CrudRepository<AulaConteudo, UUI
     
     List<AulaConteudo> findByAulaId(UUID aulaId);
 
-    @Query("SELECT a.curso_id FROM aula_conteudo ac INNER JOIN aulas a ON a.id = ac.aula_id WHERE ac.file_id = :fileId")
+    @Query("SELECT a.curso_id FROM aula_conteudo ac INNER JOIN aulas a ON a.id = ac.aula_id WHERE ac.id = :fileId")
     UUID findCursoIdByFileId(@Param("fileId") String fileId);
 
     @Modifying

@@ -137,15 +137,15 @@ public class CursoAlunoService {
         return this.aulaService.buscarPorId(aulaId);
     }
 
-    public void validarDownload(UUID cursoId, String fileId) {
+    public void validarDownload(UUID cursoId) {
 
-        UUID cursoDbId = this.aulaService.findCursoIdByFileId(fileId);
-        if (cursoDbId != null && !cursoDbId.equals(cursoDbId))
-            throw new IllegalStateException("Acesso Negado.");
+//        UUID cursoDbId = this.aulaService.findCursoIdByFileId(key);
+//        if (cursoDbId != null && !cursoDbId.equals(cursoDbId))
+//            throw new IllegalStateException("Acesso Negado.");
 
         UsuarioLogado usuarioLogado = SecurityUtil.obterUsuarioLogado();
 
-        if (!this.produtoService.estaMatriculado(cursoId, usuarioLogado.getId()))
+        if (usuarioLogado.isAluno() && !this.produtoService.estaMatriculado(cursoId, usuarioLogado.getId()))
             throw new IllegalStateException("Acesso Negado.");
     }
 
