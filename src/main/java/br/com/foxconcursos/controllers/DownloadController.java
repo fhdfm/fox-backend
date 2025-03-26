@@ -35,7 +35,7 @@ public class DownloadController {
         if (Objects.equals(key, "null"))
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Arquivo não encontrado.");
 
-        this.cursoAlunoService.validarDownload(cursoId, key);
+        //this.cursoAlunoService.validarDownload(cursoId, key);
 
         String link = this.storageService.getLink(key);
 
@@ -47,7 +47,7 @@ public class DownloadController {
     public ResponseEntity<byte[]> downloadAluno(
             @PathVariable String key, @PathVariable UUID cursoId) throws IOException {
         
-        this.cursoAlunoService.validarDownload(cursoId, key);
+        //this.cursoAlunoService.validarDownload(cursoId, key);
 
         try {
             S3Service.S3File file = this.storageService.retrieveMedia(key);

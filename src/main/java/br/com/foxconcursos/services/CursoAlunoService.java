@@ -1,17 +1,18 @@
 package br.com.foxconcursos.services;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+
 import br.com.foxconcursos.domain.UsuarioLogado;
 import br.com.foxconcursos.dto.AulaResponse;
 import br.com.foxconcursos.dto.CursoAlunoResponse;
 import br.com.foxconcursos.dto.DisciplinaAlunoResponse;
 import br.com.foxconcursos.util.SecurityUtil;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Service;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 @Service
 public class CursoAlunoService {
@@ -135,18 +136,6 @@ public class CursoAlunoService {
 
     private AulaResponse obterAula(UUID aulaId) throws IOException {
         return this.aulaService.buscarPorId(aulaId);
-    }
-
-    public void validarDownload(UUID cursoId) {
-
-//        UUID cursoDbId = this.aulaService.findCursoIdByFileId(key);
-//        if (cursoDbId != null && !cursoDbId.equals(cursoDbId))
-//            throw new IllegalStateException("Acesso Negado.");
-
-        UsuarioLogado usuarioLogado = SecurityUtil.obterUsuarioLogado();
-
-        if (usuarioLogado.isAluno() && !this.produtoService.estaMatriculado(cursoId, usuarioLogado.getId()))
-            throw new IllegalStateException("Acesso Negado.");
     }
 
     public String obterKeyFromFileId(UUID fileId) {
