@@ -130,6 +130,7 @@ public class AssuntoService {
                 select *
                 from assunto a
                 where disciplina_id in (%s)
+                ORDER BY nome
                 """, inSql);
 
         jdbcTemplate.query(connection -> {
