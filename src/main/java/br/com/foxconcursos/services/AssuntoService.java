@@ -127,11 +127,20 @@ public class AssuntoService {
                 .collect(Collectors.joining(", "));
 
         String sql = String.format("""
-                select *
-                from assunto a
-                where disciplina_id in (%s)
-                ORDER BY nome
-                """, inSql);
+            SELECT * 
+            FROM assunto 
+            WHERE disciplina_id IN (%s)
+            ORDER BY 
+                CASE 
+                    WHEN nome ~ '^[0-9]+' THEN split_part(nome, '.', 1)::int
+                    ELSE NULL 
+                END NULLS LAST,
+                CASE 
+                    WHEN nome ~ '^[0-9]+\\.[0-9]+' THEN split_part(nome, '.', 2)::int
+                    ELSE 0 
+                END,
+                nome ASC
+            """, inSql);
 
         jdbcTemplate.query(connection -> {
                     PreparedStatement ps = connection.prepareStatement(sql);
