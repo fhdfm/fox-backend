@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.foxconcursos.services.CursoAlunoService;
@@ -28,9 +29,9 @@ public class DownloadController {
         this.cursoAlunoService = cursoAlunoService;
     }
 
-    @GetMapping("/api/download/{key}/curso/{cursoId}")
+    @GetMapping("/api/download/curso/{cursoId}")
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN') or hasAuthority('SCOPE_ROLE_ALUNO')")
-    public ResponseEntity<String> download(@PathVariable String key, @PathVariable UUID cursoId) throws IOException {
+    public ResponseEntity<String> download(@RequestParam String key, @PathVariable UUID cursoId) throws IOException {
         
         if (Objects.equals(key, "null"))
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Arquivo não encontrado.");
