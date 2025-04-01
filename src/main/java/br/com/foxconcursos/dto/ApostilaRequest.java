@@ -16,16 +16,19 @@ public class ApostilaRequest {
     private Status status;
     private String cidade;
     private String uf;
+
+    private Boolean pdf;
     private String cargo;
 
     // Construtor vazio
     public ApostilaRequest() {}
 
-    public ApostilaRequest(String nome, String descricao, MultipartFile imagem, BigDecimal valor, Status status) {
+    public ApostilaRequest(String nome, String descricao, MultipartFile imagem, BigDecimal valor, Status status, Boolean pdf) {
         this.nome = nome;
         this.descricao = descricao;
         this.imagem = imagem;
         this.valor = valor;
+        this.pdf = pdf;
         this.status = status;
     }
 
@@ -40,6 +43,10 @@ public class ApostilaRequest {
     private void validateFields(boolean validarImagem) {
         if (nome == null || nome.trim().isEmpty()) {
             throw new IllegalArgumentException("O campo 'nome' é obrigatório e não está preenchido.");
+        }
+
+        if (pdf == null ) {
+            throw new IllegalArgumentException("O campo 'tipo' é obrigatório e não está preenchido.");
         }
 
         if (descricao == null || descricao.trim().isEmpty()) {
@@ -65,7 +72,7 @@ public class ApostilaRequest {
     }
     
     public Apostila toModel() {
-        return new Apostila(nome, descricao, valor, status, cargo, cidade, uf);
+        return new Apostila(nome, descricao, valor, status, cargo, cidade, uf, pdf);
     }
 
     // Getters e Setters
@@ -138,4 +145,11 @@ public class ApostilaRequest {
         return this.imagem != null;
     }
 
+    public boolean isPdf() {
+        return pdf;
+    }
+
+    public void setPdf(boolean pdf) {
+        this.pdf = pdf;
+    }
 }

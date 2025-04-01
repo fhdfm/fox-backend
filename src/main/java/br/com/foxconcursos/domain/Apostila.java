@@ -1,14 +1,13 @@
 package br.com.foxconcursos.domain;
 
-import java.math.BigDecimal;
-import java.util.UUID;
-
+import br.com.foxconcursos.dto.ApostilaRequest;
+import br.com.foxconcursos.dto.ApostilaResponse;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Table;
 
-import br.com.foxconcursos.dto.ApostilaRequest;
-import br.com.foxconcursos.dto.ApostilaResponse;
+import java.math.BigDecimal;
+import java.util.UUID;
 
 @Table("apostilas")
 public class Apostila {
@@ -21,6 +20,7 @@ public class Apostila {
     private BigDecimal valor;
     private Status status;
     private String cargo;
+    private Boolean pdf;
     private String cidade;
     private String uf;
     @Version
@@ -30,26 +30,28 @@ public class Apostila {
 
     }
 
-    public Apostila(UUID id, String nome, String descricao, BigDecimal valor, Status status) {
+    public Apostila(UUID id, String nome, String descricao, BigDecimal valor, Status status, Boolean pdf) {
         this.id = id;
         this.nome = nome;
         this.descricao = descricao;
         this.valor = valor;
+        this.pdf = pdf;
         this.status = status;
     }
 
-    public Apostila(String nome, String descricao, BigDecimal valor, Status status, String cargo, String cidade, String uf) {
+    public Apostila(String nome, String descricao, BigDecimal valor, Status status, String cargo, String cidade, String uf, Boolean pdf) {
         this.nome = nome;
         this.descricao = descricao;
         this.valor = valor;
         this.status = status;
         this.cargo = cargo;
         this.cidade = cidade;
+        this.pdf = pdf;
         this.uf = uf;
     }
 
     public ApostilaResponse toAssembly() {
-        return new ApostilaResponse(id, nome, descricao, imagem, valor, status, cargo, cidade, uf);
+        return new ApostilaResponse(id, nome, descricao, imagem, valor, status, cargo, cidade, uf, pdf);
     }
 
     public void updateFromRequest(ApostilaRequest request) {
@@ -60,6 +62,7 @@ public class Apostila {
         this.setUf(request.getUf());
         this.setCidade(request.getCidade());
         this.setCargo(request.getCargo());
+        this.setPdf(request.isPdf());
     }
 
     public void updateFromRequest(UUID id, ApostilaRequest request) {
@@ -141,6 +144,14 @@ public class Apostila {
         return this.cargo;
     }
 
+    public Boolean getPdf() {
+        return pdf;
+    }
+
+    public void setPdf(Boolean pdf) {
+        this.pdf = pdf;
+    }
+
     @Override
     public String toString() {
         return "Apostila{" +
@@ -149,7 +160,11 @@ public class Apostila {
                 ", descricao='" + descricao + '\'' +
                 ", imagem='" + imagem + '\'' +
                 ", valor=" + valor +
-                ", status='" + status +
+                ", status=" + status +
+                ", cargo='" + cargo + '\'' +
+                ", pdf=" + pdf +
+                ", cidade='" + cidade + '\'' +
+                ", uf='" + uf + '\'' +
                 '}';
     }
 }

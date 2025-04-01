@@ -16,13 +16,14 @@ public class ApostilaResponse {
     private String cargo;
     private String cidade;
     private String uf;
+    private Boolean pdf;
 
     // Construtor vazio
     public ApostilaResponse() {}
 
     // Construtor completo
     public ApostilaResponse(UUID id, String nome, String descricao, String imagem, 
-            BigDecimal valor, Status status, String cargo, String cidade, String uf) {
+            BigDecimal valor, Status status, String cargo, String cidade, String uf, Boolean pdf) {
         this.id = id;
         this.nome = nome;
         this.descricao = descricao;
@@ -32,6 +33,7 @@ public class ApostilaResponse {
         this.cargo = cargo;
         this.cidade = cidade;
         this.uf = uf;
+        this.pdf = pdf;
     }
 
     // Getters e Setters
@@ -106,4 +108,13 @@ public class ApostilaResponse {
     public String getCargo() {
         return this.cargo;
     }
+
+    public Boolean getPdf() {
+        return pdf;
+    }
+
+    public void setPdf(Boolean pdf) {
+        this.pdf = pdf;
+    }
+
 }    
