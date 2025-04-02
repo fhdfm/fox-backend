@@ -162,6 +162,12 @@ public class QuestaoResponse {
         return assunto;
     }
 
+    public String getAssuntoStr() {
+        if (assuntos != null && !assuntos.isEmpty())
+            return assuntos.get(0).getDisciplina().toString();
+        return assunto;
+    }
+
     public void setAssunto(String assunto) {
         this.assunto = assunto;
     }
