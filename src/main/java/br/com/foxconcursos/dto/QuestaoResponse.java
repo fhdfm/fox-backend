@@ -157,9 +157,11 @@ public class QuestaoResponse {
     }
 
     public String getAssunto() {
-        if (assuntos != null && !assuntos.isEmpty())
-            return assuntos.get(0).getId().toString();
-        return assunto;
+        if (assuntos != null && !assuntos.isEmpty()) {
+            AssuntoResponse assunto = assuntos.get(0);
+            return assunto != null ? assunto.getId().toString() : "";
+        }        
+        return "";
     }
 
     public String getAssuntoStr() {
