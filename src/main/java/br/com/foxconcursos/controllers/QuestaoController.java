@@ -196,7 +196,7 @@ public class QuestaoController {
         List<QuestaoResponse> questoes =
                 this.questaoService.findAll(questao, limit, offset)
                 .stream()
-                .sorted(Comparator.comparingInt(QuestaoResponse::getAno).reversed())
+                .sorted(Comparator.comparingInt((QuestaoResponse q) -> q.getAno() == 0 ? Integer.MIN_VALUE : q.getAno()).reversed())
                 .collect(Collectors.toList());
 
         response.setQuestoes(questoes);
