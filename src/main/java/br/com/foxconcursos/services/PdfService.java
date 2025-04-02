@@ -110,7 +110,7 @@ public class PdfService {
                     .append("<strong>Cidade:</strong> ")
                     .append(questao.getCidade()).append(" | ")
                     .append("<strong>Assunto:</strong> ")
-                    .append(questao.getAssunto()).append("</small>");
+                    .append(questao.getAssuntoStr()).append("</small>");
             htmlContent.append("</div>");
 
             htmlContent.append("<div style='margin-bottom: 0.5cm'>")
