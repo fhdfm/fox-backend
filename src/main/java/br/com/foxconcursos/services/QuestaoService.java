@@ -130,26 +130,32 @@ public class QuestaoService {
 
         if (questao.getAssuntoId() != null && !questao.getAssuntoId().isEmpty()) {
             sql += " AND qa.assunto_id IN (" + listToString(questao.getAssuntoId()) + ") ";
+            System.out.println("Assunto: " + listToString(questao.getAssuntoId()));
         }
 
         if (questao.getAno() != null) {
             sql += " AND q.ano = " + questao.getAno();
+            System.out.println("Ano: " + questao.getAno());
         }
 
         if (questao.getBancaId() != null) {
             sql += " AND q.banca_id = '" + questao.getBancaId() + "' ";
+            System.out.println("Banca: " + questao.getBancaId());
         }
 
         if (questao.getCidade() != null) {
             sql += " AND q.cidade = '" + questao.getCidade() + "' ";
+            System.out.println("Cidade: " + questao.getCidade());
         }
 
         if (questao.getUf() != null) {
             sql += " AND q.uf = '" + questao.getUf() + "' ";
+            System.out.println("UF: " + questao.getUf());
         }
 
         if (questao.getEscolaridade() != null) {
             sql += " AND q.escolaridade = '" + questao.getEscolaridade() + "' ";
+            System.out.println("Escolaridade: " + questao.getCidade());
         }
 
         if (questao.getEnunciado() != null && !questao.getEnunciado().trim().isEmpty()) {
@@ -174,6 +180,7 @@ public class QuestaoService {
 
         if (questao.getTipo() != null) {
             sql += " AND q.tipo = '" + questao.getTipo() + "' ";
+            System.out.println("Tipo: " + questao.getTipo());
         }
 
         if (questao.getEscolaMilitarId() != null) {
