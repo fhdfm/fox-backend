@@ -94,6 +94,9 @@ public class FoxUtils {
             } else if (field.getType() == UUID.class) {
                 String valor = valores.get(0); // Assumindo que o campo UUID tem um único valor
                 field.set(objeto, UUID.fromString(valor));
+            } else if (field.getType() == boolean.class || field.getType() == Boolean.class) {
+                String valor = valores.get(0);
+                field.set(objeto, Boolean.parseBoolean(valor));
             } else {
                 String valor = valores.get(0); // Assumindo que campos simples têm um único valor
                 field.set(objeto, valor);

@@ -498,3 +498,15 @@ CREATE TABLE mercado_pago
         FOREIGN KEY (produto_id)
             REFERENCES curso_simulado_key (id)
 );
+
+CREATE TABLE edital (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+    titulo VARCHAR(255) NOT NULL,
+    cidade VARCHAR(255),
+    link VARCHAR(255) not null,
+    uf VARCHAR(70),
+    ano INT,
+    status VARCHAR(50) NOT NULL,
+    version  INT          NOT NULL DEFAULT 0
+);
+

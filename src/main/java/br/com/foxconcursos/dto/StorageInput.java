@@ -65,7 +65,7 @@ public class StorageInput {
     // Builder estático
     public static class Builder {
         private InputStream fileInputStream;
-        private boolean isPublic;
+        private boolean isPublic = false;
         private String fileName;
         private String mimeType;
         private long fileSize;

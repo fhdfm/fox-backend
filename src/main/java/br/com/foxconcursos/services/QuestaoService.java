@@ -202,7 +202,11 @@ public class QuestaoService {
                 """;
 
         if (isAluno)
-            sql += ", r.acerto";
+            sql += ", r.acerto ";
+
+        if (questao.getComentarios()) {
+            sql += " HAVING COUNT(cm.id) > 0 ";
+        }
 
         sql += """
                     )

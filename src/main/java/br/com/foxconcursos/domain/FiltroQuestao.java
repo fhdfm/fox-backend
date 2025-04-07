@@ -21,6 +21,7 @@ public class FiltroQuestao {
     private TipoQuestao tipo;
     private UUID escolaMilitarId;
     private Integer periodo;
+    private boolean comentarios = false;
     
     public FiltroQuestao() {
     }
@@ -143,5 +144,13 @@ public class FiltroQuestao {
 
     public void setPeriodo(Integer periodo) {
         this.periodo = periodo;
+    }
+
+    public boolean getComentarios() {
+        return comentarios;
+    }
+
+    public void setComentarios(boolean comentarios) {
+        this.comentarios = comentarios;
     }
 }

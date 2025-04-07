@@ -53,7 +53,12 @@ public class S3Service {
 
         String bucketName = null;
         if (prefix.startsWith("apostilas/")) {
-            bucketName = "private";
+            if (object.isPublic()) {
+                bucketName = "publico";
+            } else {
+                bucketName = "private";
+            }
+            
         }
 
         if (prefix.startsWith("imagens/")) {
