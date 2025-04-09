@@ -82,6 +82,8 @@ public class EditalService {
         edital.setTitulo(request.getTitulo());
         edital.setCidade(request.getCidade());
         edital.setUf(request.getUf());
+
+        this.repository.save(edital);
     }
 
     public void delete(UUID id) {
@@ -89,7 +91,7 @@ public class EditalService {
     }
 
     public Edital findById(UUID id) {
-        return this.findById(id);
+        return repository.findById(id).orElseThrow();
     }
 
     public List<Edital> findAll() {
