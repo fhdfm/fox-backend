@@ -30,6 +30,7 @@ public class Questao {
     private Integer periodo;
     @Version
     private Integer version;
+    private boolean processado;
 
     public Questao() {
     }
@@ -180,4 +181,11 @@ public class Questao {
         return this.tipoProvaEnem;
     }
 
+    public boolean isProcessado() {
+        return processado;
+    }
+
+    public void setProcessado(boolean processado) {
+        this.processado = processado;
+    }
 }

@@ -1,5 +1,6 @@
 package br.com.foxconcursos.repositories;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -13,5 +14,6 @@ import br.com.foxconcursos.repositories.custom.CustomCrudRepository;
 public interface QuestaoRepository extends CustomCrudRepository<Questao, UUID> {
 
     Optional<Questao> findByIdAndStatus(UUID id, Status status);
+    List<Questao> findByProcessadoFalse();
 
 }
