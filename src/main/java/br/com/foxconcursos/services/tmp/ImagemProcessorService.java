@@ -16,7 +16,6 @@ import br.com.foxconcursos.dto.StorageOutput;
 import br.com.foxconcursos.repositories.AlternativaRepository;
 import br.com.foxconcursos.repositories.QuestaoRepository;
 import br.com.foxconcursos.services.StorageService;
-import jakarta.annotation.PostConstruct;
 
 @Service
 public class ImagemProcessorService {
@@ -31,7 +30,7 @@ public class ImagemProcessorService {
         this.alternativaRepository = alternativaRepository;
     }
 
-    @PostConstruct
+    // @PostConstruct
     @Transactional
     public void processarQuestoes() {
         try {
