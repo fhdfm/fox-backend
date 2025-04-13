@@ -1,31 +1,23 @@
 package br.com.foxconcursos.controllers;
 
-import java.util.List;
-import java.util.UUID;
-
+import br.com.foxconcursos.domain.Edital;
+import br.com.foxconcursos.dto.EditalRequest;
+import br.com.foxconcursos.services.EditalService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import br.com.foxconcursos.domain.Edital;
-import br.com.foxconcursos.dto.EditalRequest;
-import br.com.foxconcursos.services.EditalService;
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping(
         consumes = MediaType.APPLICATION_JSON_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE)
 public class EditalController {
-    
+
     private final EditalService editalService;
 
     public EditalController(EditalService editalService) {
@@ -53,10 +45,14 @@ public class EditalController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @GetMapping({"/api/admin/edital", "/public/edital"})
+    @GetMapping("/api/admin/edital")
     public ResponseEntity<List<Edital>> findAll() {
-        List<Edital> editais = this.editalService.findAll();
-        return ResponseEntity.ok(editais);
+        return ResponseEntity.ok(this.editalService.findAll());
+    }
+
+    @GetMapping("/public/edital")
+    public ResponseEntity<List<Edital>> findAllPublic() {
+        return ResponseEntity.ok(this.editalService.findAllPublic());
     }
 
     @GetMapping({"/api/admin/edital/{id}", "/public/edital/{id}"})
@@ -77,5 +73,5 @@ public class EditalController {
     public ResponseEntity<Void> deactivate(@PathVariable("id") UUID id) {
         this.editalService.deactivate(id);
         return ResponseEntity.ok().build();
-    }    
+    }
 }
