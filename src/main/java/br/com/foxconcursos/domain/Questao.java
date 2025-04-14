@@ -31,6 +31,7 @@ public class Questao {
     @Version
     private Integer version;
     private boolean processado;
+    private boolean comentada;
 
     public Questao() {
     }
@@ -187,5 +188,13 @@ public class Questao {
 
     public void setProcessado(boolean processado) {
         this.processado = processado;
+    }
+
+    public boolean isComentada() {
+        return comentada;
+    }
+    
+    public void setComentada(boolean comentada) {
+        this.comentada = comentada;
     }
 }

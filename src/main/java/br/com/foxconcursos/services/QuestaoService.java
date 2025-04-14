@@ -1,12 +1,17 @@
 package br.com.foxconcursos.services;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -20,9 +25,11 @@ import br.com.foxconcursos.domain.QuestaoVideo;
 import br.com.foxconcursos.domain.Status;
 import br.com.foxconcursos.domain.TipoQuestao;
 import br.com.foxconcursos.domain.UsuarioLogado;
+import br.com.foxconcursos.dto.AlternativaGptDTO;
 import br.com.foxconcursos.dto.AlternativaRequest;
 import br.com.foxconcursos.dto.AlternativaResponse;
 import br.com.foxconcursos.dto.AssuntoResponse;
+import br.com.foxconcursos.dto.QuestaoParaGptDTO;
 import br.com.foxconcursos.dto.QuestaoRequest;
 import br.com.foxconcursos.dto.QuestaoResponse;
 import br.com.foxconcursos.dto.QuestaoVideoRequest;
@@ -266,7 +273,6 @@ public class QuestaoService {
                     }
                 }
 
-
                 qr.setAssuntos(assuntosList);
 
                 if (isAluno) {
@@ -307,11 +313,15 @@ public class QuestaoService {
     }
 
     @Transactional
-    public UUID create(QuestaoRequest request) {
+    public UUID create(QuestaoRequest request) throws Exception {
 
         validate(request);
 
         Questao questao = new Questao(request);
+        
+        String enunciado = processarBase64EAtualizarComLinks(request.getEnunciado());
+        questao.setEnunciado(enunciado);
+        
         questao = this.questaoRepository.save(questao);
 
         UUID questaoId = questao.getId();
@@ -321,7 +331,14 @@ public class QuestaoService {
 
         List<AlternativaRequest> alternativas = request.getAlternativas();
         for (AlternativaRequest ar : alternativas) {
+            
             Alternativa alternativa = new Alternativa(ar, questaoId);
+
+            String descricao = ar.getDescricao();
+            if (descricao != null) {
+                alternativa.setDescricao(processarBase64EAtualizarComLinks(descricao));
+            }
+            
             this.alternativaRepository.save(alternativa);
         }
 
@@ -329,13 +346,16 @@ public class QuestaoService {
     }
 
     @Transactional
-    public UUID update(QuestaoRequest request, UUID id) {
+    public UUID update(QuestaoRequest request, UUID id) throws Exception {
 
         validate(request);
 
         Questao questao = this.questaoRepository.findByIdAndStatus(id, Status.ATIVO)
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Questão não encontrada com o id: " + id));
+
+        String enunciado = processarBase64EAtualizarComLinks(request.getEnunciado());
+        questao.setEnunciado(enunciado);
 
         questao.setEnunciado(request.getEnunciado());
         questao.setDisciplinaId(request.getDisciplinaId());
@@ -363,7 +383,7 @@ public class QuestaoService {
 
             if (alternativa != null) {
                 alternativa.setLetra(ar.getOrdem());
-                alternativa.setDescricao(ar.getDescricao());
+                alternativa.setDescricao(processarBase64EAtualizarComLinks(ar.getDescricao()));
                 alternativa.setCorreta(ar.getCorreta());
                 this.alternativaRepository.save(alternativa);
             }
@@ -372,6 +392,44 @@ public class QuestaoService {
 
         return id;
     }
+
+    private String processarBase64EAtualizarComLinks(String conteudoOriginal) throws Exception {
+        Pattern pattern = Pattern.compile("data:image/(png|jpeg|jpg|gif);base64,([A-Za-z0-9+/=]+)");
+        Matcher matcher = pattern.matcher(conteudoOriginal);
+
+        // Verifica se tem ao menos uma imagem base64
+        if (!matcher.find()) {
+            return conteudoOriginal;
+        }
+
+        matcher.reset(); // reinicia o matcher
+
+        StringBuffer sb = new StringBuffer();
+        while (matcher.find()) {
+            String formato = matcher.group(1);
+            String base64 = matcher.group(2);
+
+            byte[] bytes = Base64.getDecoder().decode(base64);
+            InputStream inputStream = new ByteArrayInputStream(bytes);
+            String nomeArquivo = "imagens/imagem_" + UUID.randomUUID() + "." + formato;
+
+            StorageInput input = new StorageInput.Builder()
+                    .withFileInputStream(inputStream)
+                    .withFileName(nomeArquivo)
+                    .withMimeType("image/" + formato)
+                    .withFileSize(bytes.length)
+                    .isPublic(true)
+                    .build();
+
+            StorageOutput output = this.storageService.upload(input);
+            String url = output.getUrl();
+
+            matcher.appendReplacement(sb, Matcher.quoteReplacement(url));
+        }
+
+        matcher.appendTail(sb);
+        return sb.toString();
+    }    
 
     private void validateMilitar(QuestaoRequest request) {
 
@@ -857,5 +915,27 @@ public class QuestaoService {
                 return null;
             }
         }, questaoId);
+    }
+
+    public QuestaoParaGptDTO findByIdToGptUse(UUID id) {
+        Questao questao = this.questaoRepository.findByIdAndStatus(id, Status.ATIVO)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Questão não encontrada com o id: " + id));
+
+        String enunciado = questao.getEnunciado();
+
+        List<Alternativa> alternativas = this.alternativaRepository.findByQuestaoId(id);
+        alternativas.sort(Comparator.comparing(Alternativa::getLetra));
+
+        List<AlternativaGptDTO> alternativasDTO = alternativas.stream()
+                .map(a -> new AlternativaGptDTO(a.getId(), a.getLetra(), a.getDescricao()))
+                .toList();
+
+        return new QuestaoParaGptDTO(id, enunciado, alternativasDTO);
+    }
+
+    public void marcarComoComentada(UUID questaoId) {
+        String sql = "update questoes set comentada = true where id = ?";
+        this.jdbcTemplate.update(sql, questaoId);
     }
 }

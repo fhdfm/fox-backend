@@ -510,3 +510,19 @@ CREATE TABLE edital (
     version  INT          NOT NULL DEFAULT 0
 );
 
+CREATE TABLE comentario_alternativa (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+
+    questao_id UUID NOT NULL,
+    alternativa_id UUID NOT NULL,
+
+    comentario TEXT NOT NULL,
+    correta BOOLEAN NOT NULL,
+    modelo VARCHAR(50) NOT NULL,        -- Ex: 'gpt-3.5-turbo', 'gpt-4-vision-preview'
+    version INTEGER NOT NULL DEFAULT 0,  -- Versão da lógica usada para gerar o comentário
+
+    criado_em TIMESTAMP WITH TIME ZONE DEFAULT now(),
+
+    CONSTRAINT fk_questao FOREIGN KEY (questao_id) REFERENCES questoes (id) ON DELETE CASCADE,
+    CONSTRAINT fk_alternativa FOREIGN KEY (alternativa_id) REFERENCES alternativas (id) ON DELETE CASCADE
+);

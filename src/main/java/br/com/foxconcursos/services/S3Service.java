@@ -58,7 +58,6 @@ public class S3Service {
             } else {
                 bucketName = "private";
             }
-            
         }
 
         if (prefix.startsWith("imagens/")) {

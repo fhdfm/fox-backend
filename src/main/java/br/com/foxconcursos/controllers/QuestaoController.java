@@ -61,7 +61,7 @@ public class QuestaoController {
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @PostMapping("/api/admin/questoes")
-    public ResponseEntity<UUID> salvar(@RequestBody QuestaoRequest request) {
+    public ResponseEntity<UUID> salvar(@RequestBody QuestaoRequest request) throws Exception {
 
         UUID id = this.questaoService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(id);
@@ -71,7 +71,7 @@ public class QuestaoController {
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @PutMapping("/api/admin/questoes/{id}")
     public ResponseEntity<String> atualizar(@RequestBody QuestaoRequest request,
-                                            @PathVariable UUID id) {
+                                            @PathVariable UUID id) throws Exception {
 
         this.questaoService.update(request, id);
         return ResponseEntity.status(HttpStatus.OK).body("Questao: " + id
