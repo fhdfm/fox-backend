@@ -110,7 +110,7 @@ public class QuestaoService {
                             em.nome as escola, 
                             q.periodo,
                             count(qv.id) as possui_video, 
-                            q.comentada 
+                            q.comentada, 
                 """;
 
         if (isAluno)
