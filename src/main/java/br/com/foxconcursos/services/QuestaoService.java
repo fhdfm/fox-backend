@@ -109,7 +109,8 @@ public class QuestaoService {
                             b.nome as banca,
                             em.nome as escola, 
                             q.periodo,
-                            count(qv.id) as possui_video,
+                            count(qv.id) as possui_video, 
+                            q.comentada 
                 """;
 
         if (isAluno)
@@ -205,7 +206,7 @@ public class QuestaoService {
         sql += """
                         GROUP BY 
                             q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, q.numero_exame_oab, 
-                            c.nome, d.nome, i.nome, a2.nome, b.nome, em.nome, q.tipo_prova_enem, q.periodo 
+                            c.nome, d.nome, i.nome, a2.nome, b.nome, em.nome, q.tipo_prova_enem, q.periodo  
                 """;
 
         if (isAluno)
@@ -221,7 +222,7 @@ public class QuestaoService {
                         pq.qid, pq.enunciado, pq.numero_exame_oab, pq.ano, pq.uf, pq.escolaridade, pq.cidade,
                         pq.cargo, pq.disciplina, pq.instituicao, pq.assuntos, pq.banca, pq.escola, pq.periodo,
                         pq.comentario_count, pq.tipo_prova_enem, a.id as aid, a.descricao, a.correta, a.letra, 
-                        pq.possui_video as possui_video 
+                        pq.possui_video as possui_video, q.comentada 
                 """;
 
         if (isAluno)
@@ -260,6 +261,7 @@ public class QuestaoService {
                 qr.setCargo(rs.getString("cargo"));
                 qr.setPeriodo(rs.getInt("periodo"));
                 qr.setPossuiVideo(rs.getInt("possui_video") > 0 ? true : false);
+                qr.setComentada(rs.getBoolean("comentada"));
                 List<AssuntoResponse> assuntosList = new ArrayList<>();
                 String assuntosStr = rs.getString("assuntos");
                 if (assuntosStr != null) {
@@ -746,6 +748,7 @@ public class QuestaoService {
                                q.tipo_prova_enem ,
                                q.periodo,  
                                STRING_AGG(DISTINCT a2.id || ':' || a2.nome, '###$### ') AS assuntos, 
+                               q.comentada, 
                 """;
 
         if (isAluno)
@@ -774,7 +777,7 @@ public class QuestaoService {
                     group by q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, 
                     a.id, a.descricao, a.correta, a.letra, b.id, i.id, c.id, a2.id, d.id, 
                     c.nome, d.nome, i.nome, a2.nome, b.nome, em.nome, q.numero_exame_oab, q.tipo_prova_enem, 
-                    q.periodo 
+                    q.periodo, q.comentada  
                 """;
 
         if (isAluno)
@@ -814,6 +817,7 @@ public class QuestaoService {
                     qr.setNumeroExameOab(rs.getString("numero_exame_oab"));
                     qr.setTipoProvaEnem(rs.getString("tipo_prova_enem"));
                     qr.setPeriodo(rs.getInt("periodo"));
+                    qr.setComentada(rs.getBoolean("comentada"));
 
                     List<AssuntoResponse> assuntosList = new ArrayList<>();
                     String assuntosStr = rs.getString("assuntos");

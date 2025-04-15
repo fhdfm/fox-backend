@@ -33,6 +33,7 @@ public class QuestaoResponse {
     private Integer periodo;
     private QuestaoVideoResponse video;
     private boolean possuiVideo;
+    private boolean comentada;
 
     public QuestaoResponse() {  }
 
@@ -270,6 +271,14 @@ public class QuestaoResponse {
 
     public void setPossuiVideo(boolean possuiVideo) {
         this.possuiVideo = possuiVideo;
+    }
+
+    public boolean isComentada() {
+        return comentada;
+    }
+
+    public void setComentada(boolean comentada) {
+        this.comentada = comentada;
     }
 
 }

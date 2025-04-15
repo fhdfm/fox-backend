@@ -218,5 +218,25 @@ public class ComentarioAlternativaService {
         }
     
         return "gpt-3.5-turbo"; // Modelo mais barato para texto puro
-    }    
+    }
+    
+    public List<ComentarioResposta.Comentario> listarComentariosPorQuestaoId(UUID questaoId) {
+        
+        List<ComentarioAlternativa> comentarios =
+                comentarioAlternativaRepository.findByQuestaoId(questaoId);
+        
+        List<ComentarioResposta.Comentario> comentariosResposta = new ArrayList<>();
+        
+        for (ComentarioAlternativa comentario : comentarios) {
+            comentariosResposta.add(new ComentarioResposta.Comentario(
+                comentario.getAlternativaId().toString(),
+                null,
+                comentario.getComentario(),
+                comentario.getCorreta()
+            ));
+        }
+
+        return comentariosResposta;
+    }
+    
 }

@@ -25,11 +25,13 @@ import br.com.foxconcursos.domain.FiltroQuestao;
 import br.com.foxconcursos.dto.BancoQuestaoResponse;
 import br.com.foxconcursos.dto.ComentarioRequest;
 import br.com.foxconcursos.dto.ComentarioResponse;
+import br.com.foxconcursos.dto.ComentarioResposta;
 import br.com.foxconcursos.dto.QuestaoRequest;
 import br.com.foxconcursos.dto.QuestaoResponse;
 import br.com.foxconcursos.dto.QuestaoVideoRequest;
 import br.com.foxconcursos.dto.RespostaRequest;
 import br.com.foxconcursos.dto.ResultadoResponse;
+import br.com.foxconcursos.services.ComentarioAlternativaService;
 import br.com.foxconcursos.services.ComentarioService;
 import br.com.foxconcursos.services.PdfService;
 import br.com.foxconcursos.services.QuestaoService;
@@ -47,15 +49,18 @@ public class QuestaoController {
     private final QuestaoService questaoService;
     private final RespostaService respostaService;
     private final PdfService pdfService;
+    private final ComentarioAlternativaService comentarioAlternativaService;
 
     public QuestaoController(QuestaoService questaoService,
                              PdfService pdfService, ComentarioService comentarioService,
-                             RespostaService respostaService) {
+                             RespostaService respostaService, 
+                             ComentarioAlternativaService comentarioAlternativaService) {
 
         this.questaoService = questaoService;
         this.pdfService = pdfService;
         this.comentarioService = comentarioService;
         this.respostaService = respostaService;
+        this.comentarioAlternativaService = comentarioAlternativaService;
 
     }
 
@@ -233,4 +238,12 @@ public class QuestaoController {
         return ResponseEntity.status(HttpStatus.OK).body(
                 comentarioService.findByQuestaoId(questaoId));
     }
+
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ALUNO') or hasAuthority('SCOPE_ROLE_ADMIN')")
+    @GetMapping({"/api/aluno/questoes/{questaoId}/explicacoes", "/api/admin/questoes/{questaoId}/explicacoes"})
+    public ResponseEntity<List<ComentarioResposta.Comentario>> explicacoes(
+            @PathVariable("questaoId") UUID questaoId) {
+        return ResponseEntity.status(HttpStatus.OK).body(
+            this.comentarioAlternativaService.listarComentariosPorQuestaoId(questaoId));
+    }    
 }
