@@ -222,7 +222,7 @@ public class QuestaoService {
                         pq.qid, pq.enunciado, pq.numero_exame_oab, pq.ano, pq.uf, pq.escolaridade, pq.cidade,
                         pq.cargo, pq.disciplina, pq.instituicao, pq.assuntos, pq.banca, pq.escola, pq.periodo,
                         pq.comentario_count, pq.tipo_prova_enem, a.id as aid, a.descricao, a.correta, a.letra, 
-                        pq.possui_video as possui_video, q.comentada 
+                        pq.possui_video as possui_video, pq.comentada 
                 """;
 
         if (isAluno)
