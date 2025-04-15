@@ -3,6 +3,7 @@ package br.com.foxconcursos.services;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.com.foxconcursos.dto.QuestaoParaGptDTO;
@@ -18,9 +19,8 @@ public class GptService {
         this.comentarioAlternativaService = comentarioAlternativaService;
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void processarQuestao(UUID questaoId) throws Exception {
-
        QuestaoParaGptDTO questao = questaoService.findByIdToGptUse(questaoId);
        comentarioAlternativaService.gerarComentario(questao);
        questaoService.marcarComoComentada(questaoId);

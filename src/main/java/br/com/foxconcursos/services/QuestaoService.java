@@ -938,6 +938,10 @@ public class QuestaoService {
         return new QuestaoParaGptDTO(id, enunciado, alternativasDTO);
     }
 
+    public List<UUID> findIdsByComentadaFalse() {
+        return this.questaoRepository.findIdsByComentadaFalse();
+    }
+
     public void marcarComoComentada(UUID questaoId) {
         String sql = "update questoes set comentada = true where id = ?";
         this.jdbcTemplate.update(sql, questaoId);
