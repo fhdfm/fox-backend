@@ -204,7 +204,7 @@ public class QuestaoService {
         }
 
         if (questao.getComentada()) {
-            sql += " AND q.comentada = 'true' ";
+            sql += " AND q.comentada = true ";
         }
 
         sql += """
@@ -719,6 +719,10 @@ public class QuestaoService {
 
         if (questao.getNumeroExameOab() != null) {
             sql += " and q.numero_exame_oab = '" + questao.getNumeroExameOab() + "' ";
+        }
+
+        if (questao.getComentada()) {
+            sql += " and q.comentada = true ";
         }
 
         int count = this.jdbcTemplate.queryForObject(sql, Integer.class);
