@@ -526,3 +526,10 @@ CREATE TABLE comentario_alternativa (
     CONSTRAINT fk_questao FOREIGN KEY (questao_id) REFERENCES questoes (id) ON DELETE CASCADE,
     CONSTRAINT fk_alternativa FOREIGN KEY (alternativa_id) REFERENCES alternativas (id) ON DELETE CASCADE
 );
+
+CREATE TABLE carrossel (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+    ordem INTEGER NOT NULL,
+    imagem VARCHAR(255) NOT NULL,
+    link VARCHAR(255)
+);

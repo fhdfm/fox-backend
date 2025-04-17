@@ -203,6 +203,10 @@ public class QuestaoService {
             sql += " AND q.periodo = " + questao.getPeriodo() + " ";
         }
 
+        if (questao.getComentada()) {
+            sql += " AND q.comentada = 'true' ";
+        }
+
         sql += """
                         GROUP BY 
                             q.id, q.enunciado, q.ano, q.uf, q.escolaridade, q.cidade, q.numero_exame_oab, 
