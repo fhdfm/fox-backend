@@ -1,15 +1,16 @@
 package br.com.foxconcursos.services;
 
-import br.com.foxconcursos.domain.Password;
-import br.com.foxconcursos.domain.Usuario;
-import br.com.foxconcursos.events.TokenEvent;
-import br.com.foxconcursos.repositories.PasswordRepository;
+import java.time.Instant;
+import java.util.UUID;
+
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.util.UUID;
+import br.com.foxconcursos.domain.Password;
+import br.com.foxconcursos.domain.Usuario;
+import br.com.foxconcursos.events.TokenEvent;
+import br.com.foxconcursos.repositories.PasswordRepository;
 
 @Service
 public class RecuperarPasswordService {
@@ -41,7 +42,8 @@ public class RecuperarPasswordService {
 
         Instant now = Instant.now();
 
-        long expiresAt = 900;
+        //long expiresAt = 900;
+        long expiresAt = 5 * 24 * 3600; // 5 dias em segundos (432000 segundos)
 
         String token = this.jwtService.generatePasswordToken(user.getEmail(), now, expiresAt);
 
