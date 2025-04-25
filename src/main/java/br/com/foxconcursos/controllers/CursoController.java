@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -67,9 +68,24 @@ public class CursoController {
         return ResponseEntity.status(HttpStatus.OK).body("Curso deletado com sucesso.");
     }
 
-    @GetMapping(value = {"/public/cursos", "/api/admin/cursos"})
+    @GetMapping(value = "/api/admin/cursos")
     public ResponseEntity<Page<CursoResponse>> findAll(@RequestParam(required = false) String filter, Pageable pageable) throws Exception {
         return ResponseEntity.ok(this.cursoService.findAll(pageable, filter));
+    }
+
+    @GetMapping(value = "/public/cursos")
+    public ResponseEntity<Page<CursoResponse>> findAllPublic(@RequestParam(required = false) String filter, Pageable pageable) throws Exception {
+        Page<CursoResponse> cursos = this.cursoService.findAll(pageable, filter);
+
+        // Ordenar os cursos pela data de início em ordem decrescente
+        List<CursoResponse> sortedCursos = cursos.getContent().stream()
+            .sorted((c1, c2) -> c2.getDataInicio().compareTo(c1.getDataInicio())) // Ordenação decrescente
+            .toList();
+
+        // Criar um novo Page com os cursos ordenados
+        Page<CursoResponse> sortedPage = new PageImpl<>(sortedCursos, pageable, cursos.getTotalElements());
+
+        return ResponseEntity.ok(sortedPage);        
     }
 
     @GetMapping(value = "/api/cursos/{id}")
