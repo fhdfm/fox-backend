@@ -33,8 +33,15 @@ public class MatriculaController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UUID> matricular(@RequestBody MatriculaRequest request) {
-        UUID matriculaId = this.matriculaService.matricular(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(matriculaId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.matriculaService.matricular(request));
+    }
+
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
+    @PostMapping(path = "/api/admin/remover-matricula",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UUID> desvincular(@RequestBody MatriculaRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.matriculaService.desvincular(request));
     }
 
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")

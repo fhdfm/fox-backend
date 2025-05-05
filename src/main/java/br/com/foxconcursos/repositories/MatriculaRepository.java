@@ -1,6 +1,7 @@
 package br.com.foxconcursos.repositories;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import br.com.foxconcursos.domain.Usuario;
@@ -16,5 +17,8 @@ import br.com.foxconcursos.domain.Status;
 public interface MatriculaRepository extends ListCrudRepository<Matricula, UUID> {
  
     List<Matricula> findByUsuarioIdAndStatus(UUID usuarioId, Status status);
+
+    Optional<Matricula> findByUsuarioIdAndProdutoId(UUID usuarioId, UUID produtoId);
+
 
 }

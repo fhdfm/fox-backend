@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -57,16 +58,49 @@ public class MatriculaService {
         if (matricula.getUsuarioId() == null)
             throw new IllegalArgumentException("Usuário não informado");
 
-        UsuarioResponse usuario = this.usuarioService.findById(matricula.getUsuarioId());
-
         if (matricula.getProdutoId() == null)
             throw new IllegalArgumentException("Produto (curso/simulado) não informado");
+
+        UsuarioResponse usuario = this.usuarioService.findById(matricula.getUsuarioId());
+
+        Optional<Matricula> matriculaExistente = matriculaRepository.findByUsuarioIdAndProdutoId(
+                matricula.getUsuarioId(), matricula.getProdutoId());
+
+        if (matriculaExistente.isPresent()) {
+            Matricula existente = matriculaExistente.get();
+
+            if (existente.getStatus() == Status.INATIVO) {
+                existente.setStatus(Status.ATIVO);
+                matriculaRepository.save(existente);
+                return existente.getId();
+            } else {
+                throw new IllegalStateException("Usuário já está matriculado neste produto.");
+            }
+        }
 
         if (matricula.isBancoQuestao())
             return matricularBancoQuestao(usuario, matricula);
         else
             return matricularCursoSimulado(usuario, matricula);
     }
+
+    @Transactional
+    public UUID desvincular(MatriculaRequest matricula) {
+        if (matricula.getUsuarioId() == null || matricula.getProdutoId() == null) {
+            throw new IllegalArgumentException("Usuário e produto devem ser informados.");
+        }
+
+        Matricula matriculaExistente = matriculaRepository
+                .findByUsuarioIdAndProdutoId(matricula.getUsuarioId(), matricula.getProdutoId())
+                .orElseThrow(() -> new IllegalArgumentException("Matrícula não encontrada."));
+
+        // Lógica de inativação (ao invés de deletar)
+        matriculaExistente.setStatus(Status.INATIVO);
+        matriculaRepository.save(matriculaExistente);
+
+        return matriculaExistente.getId();
+    }
+
 
     @Transactional
     private UUID matricularBancoQuestao(UsuarioResponse usuario, MatriculaRequest matricula) {

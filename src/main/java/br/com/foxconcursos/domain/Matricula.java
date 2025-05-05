@@ -11,7 +11,7 @@ public class Matricula {
     @Id
     private UUID id;
     private UUID usuarioId;
-    private UUID produtoId; // produto ou curso
+    private UUID produtoId;
     private UUID transacaoId;
     private TipoProduto tipoProduto;
     private Status status;

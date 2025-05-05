@@ -8,7 +8,7 @@ public class MatriculaRequest {
     
     private static final String BANCO_QUESTOES_ID = "00000000-0000-0000-0000-000000000000";
 
-    private UUID produtoId; // curso ou simulado
+    private UUID produtoId;
     private UUID usuarioId;
     private LocalDateTime dataFim;
     private BigDecimal valor;
