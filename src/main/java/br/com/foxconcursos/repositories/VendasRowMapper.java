@@ -1,14 +1,15 @@
 package br.com.foxconcursos.repositories;
 
-import br.com.foxconcursos.dto.VendasResponse;
-import org.springframework.jdbc.core.RowMapper;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.UUID;
+
+import org.springframework.jdbc.core.RowMapper;
+
+import br.com.foxconcursos.dto.VendasResponse;
 
 public class VendasRowMapper implements RowMapper<VendasResponse> {
 
@@ -47,6 +48,14 @@ public class VendasRowMapper implements RowMapper<VendasResponse> {
             venda.setEntrega(rs.getBoolean("para_entrega"));
             venda.setEnviado(rs.getBoolean("produto_enviado"));
         }
+
+        venda.setLogradouro(rs.getString("logradouro"));
+        venda.setNumero(rs.getString("numero"));
+        venda.setComplemento(rs.getString("complemento"));
+        venda.setBairro(rs.getString("bairro"));
+        venda.setCidade(rs.getString("cidade"));
+        venda.setEstado(rs.getString("estado"));
+        venda.setCep(rs.getString("cep"));
 
         return venda;
 

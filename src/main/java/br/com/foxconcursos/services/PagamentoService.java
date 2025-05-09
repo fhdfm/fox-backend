@@ -1,16 +1,12 @@
 package br.com.foxconcursos.services;
 
-import br.com.foxconcursos.domain.*;
-import br.com.foxconcursos.dto.ProdutoMercadoPagoRequest;
-import br.com.foxconcursos.dto.VendasFilterResquest;
-import br.com.foxconcursos.dto.VendasResponse;
-import br.com.foxconcursos.dto.VendasStatusUpdateRequest;
-import br.com.foxconcursos.repositories.PagamentoRepository;
-import br.com.foxconcursos.repositories.UsuarioRepository;
-import br.com.foxconcursos.repositories.VendasRowMapper;
-import br.com.foxconcursos.util.SecurityUtil;
-import com.mercadopago.client.preference.*;
-import com.mercadopago.resources.preference.Preference;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -20,12 +16,26 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import com.mercadopago.client.preference.PreferenceBackUrlsRequest;
+import com.mercadopago.client.preference.PreferenceClient;
+import com.mercadopago.client.preference.PreferenceItemRequest;
+import com.mercadopago.client.preference.PreferencePayerRequest;
+import com.mercadopago.client.preference.PreferenceRequest;
+import com.mercadopago.resources.preference.Preference;
+
+import br.com.foxconcursos.domain.Endereco;
+import br.com.foxconcursos.domain.Pagamento;
+import br.com.foxconcursos.domain.TipoProduto;
+import br.com.foxconcursos.domain.Usuario;
+import br.com.foxconcursos.domain.UsuarioLogado;
+import br.com.foxconcursos.dto.ProdutoMercadoPagoRequest;
+import br.com.foxconcursos.dto.VendasFilterResquest;
+import br.com.foxconcursos.dto.VendasResponse;
+import br.com.foxconcursos.dto.VendasStatusUpdateRequest;
+import br.com.foxconcursos.repositories.PagamentoRepository;
+import br.com.foxconcursos.repositories.UsuarioRepository;
+import br.com.foxconcursos.repositories.VendasRowMapper;
+import br.com.foxconcursos.util.SecurityUtil;
 
 @Service
 public class PagamentoService {
@@ -174,9 +184,11 @@ public class PagamentoService {
 
         String sqlBase = """
                     select v.id, v.usuario_id, u.nome, v.produto_id, v.mp_id, v.data, v.periodo, 
-                           v.tipo, v.titulo, v.para_entrega, v.produto_enviado, v.telefone 
+                           v.tipo, v.titulo, v.para_entrega, v.produto_enviado, v.telefone, 
+                           e.logradouro, e.numero, e.complemento, e.bairro, e.cidade, e.estado, e.cep  
                     from mercado_pago v 
                     inner join usuarios u on u.id = v.usuario_id
+                    inner join enderecos e on e.usuario_id = v.usuario_id 
                     where v.status = 'approved'
                 """;
 
@@ -246,7 +258,7 @@ public class PagamentoService {
                 new VendasRowMapper(),
                 params.toArray());
 
-        StringBuilder sqlCountQuery = new StringBuilder("select count(*) from mercado_pago v inner join usuarios u on u.id = v.usuario_id where v.status = 'approved'");
+        StringBuilder sqlCountQuery = new StringBuilder("select count(*) from mercado_pago v inner join usuarios u on u.id = v.usuario_id inner join enderecos e on e.usuario_id = v.usuario_id where v.status = 'approved'");
 
         List<Object> countParams = new ArrayList<>();
 
