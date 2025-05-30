@@ -62,19 +62,20 @@ public class MatriculaService {
             throw new IllegalArgumentException("Produto (curso/simulado) não informado");
 
         UsuarioResponse usuario = this.usuarioService.findById(matricula.getUsuarioId());
+        if (!matricula.getProdutoId().toString().equals("00000000-0000-0000-0000-000000000000")) {
+            Optional<Matricula> matriculaExistente = matriculaRepository.findByUsuarioIdAndProdutoId(
+                    matricula.getUsuarioId(), matricula.getProdutoId());
 
-        Optional<Matricula> matriculaExistente = matriculaRepository.findByUsuarioIdAndProdutoId(
-                matricula.getUsuarioId(), matricula.getProdutoId());
+            if (matriculaExistente.isPresent()) {
+                Matricula existente = matriculaExistente.get();
 
-        if (matriculaExistente.isPresent()) {
-            Matricula existente = matriculaExistente.get();
-
-            if (existente.getStatus() == Status.INATIVO) {
-                existente.setStatus(Status.ATIVO);
-                matriculaRepository.save(existente);
-                return existente.getId();
-            } else {
-                throw new IllegalStateException("Usuário já está matriculado neste produto.");
+                if (existente.getStatus() == Status.INATIVO) {
+                    existente.setStatus(Status.ATIVO);
+                    matriculaRepository.save(existente);
+                    return existente.getId();
+                } else {
+                    throw new IllegalStateException("Usuário já está matriculado neste produto.");
+                }
             }
         }
 
