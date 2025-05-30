@@ -165,8 +165,9 @@ public class ComentarioAlternativaService {
               "messages": [
                 {
                   "role": "user",
-                  "content": "%s"
-                }
+                  "content": "%s",
+                  "file_ids": ["vs_68388f73b6808191974501ff1c865c1a"] 
+                }   
               ]
             }
             """, escapeJson(mensagem));
