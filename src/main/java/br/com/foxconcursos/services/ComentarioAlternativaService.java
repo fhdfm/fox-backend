@@ -80,6 +80,12 @@ public class ComentarioAlternativaService {
         salvarComentario(comentarioResposta);
     }
 
+    private String criarThreadVazia() throws Exception {
+        HttpRequest request = request("https://api.openai.com/v1/threads", "{}");
+        String response = send(request);
+        return JsonParser.parseString(response).getAsJsonObject().get("id").getAsString();
+    }    
+
     private String buscarResposta(String threadId) throws Exception {
         HttpRequest request = get("https://api.openai.com/v1/threads/" + threadId + "/messages");
         String response = send(request);
@@ -165,8 +171,7 @@ public class ComentarioAlternativaService {
               "messages": [
                 {
                   "role": "user",
-                  "content": "%s",
-                  "file_ids": ["vs_68388f73b6808191974501ff1c865c1a"] 
+                  "content": "%s"
                 }   
               ]
             }
