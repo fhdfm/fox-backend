@@ -22,7 +22,7 @@ public class GptService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void processarQuestao(UUID questaoId) throws Exception {
        QuestaoParaGptDTO questao = questaoService.findByIdToGptUse(questaoId);
-       comentarioAlternativaService.gerarComentario(questao);
+       comentarioAlternativaService.comentar(questao);
        questaoService.marcarComoComentada(questaoId);
     }
 }

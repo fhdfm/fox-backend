@@ -1,5 +1,7 @@
 package br.com.foxconcursos.services;
 
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import br.com.foxconcursos.repositories.QuestaoRepository;
@@ -15,7 +17,7 @@ public class QuestaoProcessor {
         this.questaoRepository = questaoRepository;
     }
 
-    //@EventListener(ApplicationReadyEvent.class)
+    @EventListener(ApplicationReadyEvent.class)
     public void iniciarProcessamento() {
         System.out.println("Iniciando o processamento... ");
 

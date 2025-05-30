@@ -1,29 +1,26 @@
 package br.com.foxconcursos.services;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import br.com.foxconcursos.domain.ComentarioAlternativa;
 import br.com.foxconcursos.dto.AlternativaGptDTO;
 import br.com.foxconcursos.dto.ComentarioResposta;
-import br.com.foxconcursos.dto.ComentarioRespostaAPI;
 import br.com.foxconcursos.dto.QuestaoParaGptDTO;
 import br.com.foxconcursos.repositories.ComentarioAlternativaRepository;
 
@@ -38,75 +35,165 @@ public class ComentarioAlternativaService {
     @Value("${api.gpt.key}")
     private String apiKey;
 
+      private final HttpClient client = HttpClient.newHttpClient();
+      private final Gson gson = new Gson();
+
     public ComentarioAlternativaService(ComentarioAlternativaRepository comentarioAlternativaRepository) {
         this.comentarioAlternativaRepository = comentarioAlternativaRepository;
     }
 
-    public void gerarComentario(QuestaoParaGptDTO questaoParaGptDTO) throws Exception {
-        String prompt = montarPrompt(questaoParaGptDTO);
+    public void comentar(QuestaoParaGptDTO questao) throws Exception {
+        String prompt = montarPrompt(questao);
         String modelo = obterModelo(prompt);
-    
-        List<Map<String, String>> messages = new ArrayList<>();
-        messages.add(Map.of(
-            "role", "user",
-            "content", prompt
+
+        // Cria uma thread para a questão
+        String threadId = criarThread(prompt);
+
+        // Iniciar o run com o assistant
+        String runId = iniciarRun(threadId);
+
+        // 3. Esperar até o run ser concluído
+        aguardarConclusao(threadId, runId);
+
+        // 4. Buscar resposta final
+        String respostaJson = buscarResposta(threadId);
+
+        System.out.println("Resposta JSON: " + respostaJson);
+
+                // 5. Interpretar JSON
+        RespostaGPT resposta = gson.fromJson(respostaJson, RespostaGPT.class);
+        
+        List<ComentarioResposta.Comentario> comentarios = new ArrayList<>();
+        comentarios.add(new ComentarioResposta.Comentario(
+            resposta.getId_opcao_correta(),
+            null, // Alternativa não é necessária aqui
+            resposta.getExplicacao(),
+            true // Considerando que a opção correta é sempre verdadeira
         ));
-    
-        Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("model", modelo);
-        requestBody.put("messages", messages);
-    
-        String responseJson = callApi(requestBody);
-    
-        // 1º parse: extrair content do JSON retornado pela OpenAI
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode root = objectMapper.readTree(responseJson);
-    
-        // Verificar se a resposta tem a estrutura correta
-        JsonNode choicesNode = root.path("choices");
-        if (choicesNode.isArray() && choicesNode.size() > 0) {
-            String conteudo = choicesNode.get(0).path("message").path("content").asText();
-    
-            // 2º parse: transformar a string JSON dentro do content em uma lista de ComentarioResposta
-            // No método gerarComentario:
-            try {
-                // 1. Desserializar para a classe intermediária
-                List<ComentarioRespostaAPI> respostasAPI = objectMapper.readValue(conteudo, 
-                    new TypeReference<List<ComentarioRespostaAPI>>() {});
-                
-                // 2. Converter para o formato necessário
-                List<ComentarioResposta.Comentario> comentarios = new ArrayList<>();
-                
-                for (ComentarioRespostaAPI resp : respostasAPI) {
-                    comentarios.add(new ComentarioResposta.Comentario(
-                        resp.alternativaId(),
-                        resp.alternativa(),
-                        resp.comentario(),
-                        resp.correta()
-                    ));
-                }
-                
-                // 3. Criar o objeto final
-                ComentarioResposta respostaFinal = new ComentarioResposta(
-                    questaoParaGptDTO.idQuestao().toString(),
-                    modelo,
-                    comentarios
-                );
-                
-                // 4. Salvar 
-                salvarComentario(respostaFinal);
-            } catch (JsonProcessingException e) {
-                // Tratamento de erro com mais detalhes
-                System.err.println("Erro ao processar JSON: " + e.getMessage());
-                System.err.println("Conteúdo recebido: " + conteudo);
-                throw new Exception("Erro ao processar o JSON do conteúdo gerado.", e);
-            }
-        } else {
-            System.err.println("A resposta não contém a estrutura esperada.");
-            throw new Exception("Resposta da API não contém a estrutura esperada.");
+        
+        ComentarioResposta comentarioResposta = new ComentarioResposta(
+            questao.idQuestao().toString(),
+            modelo,
+            comentarios
+        );
+
+        salvarComentario(comentarioResposta);
+    }
+
+    private String buscarResposta(String threadId) throws Exception {
+        HttpRequest request = get("https://api.openai.com/v1/threads/" + threadId + "/messages");
+        String response = send(request);
+
+        System.out.println("Resposta da API: " + response);
+
+        JsonObject json = JsonParser.parseString(response).getAsJsonObject();
+        JsonArray data = json.getAsJsonArray("data");
+
+        if (data == null || data.size() == 0) {
+            throw new IllegalStateException("Nenhuma resposta encontrada no thread.");
         }
+
+        JsonObject primeiraMensagem = data.get(0).getAsJsonObject();
+        JsonArray contentArray = primeiraMensagem.getAsJsonArray("content");
+
+        if (contentArray == null || contentArray.size() == 0) {
+            throw new IllegalStateException("Mensagem não contém conteúdo.");
+        }
+
+        JsonObject primeiroConteudo = contentArray.get(0).getAsJsonObject();
+
+        if (!primeiroConteudo.has("text")) {
+            throw new IllegalStateException("Conteúdo inesperado no formato da mensagem.");
+        }
+
+        JsonObject textObject = primeiroConteudo.getAsJsonObject("text");
+
+        if (!textObject.has("value")) {
+            throw new IllegalStateException("Campo 'value' não encontrado na resposta.");
+        }
+
+        try {
+            String valor = textObject.get("value").getAsString();
+            System.out.println("Valor extraído: " + valor);
+            return valor;
+        } catch (Exception e) {
+            System.err.println("Erro ao extrair 'value': " + textObject);
+            throw e;
+        }
+    }
+
+
+    private void aguardarConclusao(String threadId, String runId) throws Exception {
+        String status;
+        do {
+            HttpRequest request = get("https://api.openai.com/v1/threads/" + threadId + "/runs/" + runId);
+            String response = send(request);
+            status = JsonParser.parseString(response)
+                               .getAsJsonObject()
+                               .get("status").getAsString();
+            Thread.sleep(1000);
+        } while (!status.equals("completed"));
     }    
-    
+
+    private HttpRequest get(String url) {
+        return HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .timeout(Duration.ofSeconds(30))
+                .header("Authorization", "Bearer " + apiKey)
+                .header("OpenAI-Beta", "assistants=v2")  // ← ESSENCIAL
+                .build();
+    }
+
+    private  String iniciarRun(String threadId) throws Exception {
+        String body = String.format("""
+            {
+              "assistant_id": "%s",
+              "tool_choice": "auto"
+            }
+            """, "asst_wEqOcJwnQXbVRlvgFSOildrJ");
+
+        HttpRequest request = request("https://api.openai.com/v1/threads/" + threadId + "/runs", body);
+        String response = send(request);
+        return JsonParser.parseString(response)
+                         .getAsJsonObject()
+                         .get("id").getAsString();
+    }
+
+    private String criarThread(String mensagem) throws Exception {
+        String body = String.format("""
+            {
+              "messages": [
+                {
+                  "role": "user",
+                  "content": "%s"
+                }
+              ]
+            }
+            """, escapeJson(mensagem));
+
+        HttpRequest request = request("https://api.openai.com/v1/threads", body);
+        String response = send(request);
+
+        return JsonParser.parseString(response)
+                         .getAsJsonObject()
+                         .get("id").getAsString();
+    }
+
+    private String send(HttpRequest request) throws Exception {
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        return response.body();
+    }
+
+    private HttpRequest request(String url, String body) {
+        return HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .timeout(Duration.ofSeconds(30))
+                .header("Authorization", "Bearer " + apiKey)
+                .header("Content-Type", "application/json")
+                .header("OpenAI-Beta", "assistants=v2")  // ← ESSENCIAL
+                .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
+                .build();
+    }
 
     private void salvarComentario(ComentarioResposta comentarioResposta) {
         // Verificação de segurança para evitar NPE
@@ -128,87 +215,54 @@ public class ComentarioAlternativaService {
     }
     
     private String montarPrompt(QuestaoParaGptDTO questao) {
-        StringBuilder prompt = new StringBuilder();
-    
-        // Adicionar contexto da matéria se disponível
-        prompt.append("Analise a seguinte questão de múltipla escolha ");
-        // if (questao.materia() != null && !questao.materia().isEmpty()) {
-        //     prompt.append("sobre " + questao.materia());
-        // }
-        prompt.append(".\n\n");
-    
-        // Enunciado
-        String enunciadoLimitado = questao.enunciado().length() > 500 ? 
-            questao.enunciado().substring(0, 500) + "..." : questao.enunciado();
-        prompt.append("Enunciado:\n").append(enunciadoLimitado).append("\n\n");
-    
-        // Alternativas
-        int maxAlternativas = 5;
-        prompt.append("Alternativas:\n");
-        int alternativasCount = 0;
-        for (AlternativaGptDTO alt : questao.alternativas()) {
-            if (alternativasCount >= maxAlternativas) break;
-            prompt.append(alt.letra()).append(") ").append(alt.descricao()).append("\n");
-            alternativasCount++;
-        }
-    
-        // Instruções para comentários de qualidade
-        prompt.append("\nPara cada alternativa, forneça um comentário detalhado e técnico que:\n");
-        prompt.append("- Se a alternativa for correta: explique por que ela é a resposta certa\n");
-        prompt.append("- Se a alternativa for incorreta: explique precisamente por que está errada\n");
-        prompt.append("- Use linguagem técnica e precisa, mas compreensível\n");
-        prompt.append("- Tenha entre 2-4 frases explicativas\n\n");
-    
-        // Detalhamento do formato da resposta
-        prompt.append("A resposta deve estar em formato JSON assim:\n");
-        prompt.append("[\n");
-        prompt.append("  {\n");
-        prompt.append("    \"alternativa\": \"<LETRA da alternativa>\",\n");
-        prompt.append("    \"comentario\": \"<justificativa técnica e detalhada>\",\n");
-        prompt.append("    \"correta\": true|false,\n");
-        prompt.append("    \"questaoId\": \"<ID da questão>\",\n");
-        prompt.append("    \"alternativaId\": \"<ID da alternativa>\"\n");
-        prompt.append("  },\n  ...\n]\n");
-    
-        // IMPORTANTE: Instrução sobre alternativa correta
-        prompt.append("\nIMPORTANTE: Uma e apenas uma alternativa deve ser marcada como correta (correta: true). ");
-        prompt.append("Analise cuidadosamente a questão e determine qual é a resposta correta baseada no conteúdo.\n");
-    
-        // Exemplo de comentário
-        prompt.append("\nExemplo de comentário de qualidade:\n");
-        prompt.append("Para alternativa correta: \"Esta alternativa está correta porque [explicação técnica]. ");
-        prompt.append("O conceito se aplica adequadamente neste contexto, pois [explicação].\"\n\n");
-        prompt.append("Para alternativa incorreta: \"Esta alternativa está incorreta porque [explicação do erro]. ");
-        prompt.append("O correto seria [explicação da verdade].\"\n\n");
-    
-        // IDs das alternativas
-        prompt.append("IDs das alternativas:\n");
-        for (AlternativaGptDTO alt : questao.alternativas()) {
-            prompt.append(alt.letra()).append(" → ").append(alt.id()).append("\n");
-        }
-    
-        // Instrução final
-        prompt.append("\nUse apenas a LETRA das alternativas no campo \"alternativa\".\n");
-        prompt.append("Assegure-se de marcar exatamente uma alternativa como correta.\n");
-    
-        return prompt.toString();
+
+        String opcoes = montarOpcoes(questao.alternativas());
+
+        String prompt = """
+                id_questao: %s
+                banca: %s
+                questao: %s
+
+                opcoes:
+                %s
+            """;
+
+        prompt = String.format(prompt, questao.idQuestao(), questao.banca(), questao.enunciado(), opcoes);
+
+        return escapeJson(prompt);
     }
-        
-    private String callApi(Map<String, Object> requestBody) throws Exception {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(apiKey); // substitui "Authorization" manual
 
-        HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
-
-        RestTemplate restTemplate = new RestTemplate();
-
-        try {
-            ResponseEntity<String> response = restTemplate.postForEntity(gptApiUrl, request, String.class);
-            return response.getBody();
-        } catch (RestClientException e) {
-            throw new Exception("Erro ao chamar a API do ChatGPT", e);
+    private String montarOpcoes(List<AlternativaGptDTO> alternativas) {
+        String opcoes = "";
+        for (AlternativaGptDTO alternativa : alternativas) {
+            opcoes += String.format("%s: %s\n", 
+                alternativa.id(), alternativa.descricao());
         }
+        return opcoes;
+    }
+
+    // private String callApi(Map<String, Object> requestBody) throws Exception {
+    //     HttpHeaders headers = new HttpHeaders();
+    //     headers.setContentType(MediaType.APPLICATION_JSON);
+    //     headers.setBearerAuth(apiKey); // substitui "Authorization" manual
+
+    //     HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
+
+    //     RestTemplate restTemplate = new RestTemplate();
+
+    //     try {
+    //         ResponseEntity<String> response = restTemplate.postForEntity(gptApiUrl, request, String.class);
+    //         return response.getBody();
+    //     } catch (RestClientException e) {
+    //         throw new Exception("Erro ao chamar a API do ChatGPT", e);
+    //     }
+    // }
+
+    private String escapeJson(String text) {
+        return text.replace("\\", "\\\\")
+                   .replace("\"", "\\\"")
+                   .replace("\n", "\\n")
+                   .replace("\r", "\\r");
     }
 
     private String obterModelo(String prompt) {
@@ -240,3 +294,43 @@ public class ComentarioAlternativaService {
     }
     
 }
+
+class RespostaGPT {
+    private String id_questao;
+    private String id_opcao_correta;
+    private String explicacao;
+
+    public String getId_questao() {
+        return id_questao;
+    }
+
+    public void setId_questao(String id_questao) {
+        this.id_questao = id_questao;
+    }
+
+    public String getId_opcao_correta() {
+        return id_opcao_correta;
+    }
+
+    public void setId_opcao_correta(String id_opcao_correta) {
+        this.id_opcao_correta = id_opcao_correta;
+    }
+
+    public String getExplicacao() {
+        return explicacao;
+    }
+
+    public void setExplicacao(String explicacao) {
+        this.explicacao = explicacao;
+    }
+
+    @Override
+    public String toString() {
+        return "RespostaQuestao{" +
+                "id_questao='" + id_questao + '\'' +
+                ", id_opcao_correta='" + id_opcao_correta + '\'' +
+                ", explicacao='" + explicacao + '\'' +
+                '}';
+    }
+}
+

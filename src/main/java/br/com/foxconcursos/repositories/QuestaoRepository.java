@@ -18,7 +18,15 @@ public interface QuestaoRepository extends CustomCrudRepository<Questao, UUID> {
     
     List<Questao> findByProcessadoFalse();
 
-    @Query("SELECT id FROM questoes WHERE comentada = false")
+    //@Query("SELECT id FROM questoes WHERE comentada = false")
+    @Query("""
+        SELECT q.id
+        FROM questoes q
+        JOIN disciplinas d ON q.disciplina_id = d.id
+        WHERE q.comentada = false
+        AND d.nome = 'Direito Constitucional'
+        AND d.tipo = 'CONCURSO'
+    """)
     List<UUID> findIdsByComentadaFalse();
 
 }

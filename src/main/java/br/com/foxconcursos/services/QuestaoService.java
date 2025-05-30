@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import br.com.foxconcursos.domain.Alternativa;
+import br.com.foxconcursos.domain.Banca;
 import br.com.foxconcursos.domain.FiltroQuestao;
 import br.com.foxconcursos.domain.Questao;
 import br.com.foxconcursos.domain.QuestaoVideo;
@@ -37,6 +38,7 @@ import br.com.foxconcursos.dto.ResultadoResponse;
 import br.com.foxconcursos.dto.StorageInput;
 import br.com.foxconcursos.dto.StorageOutput;
 import br.com.foxconcursos.repositories.AlternativaRepository;
+import br.com.foxconcursos.repositories.BancaRepository;
 import br.com.foxconcursos.repositories.QuestaoAssuntoRepository;
 import br.com.foxconcursos.repositories.QuestaoRepository;
 import br.com.foxconcursos.repositories.QuestaoVideoRepository;
@@ -49,6 +51,7 @@ public class QuestaoService {
     private final QuestaoRepository questaoRepository;
     private final AlternativaRepository alternativaRepository;
     private final QuestaoAssuntoRepository questaoAssuntoRepository;
+    private final BancaRepository bancaRepository;
     private final StorageService storageService;
     private JdbcTemplate jdbcTemplate;
 
@@ -57,7 +60,8 @@ public class QuestaoService {
                           JdbcTemplate jdbcTemplate,
                           QuestaoAssuntoRepository questaoAssuntoRepository,
                           StorageService storageService,
-                          QuestaoVideoRepository questaoVideoRepository) {
+                          QuestaoVideoRepository questaoVideoRepository,
+                          BancaRepository bancaRepository) {
 
         this.questaoRepository = questaoRepository;
         this.alternativaRepository = alternativaRepository;
@@ -65,6 +69,7 @@ public class QuestaoService {
         this.questaoAssuntoRepository = questaoAssuntoRepository;
         this.storageService = storageService;
         this.questaoVideoRepository = questaoVideoRepository;
+        this.bancaRepository = bancaRepository;
 
     }
 
@@ -943,7 +948,9 @@ public class QuestaoService {
                 .map(a -> new AlternativaGptDTO(a.getId(), a.getLetra(), a.getDescricao()))
                 .toList();
 
-        return new QuestaoParaGptDTO(id, enunciado, alternativasDTO);
+        Banca banca = this.bancaRepository.findById(questao.getBancaId()).orElse(null);
+
+        return new QuestaoParaGptDTO(id, banca != null ? banca.getNome() : null, enunciado, alternativasDTO);
     }
 
     public List<UUID> findIdsByComentadaFalse() {
